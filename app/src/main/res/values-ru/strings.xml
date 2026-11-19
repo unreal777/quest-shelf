@@ -32,6 +32,7 @@
     <string name="mark_bad">Не понравилось</string>
     <string name="mark_done">Пройдено</string>
     <string name="mark_new">Новое</string>
+    <string name="mark_never">Не запускалось</string>
 
     <string name="move_hint">Выбери приложение, перед которым поставить «%s»</string>
     <string name="move_end">В конец</string>

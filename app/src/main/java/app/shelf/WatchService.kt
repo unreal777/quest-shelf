@@ -27,7 +27,16 @@ class WatchService : AccessibilityService() {
     companion object {
         private const val TAG = "Shelf"
         private const val LOG_SIZE = 120
-        private val SHELL_CHROME = setOf("com.oculus.vrshell", "com.oculus.systemux", "com.oculus.guardian")
+        // Not panels of the desktop: the shell's bars and dialogs, and Meta's menu with its library,
+        // which shows up for a moment whenever the desktop is left without a single panel.
+        private val SHELL_CHROME = setOf(
+            "com.oculus.vrshell", "com.oculus.systemux", "com.oculus.guardian",
+            "com.oculus.panelapp.library", "com.meta.systemui",
+        )
+
+        /** When the launcher's window was last made anew: never twice in a row. */
+        @Volatile
+        private var lastRemake = 0L
 
         @Volatile
         var running = false
@@ -249,8 +258,9 @@ class WatchService : AccessibilityService() {
 
     /**
      * A second panel takes the middle and pushes the launcher to the side, and the system leaves
-     * it there after that panel is closed. Starting the launcher again is how the shell is asked
-     * to bring a panel back in front of the user, so do that once the last other panel is gone.
+     * it there after that panel is closed. Starting the launcher again changes nothing (the shell
+     * ignores a relaunch of a panel that is already shown), but a window opened anew is put in the
+     * middle. So once the last other panel is gone the launcher closes its window and opens it again.
      */
     private fun checkOtherWindows() {
         var mine = false
@@ -272,7 +282,13 @@ class WatchService : AccessibilityService() {
         val closed = othersOpen && !others
         othersOpen = others
         if (closed && mine && Store.recenter && !bypass) {
-            handler.postDelayed({ openLauncher(this, "other window closed") }, 500)
+            handler.postDelayed({
+                val now = System.currentTimeMillis()
+                if (!othersOpen && now - lastRemake > 10_000) {
+                    lastRemake = now
+                    Panel.remake(this, "other window closed")
+                }
+            }, 400)
         }
     }
 

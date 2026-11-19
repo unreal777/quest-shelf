@@ -4,6 +4,7 @@ import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.net.Uri
 import android.provider.Settings
 import android.util.Log
 
@@ -20,17 +21,25 @@ object SystemLinks {
     const val LIBRARY = "library"
     private const val NAVIGATOR = "com.oculus.panelapp.library"
     private const val SHELL = "com.oculus.vrshell"
+    private const val HOME_PAGE = "https://www.google.com/"
 
     /**
      * A "system deep link", the way Meta documents it: the shell is started with the name of
      * one of its built-in apps (systemux://browser, systemux://store, ...) and opens that app
      * itself, exactly as its own menu does.
      */
-    private fun deep(pm: PackageManager, target: String): Intent? =
+    private fun deep(pm: PackageManager, target: String, uri: String? = null): Intent? =
         pm.getLaunchIntentForPackage(SHELL)?.apply {
             putExtra("intent_data", target)
+            if (uri != null) putExtra("uri", uri)
             addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
         }
+
+    /** An ordinary web link handed to the browser, the way any app opens a page. */
+    private fun page(pm: PackageManager, pkg: String, url: String): Intent? {
+        val i = Intent(Intent.ACTION_VIEW, Uri.parse(url)).setPackage(pkg).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        return if (i.resolveActivity(pm) != null) i else null
+    }
 
     /** A specific screen of a system app; only when other apps are allowed to start it. */
     private fun screen(pm: PackageManager, pkg: String, cls: String): Intent? = try {
@@ -86,9 +95,13 @@ object SystemLinks {
         )
         add("people", R.string.sys_people, Ic.PEOPLE, app(pm, "com.oculus.socialplatform"))
         add("camera", R.string.sys_camera, Ic.CAMERA, app(pm, "com.oculus.metacam"))
-        // started as a plain app the browser comes up only when it is not running yet;
-        // the shell's own link also brings an already open browser back
-        add("browser", R.string.sys_browser, Ic.GLOBE, deep(pm, "systemux://browser"), app(pm, "com.oculus.browser"))
+        // The shell's browser link does nothing without an address (seen on v209: it starts
+        // an activity that closes at once), so it is always given a page to open.
+        add(
+            "browser", R.string.sys_browser, Ic.GLOBE,
+            deep(pm, "systemux://browser", HOME_PAGE),
+            page(pm, "com.oculus.browser", HOME_PAGE) ?: app(pm, "com.oculus.browser")
+        )
 
         Log.i(
             "Shelf",

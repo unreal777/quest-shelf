@@ -50,6 +50,7 @@ object Pal {
     const val PURPLE = 0xFFB99BFF.toInt()
     const val SLATE = 0xFFB6B8BE.toInt()
     const val GREEN = 0xFF6FD08C.toInt()
+    const val SKY = 0xFF7CC4EE.toInt()
 
     /** The same colour as a faint wash, for the plate behind an icon. */
     fun wash(color: Int, alpha: Int = 0x2B) = (color and 0x00FFFFFF) or (alpha shl 24)
@@ -79,7 +80,7 @@ object Lang {
 enum class Ic {
     PLAY, DOWNLOAD, STAR, STAR_LINE, MORE, BAG, FOLDER, TROPHY, SAD, FLASK, CLOCK, MOVE, EDIT,
     EYE, EYE_OFF, INFO, TRASH, SLIDERS, SORT, SEARCH, CHECK, CLOSE, PLUS, REFRESH, GLOBE, POWER,
-    SWAP, GRID, IMAGE, SPARK, TARGET, LIST, OPEN, CHART, OK_CIRCLE, GEAR, BELL, CAMERA, BOLT, PEOPLE, USER, FUNNEL, SWITCH, CHEVRON,
+    SWAP, GRID, IMAGE, SPARK, PLAY_LINE, TARGET, LIST, OPEN, CHART, OK_CIRCLE, GEAR, BELL, CAMERA, BOLT, PEOPLE, USER, FUNNEL, SWITCH, CHEVRON,
 }
 
 /** Line icons drawn in code on a 24-unit grid, so they stay sharp at any size and in any colour. */
@@ -150,6 +151,7 @@ class Icon(private val kind: Ic, color: Int) : Drawable() {
         c.scale(s, s)
         when (kind) {
             Ic.PLAY -> c.poly(fill, true, 8.5f, 5.5f, 18.5f, 12f, 8.5f, 18.5f)
+            Ic.PLAY_LINE -> c.poly(line, true, 8f, 5f, 19f, 12f, 8f, 19f)
             Ic.DOWNLOAD -> {
                 c.l(12f, 4f, 12f, 15f)
                 c.poly(line, false, 7f, 10.5f, 12f, 15.5f, 17f, 10.5f)
@@ -575,6 +577,7 @@ class Kit(val c: Context) {
             text = title
             textSize = 16f
             typeface = medium
+            shadow(this)
             setTextColor(if (active) Pal.TEXT else Pal.DIM)
             gravity = Gravity.CENTER
             minHeight = dp(44)
@@ -644,6 +647,9 @@ class Kit(val c: Context) {
         setTextColor(color)
         if (bold) typeface = medium
     }
+
+    /** A soft dark edge around the letters, for text that lies straight on the background picture. */
+    fun shadow(t: TextView) = t.setShadowLayer(dp(4).toFloat(), 0f, dp(1).toFloat(), 0xB3000000.toInt())
 
     /** Rounds the corners of whatever the view draws; [fraction] of its width. */
     fun rounded(v: View, fraction: Float) {

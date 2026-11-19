@@ -41,6 +41,32 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import kotlin.concurrent.thread
 
+/**
+ * Lets the watch service have the launcher's window made anew, which is the only way to get it
+ * back to the middle of the desktop (see WatchService.checkOtherWindows).
+ */
+object Panel {
+    /** What the user was looking at, to come back to the same place. */
+    class Carry(val tab: String, val query: String, val genre: String, val mark: String, val first: Int, val at: Long)
+
+    @Volatile
+    var current: MainActivity? = null
+
+    @Volatile
+    var carry: Carry? = null
+
+    fun remake(c: Context, why: String): Boolean {
+        val a = current ?: return false
+        if (a.isFinishing || a.isDestroyed || !a.mayRemake()) return false
+        android.util.Log.i("Shelf", "window made anew: $why")
+        carry = a.snapshot()
+        a.finishAndRemoveTask()
+        val app = c.applicationContext
+        Handler(Looper.getMainLooper()).postDelayed({ WatchService.openLauncher(app, why) }, 200)
+        return true
+    }
+}
+
 class MainActivity : Activity() {
 
     /** A label an app can carry. */
@@ -51,12 +77,16 @@ class MainActivity : Activity() {
         const val WRAP = ViewGroup.LayoutParams.WRAP_CONTENT
         const val DAY_MS = 24L * 3600 * 1000
 
+        /** Free strip left and right of the content, where the background picture shows as it is. */
+        const val SIDE = 48
+
         /** Less play time than this (and not touched since) reads as "tried it and dropped it". */
         const val SHORT_PLAY_MS = 15L * 60 * 1000
 
-        /** The first three are worked out automatically, the other two are the user's own. */
+        /** The first four are worked out automatically, the other two are the user's own. */
         val MARKS = listOf(
             Mark("new", R.string.mark_new, Ic.SPARK, Pal.GREEN),
+            Mark("never", R.string.mark_never, Ic.PLAY_LINE, Pal.SKY),
             Mark("demo", R.string.mark_demo, Ic.FLASK, Pal.PURPLE),
             Mark("short", R.string.mark_short, Ic.CLOCK, Pal.SLATE),
             Mark("bad", R.string.mark_bad, Ic.SAD, Pal.RED),
@@ -116,8 +146,10 @@ class MainActivity : Activity() {
     private lateinit var filterScroll: HorizontalScrollView
     private lateinit var filterRow: LinearLayout
     private lateinit var heroBox: FrameLayout
-    private lateinit var wallpaper: ImageView
-    private lateinit var veil: View
+    private lateinit var backdrop: Backdrop
+
+    /** Grid position to come back to after the window was made anew, -1 = none. */
+    private var restoreFirst = -1
     private lateinit var genreBox: TextView
     private var wallKey = "-"
     private lateinit var grid: DragGrid
@@ -154,6 +186,7 @@ class MainActivity : Activity() {
     private var done: Set<String> = emptySet()
     private var notShort: Set<String> = emptySet()
     private var notNew: Set<String> = emptySet()
+    private var notNever: Set<String> = emptySet()
     private var hidden: Set<String> = emptySet()
     private var names: Map<String, String> = emptyMap()
     private var usageAccess = false
@@ -191,29 +224,28 @@ class MainActivity : Activity() {
         ui = Kit(this)
         inst = Store.installFilter
 
-        val frame = FrameLayout(this).apply { background = ui.backdrop() }
-        // a game cover, blurred, behind everything; the dark veil over it keeps the text readable
-        wallpaper = ImageView(this).apply {
-            scaleType = ImageView.ScaleType.CENTER_CROP
-            alpha = 0.55f
-            visibility = View.GONE
-            if (Build.VERSION.SDK_INT >= 31) {
-                val r = dp(30).toFloat()
-                setRenderEffect(RenderEffect.createBlurEffect(r, r, Shader.TileMode.CLAMP))
+        Panel.current = this
+        Panel.carry?.let { c ->
+            Panel.carry = null
+            if (System.currentTimeMillis() - c.at < 15_000) {
+                tab = c.tab
+                query = c.query
+                genre = c.genre
+                mark = c.mark
+                restoreFirst = c.first
             }
         }
-        frame.addView(wallpaper, FrameLayout.LayoutParams(MATCH, MATCH))
-        veil = View(this).apply {
-            background = GradientDrawable(
-                GradientDrawable.Orientation.TOP_BOTTOM,
-                intArrayOf(0x8C2C2C2E.toInt(), 0xC42A2A2C.toInt(), 0xEB28282A.toInt())
-            )
+
+        val frame = FrameLayout(this).apply { background = ui.backdrop() }
+        // a game cover behind everything: clear along the edges, blurred and veiled towards the middle
+        backdrop = Backdrop(this).apply {
+            inset = dp(SIDE).toFloat()
             visibility = View.GONE
         }
-        frame.addView(veil, FrameLayout.LayoutParams(MATCH, MATCH))
+        frame.addView(backdrop, FrameLayout.LayoutParams(MATCH, MATCH))
         val root = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
-            setPadding(dp(28), dp(18), dp(28), dp(8))
+            setPadding(dp(SIDE), dp(22), dp(SIDE), dp(10))
             // takes initial focus so the keyboard does not pop up over the grid
             isFocusableInTouchMode = true
         }
@@ -234,6 +266,7 @@ class MainActivity : Activity() {
             setPadding(dp(18), 0, dp(18), 0)
             setCompoundDrawablesRelative(ui.icon(Ic.SEARCH, Pal.DIM, 20), null, null, null)
             compoundDrawablePadding = dp(12)
+            if (query.isNotEmpty()) setText(query)
         }
         search.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, a: Int, b: Int, c: Int) {}
@@ -410,7 +443,14 @@ class MainActivity : Activity() {
         links.firstOrNull { it.id == id }?.let { openLink(it) }
     }
 
+    /** Not while a tile is being carried: the window going away would drop it. */
+    internal fun mayRemake() = !grid.isDragging
+
+    internal fun snapshot() =
+        Panel.Carry(tab, query, genre, mark, grid.firstVisiblePosition, System.currentTimeMillis())
+
     override fun onDestroy() {
+        if (Panel.current === this) Panel.current = null
         Meta.onUpdate = null
         Owned.onUpdate = null
         handler.removeCallbacksAndMessages(null)
@@ -431,6 +471,10 @@ class MainActivity : Activity() {
                     loaded = true
                     // a redraw in the middle of carrying a tile would pull it out of the hand
                     if (!grid.isDragging) refresh()
+                    if (restoreFirst >= 0) {
+                        grid.setSelection(restoreFirst)
+                        restoreFirst = -1
+                    }
                 }
             }
         }
@@ -537,8 +581,19 @@ class MainActivity : Activity() {
         return System.currentTimeMillis() - a.lastUsed > DAY_MS && a.installed > Apps.statsSince
     }
 
+    /**
+     * On the headset and never started. Only said when it can be known: with access to the
+     * usage statistics, and for apps installed after those statistics begin.
+     */
+    private fun isNever(a: AppEntry): Boolean {
+        if (a.isSystem || a.notInstalled || !usageAccess) return false
+        if (a.playTime > 0 || a.lastUsed > 0 || a.pkg in notNever) return false
+        return Apps.statsSince > 0 && a.installed > Apps.statsSince
+    }
+
     private fun hasMark(a: AppEntry, mark: String) = when (mark) {
         "new" -> a.fresh && a.pkg !in notNew
+        "never" -> isNever(a)
         "demo" -> a.demo
         "short" -> isShort(a)
         "bad" -> a.pkg in bad
@@ -557,6 +612,7 @@ class MainActivity : Activity() {
         done = Store.marked("done")
         notShort = Store.marked("notshort")
         notNew = Store.marked("notnew")
+        notNever = Store.marked("notnever")
         names = Store.names()
         hidden = Store.hidden()
         usageAccess = Apps.hasUsageAccess(this)
@@ -811,20 +867,23 @@ class MainActivity : Activity() {
                 ?: games.filter { !it.notInstalled && it.playTime > 0 }.maxByOrNull { it.playTime }
                 ?: games.filter { !it.notInstalled && it.lastUsed > 0 }.maxByOrNull { it.lastUsed }
         }
-        val bitmap = (chosen?.icon as? BitmapDrawable)?.bitmap
-        val key = if (chosen == null || bitmap == null) "" else "${chosen.pkg}:${bitmap.generationId}"
+        val file = chosen?.let { Meta.coverFile(it.pkg) }?.takeIf { it.exists() }
+        val key = if (chosen == null || file == null) "" else "${chosen.pkg}:${file.lastModified()}"
         if (key == wallKey) return
         wallKey = key
-        if (bitmap == null) {
-            wallpaper.setImageDrawable(null)
-            wallpaper.visibility = View.GONE
-            veil.visibility = View.GONE
+        if (file == null) {
+            backdrop.setCover(null)
             return
         }
-        // a tiny copy stretched over the panel is a soft blur by itself; newer systems smooth it further
-        wallpaper.setImageBitmap(android.graphics.Bitmap.createScaledBitmap(bitmap, 40, 40, true))
-        wallpaper.visibility = View.VISIBLE
-        veil.visibility = View.VISIBLE
+        // the tiles hold a reduced copy; the edges of the panel show the picture as it is, so read it in full
+        thread {
+            val full = try {
+                android.graphics.BitmapFactory.decodeFile(file.path)
+            } catch (e: Throwable) {
+                null
+            }
+            runOnUiThread { if (wallKey == key && !isDestroyed) backdrop.setCover(full) }
+        }
     }
 
     // ----------------------------------------------------------------- hero
@@ -1160,6 +1219,7 @@ class MainActivity : Activity() {
             )
         }
         val label = ui.text("", 14f).apply {
+            ui.shadow(this)
             gravity = Gravity.CENTER_HORIZONTAL
             maxLines = 2
             minLines = 2
@@ -1302,8 +1362,8 @@ class MainActivity : Activity() {
             fun line(text: String, size: Float, color: Int) =
                 info.addView(ui.text(text, size, color).apply { setPadding(0, dp(2), 0, dp(2)) })
 
-            // what the launcher worked out by itself: new, demo, barely played
-            val auto = MARKS.filter { it.id in setOf("new", "demo", "short") && hasMark(a, it.id) }
+            // what the launcher worked out by itself: new, never launched, demo, barely played
+            val auto = MARKS.filter { it.id in setOf("new", "never", "demo", "short") && hasMark(a, it.id) }
             if (auto.isNotEmpty()) {
                 val pills = LinearLayout(this).apply { orientation = LinearLayout.HORIZONTAL }
                 for (m in auto) {

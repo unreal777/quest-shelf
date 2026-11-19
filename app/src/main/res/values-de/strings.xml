@@ -32,6 +32,7 @@
     <string name="mark_bad">Nicht gefallen</string>
     <string name="mark_done">Durchgespielt</string>
     <string name="mark_new">Neu</string>
+    <string name="mark_never">Nie gestartet</string>
 
     <string name="move_hint">Wähle die App, vor die „%s“ gesetzt werden soll</string>
     <string name="move_end">Ans Ende</string>

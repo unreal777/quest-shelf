@@ -32,6 +32,7 @@
     <string name="mark_bad">Pas aimé</string>
     <string name="mark_done">Terminé</string>
     <string name="mark_new">Nouveau</string>
+    <string name="mark_never">Jamais lancé</string>
 
     <string name="move_hint">Choisissez l\'application devant laquelle placer « %s »</string>
     <string name="move_end">À la fin</string>
