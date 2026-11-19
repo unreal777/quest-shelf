@@ -1,5 +1,11 @@
 package app.shelf
 
+import android.graphics.Typeface
+import android.graphics.PixelFormat
+import android.graphics.Paint
+import android.graphics.ColorFilter
+import android.graphics.Color
+import android.graphics.Canvas
 import android.app.AppOpsManager
 import android.app.usage.UsageStats
 import android.app.usage.UsageStatsManager
@@ -44,6 +50,46 @@ class AppEntry(
     val fresh: Boolean = false,
 ) {
     val demo: Boolean get() = Meta.isDemo(storeName.ifEmpty { sysLabel })
+}
+
+/** A tile for an app that has no picture: its initials on a plate whose colour is its own. */
+class Monogram(name: String, key: String) : Drawable() {
+    private val letters = name.split(' ', '-', '_').filter { it.isNotEmpty() && it[0].isLetterOrDigit() }
+        .take(2).joinToString("") { it.substring(0, 1).uppercase() }.ifEmpty { "?" }
+    private val plate = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        val hue = ((key.hashCode() % 360) + 360) % 360
+        color = Color.HSVToColor(floatArrayOf(hue.toFloat(), 0.42f, 0.52f))
+    }
+    private val text = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        color = 0xFFF2F2F2.toInt()
+        textAlign = Paint.Align.CENTER
+        typeface = Typeface.create("sans-serif-medium", Typeface.NORMAL)
+    }
+
+    override fun draw(c: Canvas) {
+        val b = bounds
+        c.drawRect(b, plate)
+        text.textSize = b.height() * 0.42f
+        val y = b.exactCenterY() - (text.descent() + text.ascent()) / 2
+        c.drawText(letters, b.exactCenterX(), y, text)
+    }
+
+    override fun setAlpha(alpha: Int) {
+        plate.alpha = alpha
+        text.alpha = alpha
+    }
+
+    override fun setColorFilter(filter: ColorFilter?) {
+        plate.colorFilter = filter
+        text.colorFilter = filter
+    }
+
+    @Deprecated("Deprecated in Java")
+    override fun getOpacity() = PixelFormat.OPAQUE
+
+    override fun getIntrinsicWidth() = 192
+    override fun getIntrinsicHeight() = 192
+    override fun getConstantState(): ConstantState? = null
 }
 
 object Apps {
@@ -94,6 +140,42 @@ object Apps {
         }
     } catch (e: Exception) {
         null
+    }
+
+    /**
+     * The app's own icon, or null when it has none. Some of Meta's pieces set no application
+     * icon at all (the system then hands out a blank plate), and some only give one to the
+     * screen they start with, so that screen is asked first.
+     */
+    private fun ownIcon(pm: PackageManager, ai: ApplicationInfo, launch: Intent): Drawable? {
+        val screen = try {
+            launch.component?.let { pm.getActivityInfo(it, 0) }
+        } catch (e: Exception) {
+            null
+        }
+        if ((screen?.icon ?: 0) == 0 && ai.icon == 0) return null
+        val d = try {
+            screen?.loadIcon(pm) ?: ai.loadIcon(pm)
+        } catch (e: Exception) {
+            return null
+        }
+        return if (isBlank(d)) null else d
+    }
+
+    /** An icon that draws next to nothing. */
+    private fun isBlank(d: Drawable): Boolean = try {
+        val n = 24
+        val b = Bitmap.createBitmap(n, n, Bitmap.Config.ARGB_8888)
+        val old = android.graphics.Rect(d.bounds)
+        d.setBounds(0, 0, n, n)
+        d.draw(Canvas(b))
+        d.bounds = old
+        val px = IntArray(n * n)
+        b.getPixels(px, 0, n, 0, 0, n, n)
+        b.recycle()
+        px.count { (it ushr 24) > 40 } < n * n / 20
+    } catch (e: Throwable) {
+        false
     }
 
     private fun cover(pkg: String): Drawable? {
@@ -149,25 +231,26 @@ object Apps {
             val preinstalled = (ai.flags and ApplicationInfo.FLAG_SYSTEM) != 0
             val isStore = !preinstalled && installer(pm, pkg) == STORE_INSTALLER
             if (isStore) fromStore[pkg] = sysLabel
-            // Meta's helpers delivered through the store (help centre, home environments…)
-            // are not in the catalog; file them with the system apps
-            val isSystem = preinstalled ||
-                (isStore && Meta.isPlatformPackage(pkg) && meta != null && !meta.found)
-
             val coverFile = Meta.coverFile(pkg)
             val key = if (coverFile.exists()) "c${coverFile.lastModified()}" else "a${pi.lastUpdateTime}"
             val cached = iconCache[pkg]
             val icon = if (cached != null && cached.first == key) {
                 cached.second
             } else {
-                val d = cover(pkg) ?: try {
-                    ai.loadIcon(pm)
-                } catch (e: Exception) {
-                    pm.defaultActivityIcon
+                val d = cover(pkg) ?: ownIcon(pm, ai, launch) ?: run {
+                    Log.i("Shelf", "no picture of its own, initials instead: $pkg")
+                    Monogram(meta?.name?.ifBlank { null } ?: sysLabel, pkg)
                 }
                 iconCache[pkg] = Pair(key, d)
                 d
             }
+
+            // Meta's helpers delivered through the store (help centre, home environments…)
+            // are not in the catalog; file them with the system apps
+            // (also Meta's own pieces that come without any picture: account and privacy pages)
+            val isSystem = preinstalled ||
+                (isStore && Meta.isPlatformPackage(pkg) && meta != null && !meta.found) ||
+                (Meta.isPlatformPackage(pkg) && icon is Monogram)
 
             val u = usage[pkg]
             out.add(

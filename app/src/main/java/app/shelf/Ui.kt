@@ -40,6 +40,10 @@ object Pal {
     const val SURFACE = 0xFF2E2E30.toInt()
     const val CARD = 0x24FFFFFF
     const val CARD_HI = 0x42FFFFFF
+
+    /** Controls of the main screen: they lie on the background picture, so they carry their own grey. */
+    const val GLASS = 0xC24C4C4E.toInt()
+    const val GLASS_HI = 0xDB626264.toInt()
     const val ACCENT = 0xFFE6E6E8.toInt()
     const val ACCENT_HI = 0xFFFAFAFA.toInt()
     const val TEXT = 0xFFF2F2F2.toInt()
@@ -503,8 +507,8 @@ class Kit(val c: Context) {
         plain: Boolean = false,
         onClick: (View) -> Unit,
     ): ImageView {
-        val normal = if (active) Pal.ACCENT else if (plain) 0 else Pal.CARD
-        val hi = if (active) Pal.ACCENT_HI else Pal.CARD_HI
+        val normal = if (active) Pal.ACCENT else if (plain) 0 else Pal.GLASS
+        val hi = if (active) Pal.ACCENT_HI else if (plain) Pal.CARD_HI else Pal.GLASS_HI
         return ImageView(c).apply {
             setImageDrawable(Icon(ic, if (active) Pal.DARK else Pal.TEXT))
             val p = dp(size) * 27 / 100
@@ -603,7 +607,7 @@ class Kit(val c: Context) {
     fun segment(options: List<String>, selected: Int, compact: Boolean = false, onPick: (Int) -> Unit) =
         LinearLayout(c).apply {
             orientation = LinearLayout.HORIZONTAL
-            background = round(Pal.CARD, if (compact) 22 else 18)
+            background = round(if (compact) Pal.GLASS else Pal.CARD, if (compact) 22 else 18)
             val pad = dp(if (compact) 3 else 4)
             setPadding(pad, pad, pad, pad)
             val r = if (compact) 19 else 14

@@ -42,8 +42,10 @@ import java.util.Date
 import kotlin.concurrent.thread
 
 /**
- * Lets the watch service have the launcher's window made anew, which is the only way to get it
- * back to the middle of the desktop (see WatchService.checkOtherWindows).
+ * The launcher has two identical windows, [MainActivity] and [MainActivity2], and shows one
+ * of them. The shell puts a newly opened window in the middle of the desktop and offers no
+ * way to move one that is already open, so "move to the middle" is done by opening the other
+ * window, which then closes the one left at the side.
  */
 object Panel {
     /** What the user was looking at, to come back to the same place. */
@@ -55,19 +57,31 @@ object Panel {
     @Volatile
     var carry: Carry? = null
 
-    fun remake(c: Context, why: String): Boolean {
-        val a = current ?: return false
-        if (a.isFinishing || a.isDestroyed || !a.mayRemake()) return false
-        android.util.Log.i("Shelf", "window made anew: $why")
+    private fun alive(a: MainActivity?) = a != null && !a.isFinishing && !a.isDestroyed
+
+    /** The window to start so that the launcher which is already open comes forward. */
+    fun target(): Class<out MainActivity> = current?.takeIf { alive(it) }?.javaClass ?: MainActivity::class.java
+
+    fun moveToMiddle(c: Context, why: String): Boolean {
+        val a = current
+        if (a == null || !alive(a) || !a.mayMove()) return false
+        android.util.Log.i("Shelf", "moving to the middle: $why")
         carry = a.snapshot()
-        a.finishAndRemoveTask()
-        val app = c.applicationContext
-        Handler(Looper.getMainLooper()).postDelayed({ WatchService.openLauncher(app, why) }, 200)
-        return true
+        val other = if (a is MainActivity2) MainActivity::class.java else MainActivity2::class.java
+        return try {
+            c.applicationContext.startActivity(Intent(c, other).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+            true
+        } catch (e: Exception) {
+            android.util.Log.w("Shelf", "could not open the second window", e)
+            false
+        }
     }
 }
 
-class MainActivity : Activity() {
+/** The launcher's second window: the same screen under another name (see [Panel]). */
+class MainActivity2 : MainActivity()
+
+open class MainActivity : Activity() {
 
     /** A label an app can carry. */
     private class Mark(val id: String, val title: Int, val ic: Ic, val color: Int)
@@ -224,7 +238,14 @@ class MainActivity : Activity() {
         ui = Kit(this)
         inst = Store.installFilter
 
+        // the newest window is the launcher; the one it replaces goes once this one is on screen
+        val older = Panel.current
         Panel.current = this
+        if (older != null && older !== this) {
+            handler.postDelayed({
+                if (!older.isFinishing && !older.isDestroyed) older.finishAndRemoveTask()
+            }, 450)
+        }
         Panel.carry?.let { c ->
             Panel.carry = null
             if (System.currentTimeMillis() - c.at < 15_000) {
@@ -238,10 +259,7 @@ class MainActivity : Activity() {
 
         val frame = FrameLayout(this).apply { background = ui.backdrop() }
         // a game cover behind everything: clear along the edges, blurred and veiled towards the middle
-        backdrop = Backdrop(this).apply {
-            inset = dp(SIDE).toFloat()
-            visibility = View.GONE
-        }
+        backdrop = Backdrop(this).apply { visibility = View.GONE }
         frame.addView(backdrop, FrameLayout.LayoutParams(MATCH, MATCH))
         val root = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
@@ -262,7 +280,7 @@ class MainActivity : Activity() {
             textSize = 16f
             isSingleLine = true
             imeOptions = EditorInfo.IME_ACTION_SEARCH
-            background = ui.round(Pal.CARD, 24)
+            background = ui.round(Pal.GLASS, 24)
             setPadding(dp(18), 0, dp(18), 0)
             setCompoundDrawablesRelative(ui.icon(Ic.SEARCH, Pal.DIM, 20), null, null, null)
             compoundDrawablePadding = dp(12)
@@ -387,7 +405,7 @@ class MainActivity : Activity() {
         // ---- the way back to Meta's own screens: its library, settings, store and the rest
         val dock = LinearLayout(this).apply {
             orientation = LinearLayout.HORIZONTAL
-            background = ui.round(Pal.CARD, 32)
+            background = ui.round(Pal.GLASS, 32)
             setPadding(dp(0), dp(6), dp(8), dp(6))
         }
         links = SystemLinks.build(this)
@@ -444,7 +462,7 @@ class MainActivity : Activity() {
     }
 
     /** Not while a tile is being carried: the window going away would drop it. */
-    internal fun mayRemake() = !grid.isDragging
+    internal fun mayMove() = !grid.isDragging
 
     internal fun snapshot() =
         Panel.Carry(tab, query, genre, mark, grid.firstVisiblePosition, System.currentTimeMillis())
@@ -715,13 +733,13 @@ class MainActivity : Activity() {
         val on = genre.isNotEmpty()
         if (genreShownOn != on) {
             genreShownOn = on
-            val normal = if (on) Pal.ACCENT else Pal.CARD
+            val normal = if (on) Pal.ACCENT else Pal.GLASS
             genreBox.setTextColor(if (on) Pal.DARK else Pal.TEXT)
             genreBox.setCompoundDrawablesRelative(
                 null, null, ui.icon(Ic.CHEVRON, if (on) Pal.DARK else Pal.DIM, 16), null
             )
             genreBox.background = ui.round(normal, 20)
-            ui.hover(genreBox, normal, if (on) Pal.ACCENT_HI else Pal.CARD_HI, 20)
+            ui.hover(genreBox, normal, if (on) Pal.ACCENT_HI else Pal.GLASS_HI, 20)
         }
         genreBox.text = genre.ifEmpty { s(R.string.all_genres) }
         genreBox.visibility = if (genreCounts.isEmpty() && genre.isEmpty()) View.GONE else View.VISIBLE

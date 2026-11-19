@@ -10,6 +10,9 @@ import android.os.Build
 import android.os.Handler
 import android.os.Looper
 import android.os.SystemClock
+import java.util.concurrent.Executors
+import java.util.concurrent.ScheduledFuture
+import java.util.concurrent.TimeUnit
 import android.util.Log
 import android.view.accessibility.AccessibilityEvent
 import android.view.accessibility.AccessibilityWindowInfo
@@ -34,9 +37,9 @@ class WatchService : AccessibilityService() {
             "com.oculus.panelapp.library", "com.meta.systemui",
         )
 
-        /** When the launcher's window was last made anew: never twice in a row. */
+        /** When the launcher was last moved to the middle: never twice in a row. */
         @Volatile
-        private var lastRemake = 0L
+        private var lastMove = 0L
 
         @Volatile
         var running = false
@@ -109,7 +112,7 @@ class WatchService : AccessibilityService() {
             Log.i(TAG, "open launcher: $why")
             try {
                 c.startActivity(
-                    Intent(c, MainActivity::class.java).addFlags(
+                    Intent(c, Panel.target()).addFlags(
                         Intent.FLAG_ACTIVITY_NEW_TASK or
                             Intent.FLAG_ACTIVITY_REORDER_TO_FRONT or
                             Intent.FLAG_ACTIVITY_SINGLE_TOP
@@ -125,7 +128,16 @@ class WatchService : AccessibilityService() {
     private var lastFire = 0L
     private var receiverRegistered = false
     private var libraryShown = false
-    private var othersOpen = false
+    private val looker = Executors.newSingleThreadScheduledExecutor()
+    private var pendingLook: ScheduledFuture<*>? = null
+
+    /** When another panel was first seen open, 0 = none is (used on [looker] only). */
+    private var othersSince = 0L
+
+    // all three belong to [looker]
+    private val windowPkg = HashMap<Int, String>()
+    private val silentSince = HashMap<Int, Long>()
+    private var lastSeen = ""
 
     /** Label of the stock library activity in the current language; a starting guess for its window title. */
     private val stockLibraryLabel: String by lazy {
@@ -259,36 +271,106 @@ class WatchService : AccessibilityService() {
     /**
      * A second panel takes the middle and pushes the launcher to the side, and the system leaves
      * it there after that panel is closed. Starting the launcher again changes nothing (the shell
-     * ignores a relaunch of a panel that is already shown), but a window opened anew is put in the
-     * middle. So once the last other panel is gone the launcher closes its window and opens it again.
+     * ignores a relaunch of a panel that is already shown); only a window that is opened anew is
+     * put in the middle. So once the last other panel is gone, the launcher opens its second
+     * window, which lands in the middle, and that one closes the first (see Panel.moveToMiddle).
      */
     private fun checkOtherWindows() {
+        if (!Store.recenter) return
+        // many events come in a burst: look once, a moment after the last of them
+        pendingLook?.cancel(false)
+        pendingLook = looker.schedule({ look(0) }, 200, TimeUnit.MILLISECONDS)
+    }
+
+    /**
+     * Which desktop panels are open besides the launcher: 1 = at least one, 0 = none,
+     * -1 = cannot tell yet (a window that does not answer, as an app does while it starts).
+     *
+     * Runs on [looker]: asking a window for its content can take seconds, and on the main
+     * thread that froze the launcher while its own window was going away.
+     */
+    private fun otherPanels(): Pair<Boolean, Int> {
         var mine = false
         var others = false
-        try {
-            for (w in windows) {
-                if (w.type != AccessibilityWindowInfo.TYPE_APPLICATION) continue
-                val pkg = w.root?.packageName?.toString() ?: continue
-                when {
-                    pkg == packageName -> mine = true
-                    // the shell's own bars, toasts and dialogs are always around
-                    pkg in SHELL_CHROME -> {}
-                    else -> others = true
+        var unknown = false
+        val list = try {
+            windows
+        } catch (e: Exception) {
+            return Pair(false, -1)
+        }
+        val now = System.currentTimeMillis()
+        val seen = HashSet<Int>()
+        val what = StringBuilder()
+        for (w in list) {
+            if (w.type != AccessibilityWindowInfo.TYPE_APPLICATION) continue
+            val id = w.id
+            seen.add(id)
+            // a window keeps its package, so each one is asked only once
+            val pkg = windowPkg[id] ?: try {
+                w.root?.packageName?.toString()
+            } catch (e: Exception) {
+                null
+            }?.also { windowPkg[id] = it }
+            when {
+                pkg == null -> {
+                    // silent for long: not an app that is still starting, leave it out
+                    val since = silentSince.getOrPut(id) { now }
+                    if (now - since < 4_000) {
+                        unknown = true
+                        what.append(" ?").append(id)
+                    }
+                }
+                pkg == packageName -> mine = true
+                pkg in SHELL_CHROME -> {}
+                else -> {
+                    others = true
+                    what.append(' ').append(pkg)
                 }
             }
-        } catch (e: Exception) {
+        }
+        windowPkg.keys.retainAll(seen)
+        silentSince.keys.retainAll(seen)
+        lastSeen = what.toString().trim()
+        return Pair(mine, if (others) 1 else if (unknown) -1 else 0)
+    }
+
+    private fun lookAgain(attempt: Int, ms: Long) {
+        pendingLook?.cancel(false)
+        pendingLook = looker.schedule({ look(attempt) }, ms, TimeUnit.MILLISECONDS)
+    }
+
+    /** [attempt] 0 is the first look after an event; later ones repeat it until the picture is clear. */
+    private fun look(attempt: Int) {
+        val (mine, state) = otherPanels()
+        val now = System.currentTimeMillis()
+        if (state == 1) {
+            if (othersSince == 0L) {
+                othersSince = now
+                Log.i(TAG, "another panel is open: $lastSeen")
+            }
             return
         }
-        val closed = othersOpen && !others
-        othersOpen = others
-        if (closed && mine && Store.recenter && !bypass) {
-            handler.postDelayed({
-                val now = System.currentTimeMillis()
-                if (!othersOpen && now - lastRemake > 10_000) {
-                    lastRemake = now
-                    Panel.remake(this, "other window closed")
-                }
-            }, 400)
+        if (othersSince == 0L) {
+            // a window that does not answer yet may be a panel that is just opening: ask again,
+            // or its closing would go unnoticed later
+            if (state == -1 && attempt < 8) lookAgain(attempt + 1, 600)
+            return
+        }
+        // A starting app drops out of the list for a moment, so "gone" has to hold for a while.
+        if (attempt == 0 || (state == -1 && attempt < 8)) {
+            lookAgain(attempt + 1, 500)
+            return
+        }
+        if (state == -1) {
+            Log.i(TAG, "cannot tell whether the other panel is gone: $lastSeen")
+            return
+        }
+        othersSince = 0L
+        if (mine && Store.recenter && !bypass && now - lastMove > 2_500) {
+            lastMove = now
+            handler.post { Panel.moveToMiddle(this, "other window closed") }
+        } else {
+            Log.i(TAG, "other panel gone, staying: launcher shown=$mine pass=$bypass")
         }
     }
 
@@ -314,6 +396,7 @@ class WatchService : AccessibilityService() {
             }
         }
         handler.removeCallbacksAndMessages(null)
+        looker.shutdownNow()
         super.onDestroy()
     }
 }
