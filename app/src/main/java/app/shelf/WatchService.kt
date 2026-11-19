@@ -12,6 +12,7 @@ import android.os.Looper
 import android.os.SystemClock
 import android.util.Log
 import android.view.accessibility.AccessibilityEvent
+import android.view.accessibility.AccessibilityWindowInfo
 
 /**
  * Background piece of the launcher. As an accessibility service it is started by the
@@ -26,6 +27,7 @@ class WatchService : AccessibilityService() {
     companion object {
         private const val TAG = "Shelf"
         private const val LOG_SIZE = 120
+        private val SHELL_CHROME = setOf("com.oculus.vrshell", "com.oculus.systemux", "com.oculus.guardian")
 
         @Volatile
         var running = false
@@ -114,6 +116,7 @@ class WatchService : AccessibilityService() {
     private var lastFire = 0L
     private var receiverRegistered = false
     private var libraryShown = false
+    private var othersOpen = false
 
     /** Label of the stock library activity in the current language; a starting guess for its window title. */
     private val stockLibraryLabel: String by lazy {
@@ -165,6 +168,7 @@ class WatchService : AccessibilityService() {
         val type = e.eventType
         if (type == AccessibilityEvent.TYPE_WINDOWS_CHANGED) {
             checkLibraryWindow()
+            checkOtherWindows()
             return
         }
         if (type != AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED &&
@@ -240,6 +244,35 @@ class WatchService : AccessibilityService() {
         // active only while the stock-library trigger is still in the user's list
         if (appeared && Store.intercept && Store.triggers().any { it.key() == Store.STOCK_LIBRARY.key() }) {
             fire("library window appeared")
+        }
+    }
+
+    /**
+     * A second panel takes the middle and pushes the launcher to the side, and the system leaves
+     * it there after that panel is closed. Starting the launcher again is how the shell is asked
+     * to bring a panel back in front of the user, so do that once the last other panel is gone.
+     */
+    private fun checkOtherWindows() {
+        var mine = false
+        var others = false
+        try {
+            for (w in windows) {
+                if (w.type != AccessibilityWindowInfo.TYPE_APPLICATION) continue
+                val pkg = w.root?.packageName?.toString() ?: continue
+                when {
+                    pkg == packageName -> mine = true
+                    // the shell's own bars, toasts and dialogs are always around
+                    pkg in SHELL_CHROME -> {}
+                    else -> others = true
+                }
+            }
+        } catch (e: Exception) {
+            return
+        }
+        val closed = othersOpen && !others
+        othersOpen = others
+        if (closed && mine && Store.recenter && !bypass) {
+            handler.postDelayed({ openLauncher(this, "other window closed") }, 500)
         }
     }
 

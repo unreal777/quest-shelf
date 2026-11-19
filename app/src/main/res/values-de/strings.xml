@@ -31,6 +31,7 @@
     <string name="mark_short">Kaum gespielt</string>
     <string name="mark_bad">Nicht gefallen</string>
     <string name="mark_done">Durchgespielt</string>
+    <string name="mark_new">Neu</string>
 
     <string name="move_hint">Wähle die App, vor die „%s“ gesetzt werden soll</string>
     <string name="move_end">Ans Ende</string>
@@ -107,6 +108,7 @@
     <string name="opt_boot">Nach dem Start des Headsets öffnen</string>
     <string name="opt_wake">Beim Aufwachen des Headsets öffnen</string>
     <string name="opt_intercept">Anstelle der normalen Bibliothek öffnen</string>
+    <string name="opt_recenter">Zurück in die Mitte, wenn ein anderes Fenster geschlossen wird</string>
     <string name="opt_meta">Cover, Namen und Genres aus dem Internet laden</string>
 
     <string name="set_language">Sprache</string>

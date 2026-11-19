@@ -8,7 +8,7 @@ import android.provider.Settings
 import android.util.Log
 
 /** One of Meta's own screens. [intent] is null only for the library when it cannot be started directly. */
-class SysLink(val id: String, val title: Int, val ic: Ic, val intent: Intent?)
+class SysLink(val id: String, val title: Int, val ic: Ic, val intent: Intent?, val fallback: Intent? = null)
 
 /**
  * Shortcuts to the system's own screens, for the dock under the grid.
@@ -19,6 +19,18 @@ class SysLink(val id: String, val title: Int, val ic: Ic, val intent: Intent?)
 object SystemLinks {
     const val LIBRARY = "library"
     private const val NAVIGATOR = "com.oculus.panelapp.library"
+    private const val SHELL = "com.oculus.vrshell"
+
+    /**
+     * A "system deep link", the way Meta documents it: the shell is started with the name of
+     * one of its built-in apps (systemux://browser, systemux://store, ...) and opens that app
+     * itself, exactly as its own menu does.
+     */
+    private fun deep(pm: PackageManager, target: String): Intent? =
+        pm.getLaunchIntentForPackage(SHELL)?.apply {
+            putExtra("intent_data", target)
+            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        }
 
     /** A specific screen of a system app; only when other apps are allowed to start it. */
     private fun screen(pm: PackageManager, pkg: String, cls: String): Intent? = try {
@@ -48,8 +60,9 @@ object SystemLinks {
     fun build(c: Context): List<SysLink> {
         val pm = c.packageManager
         val out = ArrayList<SysLink>()
-        fun add(id: String, title: Int, ic: Ic, intent: Intent?) {
-            if (intent != null) out.add(SysLink(id, title, ic, intent))
+        fun add(id: String, title: Int, ic: Ic, intent: Intent?, fallback: Intent? = null) {
+            val first = intent ?: fallback
+            if (first != null) out.add(SysLink(id, title, ic, first, if (intent != null) fallback else null))
         }
 
         // always offered: when it cannot be started from here, the next Meta-button press shows it
@@ -73,7 +86,9 @@ object SystemLinks {
         )
         add("people", R.string.sys_people, Ic.PEOPLE, app(pm, "com.oculus.socialplatform"))
         add("camera", R.string.sys_camera, Ic.CAMERA, app(pm, "com.oculus.metacam"))
-        add("browser", R.string.sys_browser, Ic.GLOBE, app(pm, "com.oculus.browser"))
+        // started as a plain app the browser comes up only when it is not running yet;
+        // the shell's own link also brings an already open browser back
+        add("browser", R.string.sys_browser, Ic.GLOBE, deep(pm, "systemux://browser"), app(pm, "com.oculus.browser"))
 
         Log.i(
             "Shelf",

@@ -40,6 +40,8 @@ class AppEntry(
     val storeId: String = "",
     /** When the launcher noticed the app had been uninstalled, 0 = unknown. */
     val removed: Long = 0,
+    /** Turned up in the library lately and has not been on the headset since. */
+    val fresh: Boolean = false,
 ) {
     val demo: Boolean get() = Meta.isDemo(storeName.ifEmpty { sysLabel })
 }
@@ -50,7 +52,7 @@ object Apps {
     private const val STORE_INSTALLER = "com.oculus.ocms"
 
     /** Tile plate for an app that has neither a cover nor an APK to take an icon from. */
-    private val blank = ColorDrawable(0xFF1E222C.toInt())
+    private val blank = ColorDrawable(0xFF444446.toInt())
 
     /** package -> (version key, drawable) */
     private val iconCache = HashMap<String, Pair<String, Drawable>>()
@@ -213,6 +215,7 @@ object Apps {
         // bought, but not on the headset
         val wantCover = ArrayList<String>()
         for (a in out) if (!a.hasCover && a.storeId.isNotEmpty() && !a.isSystem) wantCover.add(a.pkg)
+        val fresh = Owned.fresh()
         for (pkg in Owned.pkgs()) {
             if (pkg in present || !Owned.worthShowing(pkg)) continue
             val meta = Meta.get(pkg) ?: continue
@@ -247,6 +250,8 @@ object Apps {
                     notInstalled = true,
                     storeId = meta.storeId,
                     removed = h?.removed ?: 0L,
+                    // any history means it has been installed at some point
+                    fresh = h == null && pkg in fresh,
                 )
             )
         }

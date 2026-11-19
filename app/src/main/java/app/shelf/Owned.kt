@@ -62,6 +62,13 @@ object Owned {
     fun pkgs(): Set<String> =
         cache ?: HashSet(p.getStringSet("pkgs", emptySet()) ?: emptySet()).also { cache = it }
 
+    /**
+     * Packages that joined the library after the launcher first read it. What was bought and
+     * removed before that cannot be told apart from what was never installed, so only later
+     * arrivals count.
+     */
+    fun fresh(): Set<String> = HashSet(p.getStringSet("fresh", emptySet()) ?: emptySet())
+
     /** When the library was last checked, 0 = never. */
     val time: Long get() = p.getLong("time", 0)
 
@@ -184,8 +191,22 @@ object Owned {
                     }
                 }
             }
+            val before = p.getStringSet("pkgs", null)
+            val fresh = HashSet(p.getStringSet("fresh", emptySet()) ?: emptySet())
+            fresh.retainAll(found)
+            if (before != null) {
+                val added = found.filter { it !in before }
+                val grew = total - p.getInt("total", -1)
+                // The library itself must have grown by as much. Otherwise these are old
+                // purchases that a newer catalog has only now put a name to.
+                if (added.isNotEmpty() && p.getInt("total", -1) >= 0 && added.size <= grew) {
+                    fresh.addAll(added)
+                    Log.i(TAG, "owned scan: new in the library: $added")
+                }
+            }
             p.edit()
                 .putStringSet("pkgs", found)
+                .putStringSet("fresh", fresh)
                 .putLong("time", System.currentTimeMillis())
                 .putInt("total", total)
                 .putLong("build", build())

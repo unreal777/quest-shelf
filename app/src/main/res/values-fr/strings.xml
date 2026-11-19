@@ -31,6 +31,7 @@
     <string name="mark_short">À peine joué</string>
     <string name="mark_bad">Pas aimé</string>
     <string name="mark_done">Terminé</string>
+    <string name="mark_new">Nouveau</string>
 
     <string name="move_hint">Choisissez l\'application devant laquelle placer « %s »</string>
     <string name="move_end">À la fin</string>
@@ -107,6 +108,7 @@
     <string name="opt_boot">Ouvrir au démarrage du casque</string>
     <string name="opt_wake">Ouvrir au réveil du casque</string>
     <string name="opt_intercept">Ouvrir à la place de la bibliothèque d\'origine</string>
+    <string name="opt_recenter">Revenir au centre quand une autre fenêtre se ferme</string>
     <string name="opt_meta">Charger jaquettes, noms et genres depuis internet</string>
 
     <string name="set_language">Langue</string>

@@ -61,6 +61,11 @@ object Store {
         set(v) = p.edit().putBoolean("fetchMeta", v).apply()
 
     /** Whether a blurred game cover is drawn behind the whole screen. */
+    /** Ask the system to put the launcher back in the middle once other windows are closed. */
+    var recenter: Boolean
+        get() = p.getBoolean("recenter", true)
+        set(v) = p.edit().putBoolean("recenter", v).apply()
+
     var wallpaperOn: Boolean
         get() = p.getBoolean("wallpaperOn", true)
         set(v) = p.edit().putBoolean("wallpaperOn", v).apply()

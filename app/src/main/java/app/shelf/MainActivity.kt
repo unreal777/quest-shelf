@@ -54,8 +54,9 @@ class MainActivity : Activity() {
         /** Less play time than this (and not touched since) reads as "tried it and dropped it". */
         const val SHORT_PLAY_MS = 15L * 60 * 1000
 
-        /** The first two are worked out automatically, the other two are the user's own. */
+        /** The first three are worked out automatically, the other two are the user's own. */
         val MARKS = listOf(
+            Mark("new", R.string.mark_new, Ic.SPARK, Pal.GREEN),
             Mark("demo", R.string.mark_demo, Ic.FLASK, Pal.PURPLE),
             Mark("short", R.string.mark_short, Ic.CLOCK, Pal.SLATE),
             Mark("bad", R.string.mark_bad, Ic.SAD, Pal.RED),
@@ -152,6 +153,7 @@ class MainActivity : Activity() {
     private var bad: Set<String> = emptySet()
     private var done: Set<String> = emptySet()
     private var notShort: Set<String> = emptySet()
+    private var notNew: Set<String> = emptySet()
     private var hidden: Set<String> = emptySet()
     private var names: Map<String, String> = emptyMap()
     private var usageAccess = false
@@ -162,7 +164,8 @@ class MainActivity : Activity() {
     private var countNo = 0
     private var markCounts: Map<Mark, Int> = emptyMap()
     private var genreCounts: Map<String, Int> = emptyMap()
-    private var filterShownActive: Boolean? = null
+    private var funnelState = -1
+    private var genreShownOn: Boolean? = null
 
     private var heroWanted = false
     private var heroKey = ""
@@ -203,7 +206,7 @@ class MainActivity : Activity() {
         veil = View(this).apply {
             background = GradientDrawable(
                 GradientDrawable.Orientation.TOP_BOTTOM,
-                intArrayOf(0x8C0E1118.toInt(), 0xCC0C0E14.toInt(), 0xF00B0D12.toInt())
+                intArrayOf(0x8C2C2C2E.toInt(), 0xC42A2A2C.toInt(), 0xEB28282A.toInt())
             )
             visibility = View.GONE
         }
@@ -267,13 +270,10 @@ class MainActivity : Activity() {
             maxLines = 1
             ellipsize = TextUtils.TruncateAt.END
             setPadding(dp(14), 0, dp(10), 0)
-            background = ui.round(Pal.CARD, 14)
-            setCompoundDrawablesRelative(null, null, ui.icon(Ic.CHEVRON, Pal.DIM, 16), null)
             compoundDrawablePadding = dp(8)
             isClickable = true
             isFocusable = true
             setOnClickListener { showGenres() }
-            ui.hover(this, Pal.CARD, Pal.CARD_HI, 14)
             visibility = View.GONE
         }
         tabBar.addView(genreBox, LinearLayout.LayoutParams(WRAP, WRAP).apply { leftMargin = dp(8) })
@@ -286,7 +286,7 @@ class MainActivity : Activity() {
         })
         root.addView(tabBar, LinearLayout.LayoutParams(MATCH, WRAP).apply { topMargin = dp(10) })
 
-        // ---- filters that are switched on, each removable
+        // ---- installed / not installed, one click away; then the mark filter, removable
         filterRow = LinearLayout(this).apply {
             orientation = LinearLayout.HORIZONTAL
             gravity = Gravity.CENTER_VERTICAL
@@ -354,7 +354,7 @@ class MainActivity : Activity() {
         // ---- the way back to Meta's own screens: its library, settings, store and the rest
         val dock = LinearLayout(this).apply {
             orientation = LinearLayout.HORIZONTAL
-            background = ui.round(0xFF1B202C.toInt(), 32)
+            background = ui.round(Pal.CARD, 32)
             setPadding(dp(0), dp(6), dp(8), dp(6))
         }
         links = SystemLinks.build(this)
@@ -538,6 +538,7 @@ class MainActivity : Activity() {
     }
 
     private fun hasMark(a: AppEntry, mark: String) = when (mark) {
+        "new" -> a.fresh && a.pkg !in notNew
         "demo" -> a.demo
         "short" -> isShort(a)
         "bad" -> a.pkg in bad
@@ -555,6 +556,7 @@ class MainActivity : Activity() {
         bad = Store.marked("bad")
         done = Store.marked("done")
         notShort = Store.marked("notshort")
+        notNew = Store.marked("notnew")
         names = Store.names()
         hidden = Store.hidden()
         usageAccess = Apps.hasUsageAccess(this)
@@ -652,12 +654,20 @@ class MainActivity : Activity() {
         add("hidden", s(R.string.tab_hidden))
     }
 
-    /** The filters that live in the filter sheet; the genre has its own dropdown. */
-    private fun filtersActive() = inst != "all" || mark.isNotEmpty()
-
+    /** The genre box: filled, like every selected control, once a genre is chosen. */
     private fun buildGenreBox() {
+        val on = genre.isNotEmpty()
+        if (genreShownOn != on) {
+            genreShownOn = on
+            val normal = if (on) Pal.ACCENT else Pal.CARD
+            genreBox.setTextColor(if (on) Pal.DARK else Pal.TEXT)
+            genreBox.setCompoundDrawablesRelative(
+                null, null, ui.icon(Ic.CHEVRON, if (on) Pal.DARK else Pal.DIM, 16), null
+            )
+            genreBox.background = ui.round(normal, 20)
+            ui.hover(genreBox, normal, if (on) Pal.ACCENT_HI else Pal.CARD_HI, 20)
+        }
         genreBox.text = genre.ifEmpty { s(R.string.all_genres) }
-        genreBox.setTextColor(if (genre.isEmpty()) Pal.TEXT else Pal.ACCENT_HI)
         genreBox.visibility = if (genreCounts.isEmpty() && genre.isEmpty()) View.GONE else View.VISIBLE
     }
 
@@ -674,27 +684,49 @@ class MainActivity : Activity() {
         }
     }
 
-    /** The funnel button, and one small removable label per filter that is switched on. */
+    /**
+     * The bar under the tabs: installed / not installed as a switch that takes one click, then the
+     * mark filter as a removable label. The funnel button (marks) shows only when there are marks.
+     */
     private fun buildFilterRow() {
-        val active = filtersActive()
-        if (filterShownActive != active) {
-            filterShownActive = active
+        val state = if (mark.isNotEmpty()) 2 else if (markCounts.isNotEmpty()) 1 else 0
+        if (funnelState != state) {
+            funnelState = state
             filterSlot.removeAllViews()
-            filterSlot.addView(ui.iconButton(Ic.FUNNEL, s(R.string.filters), active = active) { showFilters() })
+            if (state > 0) {
+                filterSlot.addView(
+                    ui.iconButton(Ic.FUNNEL, s(R.string.filters), active = state == 2) { showFilters() }
+                )
+            }
         }
         filterRow.removeAllViews()
-        fun add(title: String, clear: () -> Unit) = filterRow.addView(
-            ui.chip(title, false, small = true, ic = Ic.CLOSE) {
-                clear()
-                refresh()
-            }
-        )
-        when (inst) {
-            "yes" -> add(s(R.string.f_installed)) { setInstall("all") }
-            "no" -> add(s(R.string.f_not_installed)) { setInstall("all") }
+        if (countNo > 0 || inst != "all") {
+            val ids = listOf("all", "yes", "no")
+            filterRow.addView(
+                ui.segment(
+                    listOf(
+                        "${s(R.string.f_all)} · $countAll",
+                        "${s(R.string.f_installed)} · $countYes",
+                        "${s(R.string.f_not_installed)} · $countNo",
+                    ),
+                    ids.indexOf(inst).coerceAtLeast(0),
+                    compact = true
+                ) { i ->
+                    setInstall(ids[i])
+                    refresh()
+                },
+                LinearLayout.LayoutParams(WRAP, WRAP).apply { rightMargin = dp(10) }
+            )
         }
-        MARKS.firstOrNull { it.id == mark }?.let { m -> add(s(m.title)) { mark = "" } }
-        if (filterRow.childCount == 0 && Owned.busy.isNotEmpty() && Owned.time == 0L && !Owned.denied) {
+        MARKS.firstOrNull { it.id == mark }?.let { m ->
+            filterRow.addView(
+                ui.chip(s(m.title), false, small = true, ic = Ic.CLOSE) {
+                    mark = ""
+                    refresh()
+                }
+            )
+        }
+        if (Owned.busy.isNotEmpty() && Owned.time == 0L && !Owned.denied) {
             filterRow.addView(ui.text(s(R.string.scanning), 13f, Pal.DIM).apply { setPadding(dp(4), dp(8), 0, dp(8)) })
         }
         filterScroll.visibility = if (filterRow.childCount == 0) View.GONE else View.VISIBLE
@@ -712,30 +744,9 @@ class MainActivity : Activity() {
                 d.dismiss()
                 refresh()
             }
-            if (filtersActive()) {
+            if (mark.isNotEmpty()) {
                 body.addView(
-                    ui.button(s(R.string.f_reset), Ic.CLOSE, primary = false) {
-                        pick {
-                            setInstall("all")
-                            mark = ""
-                        }
-                    },
-                    LinearLayout.LayoutParams(MATCH, WRAP)
-                )
-            }
-
-            if (countNo > 0 || inst != "all") {
-                ui.section(body, s(R.string.f_install_title))
-                val ids = listOf("all", "yes", "no")
-                body.addView(
-                    ui.segment(
-                        listOf(
-                            "${s(R.string.f_all)} · $countAll",
-                            "${s(R.string.f_installed)} · $countYes",
-                            "${s(R.string.f_not_installed)} · $countNo",
-                        ),
-                        ids.indexOf(inst).coerceAtLeast(0)
-                    ) { i -> pick { setInstall(ids[i]) } },
+                    ui.button(s(R.string.f_reset), Ic.CLOSE, primary = false) { pick { mark = "" } },
                     LinearLayout.LayoutParams(MATCH, WRAP)
                 )
             }
@@ -885,7 +896,7 @@ class MainActivity : Activity() {
             View(this).apply {
                 background = GradientDrawable(
                     GradientDrawable.Orientation.LEFT_RIGHT,
-                    intArrayOf(0xF00D1017.toInt(), 0xA60D1017.toInt(), 0x4D0D1017)
+                    intArrayOf(0xF0202022.toInt(), 0xA6202022.toInt(), 0x4D202022)
                 )
             },
             FrameLayout.LayoutParams(MATCH, MATCH)
@@ -918,7 +929,7 @@ class MainActivity : Activity() {
         facts.addAll(genresOf(last).take(2))
         if (last.playTime > 0) facts.add(s(R.string.pl_time, duration(last.playTime)))
         if (facts.isNotEmpty()) {
-            texts.addView(ui.text(facts.joinToString(" · "), 14f, 0xFFC3C9D6.toInt()).apply {
+            texts.addView(ui.text(facts.joinToString(" · "), 14f, 0xFFC8C8CC.toInt()).apply {
                 maxLines = 1
                 ellipsize = TextUtils.TruncateAt.END
             })
@@ -1211,7 +1222,7 @@ class MainActivity : Activity() {
     private fun openLink(link: SysLink) {
         val intent = link.intent
         if (link.id != SystemLinks.LIBRARY) {
-            if (intent != null) open(intent)
+            if (intent != null) open(intent, link.fallback)
             return
         }
         // Meta's library is the very window this launcher replaces: let it through once
@@ -1291,14 +1302,14 @@ class MainActivity : Activity() {
             fun line(text: String, size: Float, color: Int) =
                 info.addView(ui.text(text, size, color).apply { setPadding(0, dp(2), 0, dp(2)) })
 
-            // what the launcher worked out by itself: demo, barely played
-            val auto = MARKS.filter { (it.id == "demo" || it.id == "short") && hasMark(a, it.id) }
+            // what the launcher worked out by itself: new, demo, barely played
+            val auto = MARKS.filter { it.id in setOf("new", "demo", "short") && hasMark(a, it.id) }
             if (auto.isNotEmpty()) {
                 val pills = LinearLayout(this).apply { orientation = LinearLayout.HORIZONTAL }
                 for (m in auto) {
-                    val guess = m.id == "short"
+                    val guess = m.id != "demo"
                     val pill = ui.text(s(m.title), 13f, m.color, bold = true).apply {
-                        // "barely played" is a guess: the cross takes it off this game for good
+                        // "new" and "barely played" are guesses: the cross takes one off this game for good
                         setCompoundDrawablesRelative(
                             ui.icon(m.ic, m.color, 16), null, if (guess) ui.icon(Ic.CLOSE, m.color, 14) else null, null
                         )
@@ -1309,7 +1320,7 @@ class MainActivity : Activity() {
                     if (guess) {
                         pill.isClickable = true
                         pill.setOnClickListener {
-                            Store.toggleMark("notshort", a.pkg)
+                            Store.toggleMark("not${m.id}", a.pkg)
                             pill.visibility = View.GONE
                             refresh()
                         }
@@ -1350,9 +1361,9 @@ class MainActivity : Activity() {
             )
             // so that a small number for an old favourite is not taken at face value
             if (!a.notInstalled && Apps.statsSince > 0) {
-                line(s(R.string.pl_note, date(Apps.statsSince)), 12f, 0xFF7A8296.toInt())
+                line(s(R.string.pl_note, date(Apps.statsSince)), 12f, 0xFF8C8C90.toInt())
             }
-            line(a.pkg, 12f, 0xFF646C7F.toInt())
+            line(a.pkg, 12f, 0xFF747478.toInt())
             head.addView(info, LinearLayout.LayoutParams(0, WRAP, 1f))
             body.addView(head, LinearLayout.LayoutParams(MATCH, WRAP).apply { bottomMargin = dp(16) })
 
@@ -1609,6 +1620,7 @@ class MainActivity : Activity() {
             ui.toggle(body, Ic.POWER, s(R.string.opt_boot), Store.autostartBoot) { Store.autostartBoot = it }
             ui.toggle(body, Ic.EYE, s(R.string.opt_wake), Store.autostartWake) { Store.autostartWake = it }
             ui.toggle(body, Ic.SWAP, s(R.string.opt_intercept), Store.intercept) { Store.intercept = it }
+            ui.toggle(body, Ic.TARGET, s(R.string.opt_recenter), Store.recenter) { Store.recenter = it }
             ui.toggle(body, Ic.DOWNLOAD, s(R.string.opt_meta), Store.fetchMeta) {
                 Store.fetchMeta = it
                 if (it) reload()
@@ -1766,11 +1778,12 @@ class MainActivity : Activity() {
         ui.prompt(title, initial, allowEmpty, s(R.string.ok), s(R.string.cancel), ok)
     }
 
-    private fun open(i: Intent) {
+    private fun open(i: Intent, fallback: Intent? = null) {
         try {
             startActivity(i)
         } catch (e: Exception) {
-            toast(s(R.string.t_open_failed, e.message ?: ""))
+            android.util.Log.w("Shelf", "could not start $i", e)
+            if (fallback != null) open(fallback) else toast(s(R.string.t_open_failed, e.message ?: ""))
         }
     }
 

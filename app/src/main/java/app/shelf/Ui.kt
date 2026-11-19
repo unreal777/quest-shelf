@@ -31,21 +31,24 @@ import kotlin.math.cos
 import kotlin.math.min
 import kotlin.math.sin
 
-/** The palette: one dark surface family, one accent, one colour per mark. */
+/**
+ * The palette, after Meta's own panels: neutral greys with no blue in them, controls as a light
+ * wash over whatever is behind, and near-white for whatever is selected or is the main action.
+ */
 object Pal {
-    const val BG = 0xFF0F1116.toInt()
-    const val SURFACE = 0xFF171A23.toInt()
-    const val CARD = 0xFF222734.toInt()
-    const val CARD_HI = 0xFF313849.toInt()
-    const val ACCENT = 0xFF6EA8FF.toInt()
-    const val ACCENT_HI = 0xFF9BC3FF.toInt()
-    const val TEXT = 0xFFF1F3F8.toInt()
-    const val DIM = 0xFF98A0B3.toInt()
-    const val DARK = 0xFF0B0D12.toInt()
+    const val BG = 0xFF2A2A2C.toInt()
+    const val SURFACE = 0xFF2E2E30.toInt()
+    const val CARD = 0x24FFFFFF
+    const val CARD_HI = 0x42FFFFFF
+    const val ACCENT = 0xFFE6E6E8.toInt()
+    const val ACCENT_HI = 0xFFFAFAFA.toInt()
+    const val TEXT = 0xFFF2F2F2.toInt()
+    const val DIM = 0xFFB2B2B6.toInt()
+    const val DARK = 0xFF1A1A1A.toInt()
     const val GOLD = 0xFFFFC83D.toInt()
     const val RED = 0xFFFF7B7B.toInt()
     const val PURPLE = 0xFFB99BFF.toInt()
-    const val SLATE = 0xFFA9B4C8.toInt()
+    const val SLATE = 0xFFB6B8BE.toInt()
     const val GREEN = 0xFF6FD08C.toInt()
 
     /** The same colour as a faint wash, for the plate behind an icon. */
@@ -76,7 +79,7 @@ object Lang {
 enum class Ic {
     PLAY, DOWNLOAD, STAR, STAR_LINE, MORE, BAG, FOLDER, TROPHY, SAD, FLASK, CLOCK, MOVE, EDIT,
     EYE, EYE_OFF, INFO, TRASH, SLIDERS, SORT, SEARCH, CHECK, CLOSE, PLUS, REFRESH, GLOBE, POWER,
-    SWAP, GRID, IMAGE, TARGET, LIST, OPEN, CHART, OK_CIRCLE, GEAR, BELL, CAMERA, BOLT, PEOPLE, USER, FUNNEL, SWITCH, CHEVRON,
+    SWAP, GRID, IMAGE, SPARK, TARGET, LIST, OPEN, CHART, OK_CIRCLE, GEAR, BELL, CAMERA, BOLT, PEOPLE, USER, FUNNEL, SWITCH, CHEVRON,
 }
 
 /** Line icons drawn in code on a 24-unit grid, so they stay sharp at any size and in any colour. */
@@ -325,6 +328,10 @@ class Icon(private val kind: Ic, color: Int) : Drawable() {
                 c.drawCircle(16.5f, 12f, 2.4f, fill)
             }
             Ic.CHEVRON -> c.poly(line, false, 6.5f, 9.5f, 12f, 15f, 17.5f, 9.5f)
+            Ic.SPARK -> c.poly(
+                fill, true,
+                12f, 3f, 14.2f, 9.8f, 21f, 12f, 14.2f, 14.2f, 12f, 21f, 9.8f, 14.2f, 3f, 12f, 9.8f, 9.8f
+            )
             Ic.BELL -> {
                 path.rewind()
                 path.moveTo(6f, 17f)
@@ -426,9 +433,9 @@ class Toggle(c: Context) : View(c) {
     override fun onDraw(cv: Canvas) {
         val w = width.toFloat()
         val h = height.toFloat()
-        p.color = if (on) Pal.ACCENT else 0xFF3A4254.toInt()
+        p.color = if (on) Pal.ACCENT else 0x40FFFFFF
         cv.drawRoundRect(0f, 0f, w, h, h / 2, h / 2, p)
-        p.color = if (on) Pal.DARK else 0xFFD2D8E4.toInt()
+        p.color = if (on) Pal.DARK else 0xFFD8D8DA.toInt()
         cv.drawCircle(if (on) w - h / 2 else h / 2, h / 2, h * 0.36f, p)
     }
 }
@@ -444,17 +451,23 @@ class Kit(val c: Context) {
     var tipHost: FrameLayout? = null
     private var tipView: TextView? = null
 
-    /** Dark at the bottom, a little lighter and bluer at the top. */
+    /** Dark at the bottom, a little lighter at the top. */
     fun backdrop() = GradientDrawable(
         GradientDrawable.Orientation.TOP_BOTTOM,
-        intArrayOf(0xFF171C2A.toInt(), 0xFF0F1219.toInt(), 0xFF0B0D12.toInt())
+        intArrayOf(0xFF3C3C3E.toInt(), 0xFF323234.toInt(), 0xFF2A2A2C.toInt())
     )
+
+    /** The body of a sheet or a menu: the grey of Meta's panels, a shade lighter at the top. */
+    fun panel(radius: Int) = GradientDrawable(
+        GradientDrawable.Orientation.TOP_BOTTOM,
+        intArrayOf(0xFF404042.toInt(), 0xFF303032.toInt())
+    ).apply { cornerRadius = dp(radius).toFloat() }
 
     /** A small label next to [anchor]: above it in the lower half of the screen, below it in the upper. */
     fun showTip(anchor: View, label: String) {
         val host = tipHost ?: return
         val tv = tipView ?: text("", 13f, Pal.DARK, bold = true).also {
-            it.background = round(0xFFE9ECF3.toInt(), 10)
+            it.background = round(Pal.ACCENT, 10)
             it.setPadding(dp(10), dp(6), dp(10), dp(6))
             it.elevation = dp(8).toFloat()
             host.addView(it, FrameLayout.LayoutParams(wrap, wrap))
@@ -525,7 +538,7 @@ class Kit(val c: Context) {
             setPadding(dp(8), dp(8), dp(8), dp(4))
         }
         val panel = ScrollView(c).apply {
-            background = round(0xFF1D2230.toInt(), 20)
+            background = panel(20)
             clipToOutline = true
             isVerticalScrollBarEnabled = false
             addView(rows)
@@ -584,26 +597,31 @@ class Kit(val c: Context) {
         }
 
     /** A few options side by side, one of them selected. */
-    fun segment(options: List<String>, selected: Int, onPick: (Int) -> Unit) = LinearLayout(c).apply {
-        orientation = LinearLayout.HORIZONTAL
-        background = round(Pal.CARD, 18)
-        setPadding(dp(4), dp(4), dp(4), dp(4))
-        options.forEachIndexed { i, title ->
-            val on = i == selected
-            addView(
-                text(title, 15f, if (on) Pal.DARK else Pal.TEXT, bold = on).apply {
-                    gravity = Gravity.CENTER
-                    minHeight = dp(46)
-                    background = if (on) round(Pal.ACCENT, 14) else null
-                    isClickable = true
-                    isFocusable = true
-                    setOnClickListener { onPick(i) }
-                    if (!on) hover(this, 0, Pal.CARD_HI, 14)
-                },
-                LinearLayout.LayoutParams(0, wrap, 1f)
-            )
+    fun segment(options: List<String>, selected: Int, compact: Boolean = false, onPick: (Int) -> Unit) =
+        LinearLayout(c).apply {
+            orientation = LinearLayout.HORIZONTAL
+            background = round(Pal.CARD, if (compact) 22 else 18)
+            val pad = dp(if (compact) 3 else 4)
+            setPadding(pad, pad, pad, pad)
+            val r = if (compact) 19 else 14
+            options.forEachIndexed { i, title ->
+                val on = i == selected
+                addView(
+                    text(title, if (compact) 14f else 15f, if (on) Pal.DARK else Pal.TEXT, bold = true).apply {
+                        gravity = Gravity.CENTER
+                        minHeight = dp(if (compact) 38 else 46)
+                        if (compact) setPadding(dp(16), 0, dp(16), 0)
+                        background = if (on) round(Pal.ACCENT, r) else null
+                        isClickable = true
+                        isFocusable = true
+                        setOnClickListener { onPick(i) }
+                        if (!on) hover(this, 0, Pal.CARD_HI, r)
+                    },
+                    // compact: as wide as its words, for a bar; otherwise equal shares of the full width
+                    if (compact) LinearLayout.LayoutParams(wrap, wrap) else LinearLayout.LayoutParams(0, wrap, 1f)
+                )
+            }
         }
-    }
 
     fun dp(v: Int) = (v * c.resources.displayMetrics.density + 0.5f).toInt()
 
@@ -814,7 +832,7 @@ class Kit(val c: Context) {
         val d = Dialog(c, R.style.Sheet)
         val panel = LinearLayout(c).apply {
             orientation = LinearLayout.VERTICAL
-            background = round(Pal.SURFACE, 30)
+            background = panel(30)
             setPadding(dp(22), dp(18), dp(22), dp(18))
         }
         val head = LinearLayout(c).apply {

@@ -31,6 +31,7 @@
     <string name="mark_short">Мало играл</string>
     <string name="mark_bad">Не понравилось</string>
     <string name="mark_done">Пройдено</string>
+    <string name="mark_new">Новое</string>
 
     <string name="move_hint">Выбери приложение, перед которым поставить «%s»</string>
     <string name="move_end">В конец</string>
@@ -107,6 +108,7 @@
     <string name="opt_boot">Открывать после включения шлема</string>
     <string name="opt_wake">Открывать при пробуждении шлема</string>
     <string name="opt_intercept">Открывать вместо штатной библиотеки</string>
+    <string name="opt_recenter">Возвращать в центр, когда другое окно закрыто</string>
     <string name="opt_meta">Загружать обложки, названия и жанры из интернета</string>
 
     <string name="set_language">Язык</string>

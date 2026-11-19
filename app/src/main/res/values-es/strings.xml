@@ -31,6 +31,7 @@
     <string name="mark_short">Apenas jugado</string>
     <string name="mark_bad">No me gustó</string>
     <string name="mark_done">Completado</string>
+    <string name="mark_new">Nuevo</string>
 
     <string name="move_hint">Elige la aplicación delante de la cual poner «%s»</string>
     <string name="move_end">Al final</string>
@@ -107,6 +108,7 @@
     <string name="opt_boot">Abrir al encender el visor</string>
     <string name="opt_wake">Abrir cuando el visor se despierte</string>
     <string name="opt_intercept">Abrir en lugar de la biblioteca original</string>
+    <string name="opt_recenter">Volver al centro al cerrarse otra ventana</string>
     <string name="opt_meta">Cargar carátulas, nombres y géneros de internet</string>
 
     <string name="set_language">Idioma</string>
