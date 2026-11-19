@@ -168,6 +168,10 @@
     <string name="hero_continue">Продолжить</string>
     <string name="hero_top">Чаще всего играешь</string>
     <string name="hero_play">Играть</string>
+    <string name="run_now">Сейчас запущено</string>
+    <string name="run_back">Вернуться в игру</string>
+    <string name="run_quit">Закрыть игру</string>
+    <string name="t_quit_failed">Отсюда закрыть не вышло. Нажми «Закрыть» в меню Meta.</string>
     <string name="unpin">Вернуть в общий порядок</string>
     <string name="reset_pins">Сбросить свои перестановки</string>
     <string name="pl_note">Шлем считает время в играх только с %s</string>

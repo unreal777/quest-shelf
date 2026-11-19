@@ -13,6 +13,7 @@ import android.os.SystemClock
 import java.util.concurrent.Executors
 import java.util.concurrent.ScheduledFuture
 import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicBoolean
 import android.util.Log
 import android.view.accessibility.AccessibilityEvent
 import android.view.accessibility.AccessibilityWindowInfo
@@ -127,8 +128,16 @@ class WatchService : AccessibilityService() {
     private val handler = Handler(Looper.getMainLooper())
     private var lastFire = 0L
     private var receiverRegistered = false
+    @Volatile
     private var libraryShown = false
     private val looker = Executors.newSingleThreadScheduledExecutor()
+
+    // the watch for Meta's library window has a thread of its own, so that it is never held up
+    private val libraryWatch = Executors.newSingleThreadExecutor()
+    private val libraryQueued = AtomicBoolean(false)
+
+    /** Whether a window (by id) is Meta's library: used on [libraryWatch] only. */
+    private val isLibrary = HashMap<Int, Boolean>()
     private var pendingLook: ScheduledFuture<*>? = null
 
     /** When another panel was first seen open, 0 = none is (used on [looker] only). */
@@ -188,7 +197,17 @@ class WatchService : AccessibilityService() {
         e ?: return
         val type = e.eventType
         if (type == AccessibilityEvent.TYPE_WINDOWS_CHANGED) {
-            checkLibraryWindow()
+            // never on this (the main) thread: see checkLibraryWindow()
+            if (libraryQueued.compareAndSet(false, true)) {
+                libraryWatch.execute {
+                    libraryQueued.set(false)
+                    try {
+                        checkLibraryWindow()
+                    } catch (e: Exception) {
+                        Log.w(TAG, "library check failed", e)
+                    }
+                }
+            }
             checkOtherWindows()
             return
         }
@@ -242,11 +261,24 @@ class WatchService : AccessibilityService() {
         if (System.currentTimeMillis() < learnUntil) return
         val title = Store.libraryTitle.ifEmpty { stockLibraryLabel }
         if (title.isEmpty()) return
+        // Asking a window for its content waits on the app that owns it, for up to 5 s when
+        // that app is busy or its window is just going away. On the main thread this kept the
+        // launcher from drawing itself: the user saw an empty grey panel in its place.
         val shown = try {
-            windows.any {
-                it.title?.toString() == title &&
-                    it.root?.packageName?.toString() == Store.STOCK_LIBRARY.pkg
+            val seen = HashSet<Int>()
+            var found = false
+            for (w in windows) {
+                seen.add(w.id)
+                if (w.title?.toString() != title) continue
+                // a window keeps its package: each one is asked once
+                val known = isLibrary[w.id]
+                val lib = known ?: w.root?.packageName?.toString()?.let { pkg ->
+                    (pkg == Store.STOCK_LIBRARY.pkg).also { isLibrary[w.id] = it }
+                } ?: false
+                if (lib) found = true
             }
+            isLibrary.keys.retainAll(seen)
+            found
         } catch (e: Exception) {
             false
         }
@@ -264,7 +296,7 @@ class WatchService : AccessibilityService() {
         }
         // active only while the stock-library trigger is still in the user's list
         if (appeared && Store.intercept && Store.triggers().any { it.key() == Store.STOCK_LIBRARY.key() }) {
-            fire("library window appeared")
+            handler.post { fire("library window appeared") }
         }
     }
 
@@ -397,6 +429,7 @@ class WatchService : AccessibilityService() {
         }
         handler.removeCallbacksAndMessages(null)
         looker.shutdownNow()
+        libraryWatch.shutdownNow()
         super.onDestroy()
     }
 }

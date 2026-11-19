@@ -168,6 +168,10 @@
     <string name="hero_continue">Continuar</string>
     <string name="hero_top">Lo más jugado</string>
     <string name="hero_play">Jugar</string>
+    <string name="run_now">En ejecución</string>
+    <string name="run_back">Volver al juego</string>
+    <string name="run_quit">Cerrar el juego</string>
+    <string name="t_quit_failed">No se pudo cerrar desde aquí. Usa Salir en el menú de Meta.</string>
     <string name="unpin">Volver al orden automático</string>
     <string name="reset_pins">Restablecer mi orden</string>
     <string name="pl_note">El visor solo cuenta el tiempo de juego desde el %s</string>

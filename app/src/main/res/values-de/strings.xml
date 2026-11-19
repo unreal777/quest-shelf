@@ -168,6 +168,10 @@
     <string name="hero_continue">Weiterspielen</string>
     <string name="hero_top">Am meisten gespielt</string>
     <string name="hero_play">Spielen</string>
+    <string name="run_now">Läuft gerade</string>
+    <string name="run_back">Zurück zum Spiel</string>
+    <string name="run_quit">Spiel beenden</string>
+    <string name="t_quit_failed">Beenden hat von hier nicht geklappt. Nutze „Beenden“ im Meta-Menü.</string>
     <string name="unpin">Zurück zur automatischen Reihenfolge</string>
     <string name="reset_pins">Eigene Anordnung zurücksetzen</string>
     <string name="pl_note">Das Headset zählt die Spielzeit erst seit %s</string>

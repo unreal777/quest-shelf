@@ -160,6 +160,8 @@ open class MainActivity : Activity() {
     private lateinit var filterScroll: HorizontalScrollView
     private lateinit var filterRow: LinearLayout
     private lateinit var heroBox: FrameLayout
+    private lateinit var runBox: FrameLayout
+    private var runKey = "-"
     private lateinit var backdrop: Backdrop
 
     /** Grid position to come back to after the window was made anew, -1 = none. */
@@ -349,6 +351,10 @@ open class MainActivity : Activity() {
         }
         root.addView(filterScroll, LinearLayout.LayoutParams(MATCH, WRAP).apply { topMargin = dp(8) })
 
+        // ---- the game that is running under the launcher: back to it, or quit it
+        runBox = FrameLayout(this).apply { visibility = View.GONE }
+        root.addView(runBox, LinearLayout.LayoutParams(MATCH, WRAP).apply { topMargin = dp(10) })
+
         // ---- "continue" and most played; gives its room to the grid once the grid is scrolled
         heroBox = FrameLayout(this).apply { visibility = View.GONE }
         root.addView(heroBox, LinearLayout.LayoutParams(MATCH, WRAP).apply { topMargin = dp(12) })
@@ -456,6 +462,10 @@ open class MainActivity : Activity() {
 
     /** `--es open <id>` on the launch intent opens that system shortcut, e.g. from a script. */
     private fun openRequested(i: Intent?) {
+        i?.getStringExtra("running")?.let {
+            i.removeExtra("running")
+            Apps.pretendRunning = it.ifEmpty { null }
+        }
         val id = i?.getStringExtra("open") ?: return
         i.removeExtra("open")
         links.firstOrNull { it.id == id }?.let { openLink(it) }
@@ -697,6 +707,7 @@ open class MainActivity : Activity() {
         buildTabs(folders)
         buildFilterRow()
         buildGenreBox()
+        buildRunning()
         buildHero()
         buildWallpaper()
 
@@ -918,10 +929,142 @@ open class MainActivity : Activity() {
     /** A drawable of its own for a second view: one drawable cannot sit in two places. */
     private fun copyOf(d: Drawable): Drawable = d.constantState?.newDrawable(resources)?.mutate() ?: d
 
+    /**
+     * Meta's menu offers to go back to the running game or to quit it. This launcher opens in
+     * place of that menu, so it has to offer the same: a bar that is there for as long as a
+     * game is running underneath.
+     */
+    private fun buildRunning() {
+        val a = Apps.running?.let { pkg -> all.firstOrNull { it.pkg == pkg && !it.notInstalled && !it.isSystem } }
+        val key = if (a == null) "" else "${a.pkg}:${label(a)}:${a.hasCover}"
+        if (key == runKey) return
+        runKey = key
+        runBox.removeAllViews()
+        if (a == null) {
+            runBox.visibility = View.GONE
+            return
+        }
+        // The one thing on the screen that must not be missed: the game's own picture as the
+        // background of the bar, and a green edge round it.
+        val card = FrameLayout(this).apply { background = ui.round(0xFF1F3A2A.toInt(), 28) }
+        corners(card, 28)
+        val bitmap = (a.icon as? BitmapDrawable)?.bitmap
+        if (a.hasCover && bitmap != null) {
+            card.addView(
+                ImageView(this).apply {
+                    setImageBitmap(bitmap)
+                    scaleType = ImageView.ScaleType.CENTER_CROP
+                    if (Build.VERSION.SDK_INT >= 31) {
+                        val r = dp(6).toFloat()
+                        setRenderEffect(RenderEffect.createBlurEffect(r, r, Shader.TileMode.CLAMP))
+                    }
+                },
+                FrameLayout.LayoutParams(MATCH, MATCH)
+            )
+            // darker on the left, where the words are
+            card.addView(
+                View(this).apply {
+                    background = GradientDrawable(
+                        GradientDrawable.Orientation.LEFT_RIGHT,
+                        intArrayOf(0xE6141416.toInt(), 0x99141416.toInt(), 0x59141416)
+                    )
+                },
+                FrameLayout.LayoutParams(MATCH, MATCH)
+            )
+        }
+        val row = LinearLayout(this).apply {
+            orientation = LinearLayout.HORIZONTAL
+            gravity = Gravity.CENTER_VERTICAL
+            setPadding(dp(14), dp(12), dp(8), dp(12))
+        }
+        val cover = ImageView(this).apply {
+            setImageDrawable(copyOf(a.icon))
+            scaleType = if (a.hasCover) ImageView.ScaleType.CENTER_CROP else ImageView.ScaleType.FIT_CENTER
+        }
+        ui.rounded(cover, 0.22f)
+        row.addView(cover, LinearLayout.LayoutParams(dp(64), dp(64)))
+        val texts = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            setPadding(dp(16), 0, dp(12), 0)
+        }
+        texts.addView(ui.text(s(R.string.run_now).uppercase(), 12f, Pal.GREEN, bold = true).apply {
+            letterSpacing = 0.1f
+            ui.shadow(this)
+            // a green dot before the words
+            setCompoundDrawablesRelative(ui.oval(Pal.GREEN).apply { setBounds(0, 0, dp(9), dp(9)) }, null, null, null)
+            compoundDrawablePadding = dp(8)
+        })
+        texts.addView(ui.text(label(a), 21f, bold = true).apply {
+            maxLines = 1
+            ellipsize = TextUtils.TruncateAt.END
+            ui.shadow(this)
+        })
+        row.addView(texts, LinearLayout.LayoutParams(0, WRAP, 1f))
+        row.addView(ui.chip(s(R.string.run_back), true, ic = Ic.PLAY) { launch(a) })
+        row.addView(ui.chip(s(R.string.run_quit), false, ic = Ic.CLOSE) { quitRunning(a) }.apply {
+            // on the picture: its own solid grey, like the other controls of the main screen
+            background = ui.round(Pal.GLASS, 24)
+            ui.hover(this, Pal.GLASS, Pal.GLASS_HI, 24)
+        })
+        card.addView(row, FrameLayout.LayoutParams(MATCH, MATCH))
+        card.addView(
+            View(this).apply {
+                background = GradientDrawable().apply {
+                    setColor(0)
+                    cornerRadius = dp(28).toFloat()
+                    setStroke(dp(2), Pal.GREEN)
+                }
+            },
+            FrameLayout.LayoutParams(MATCH, MATCH)
+        )
+        // a fixed height: the picture behind would otherwise stretch the bar to its own size
+        runBox.addView(card, FrameLayout.LayoutParams(MATCH, dp(92)))
+        runBox.visibility = View.VISIBLE
+    }
+
+    /**
+     * Quits the running game the way the Quit button of Meta's menu does: the shell is asked
+     * to go home, and it ends the immersive app on the way (seen in the system log; simply
+     * starting the home screen from here does not end the game). If the game is still there
+     * a moment later, Meta's menu is shown instead, with its own button.
+     */
+    private fun quitRunning(a: AppEntry) {
+        android.util.Log.i("Shelf", "quitting ${a.pkg}")
+        try {
+            sendBroadcast(
+                Intent("com.oculus.vrshell.intent.action.LAUNCH")
+                    .setData(Uri.parse("com.oculus.vrshell/com.oculus.vrshell.HomeActivity"))
+                    .setClassName("com.oculus.vrshell", "com.oculus.vrshell.ShellControlBroadcastReceiver")
+            )
+        } catch (e: Exception) {
+            android.util.Log.w("Shelf", "could not ask the shell to go home", e)
+        }
+        handler.postDelayed({
+            thread {
+                val still = Apps.refreshRunning(this) == a.pkg
+                runOnUiThread {
+                    if (isDestroyed) return@runOnUiThread
+                    if (still) {
+                        android.util.Log.i("Shelf", "${a.pkg} is still running: showing Meta's menu")
+                        toast(s(R.string.t_quit_failed))
+                        links.firstOrNull { it.id == SystemLinks.LIBRARY }?.let { openLink(it) }
+                    } else {
+                        android.util.Log.i("Shelf", "${a.pkg} was quit")
+                        // back in front, in case the trip home put the launcher away
+                        WatchService.openLauncher(applicationContext, "game quit")
+                        reload()
+                    }
+                }
+            }
+        }, 2500)
+    }
+
     private fun buildHero() {
         val games = all.filter { !it.isSystem && !it.notInstalled && it.pkg !in hidden }
         val last = games.filter { it.lastUsed > 0 }.maxByOrNull { it.lastUsed }
-        heroWanted = last != null && tab == "all" && query.isEmpty() && mark.isEmpty() && genre.isEmpty()
+        // while a game is running, its bar stands in for "continue"
+        heroWanted = last != null && tab == "all" && query.isEmpty() && mark.isEmpty() && genre.isEmpty() &&
+            runKey.isEmpty()
         if (last == null || !heroWanted) {
             heroBox.visibility = View.GONE
             return

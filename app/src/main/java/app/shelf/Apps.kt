@@ -7,6 +7,7 @@ import android.graphics.ColorFilter
 import android.graphics.Color
 import android.graphics.Canvas
 import android.app.AppOpsManager
+import android.app.usage.UsageEvents
 import android.app.usage.UsageStats
 import android.app.usage.UsageStatsManager
 import android.content.Context
@@ -118,6 +119,64 @@ object Apps {
     var statsSince = 0L
         private set
 
+    /**
+     * The immersive app that is running right now, or null: found by [load], read by the screen.
+     *
+     * While the user is in the system menu or in this launcher, the game underneath stays
+     * "resumed" as far as the system's records go; it is paused and stopped only when it is
+     * really quit. So a VR app whose last recorded step is "resumed" is the one still running.
+     */
+    @Volatile
+    var running: String? = null
+        private set
+
+    /** For looking at the "running now" bar where no game can run: `am start ... --es running <package>`. */
+    @Volatile
+    var pretendRunning: String? = null
+
+    private fun findRunning(c: Context): String? {
+        if (!hasUsageAccess(c)) return null
+        return try {
+            val usm = c.getSystemService(UsageStatsManager::class.java) ?: return null
+            val now = System.currentTimeMillis()
+            // nothing from before the headset was last switched on can still be running
+            val since = maxOf(now - 12L * 3600 * 1000, now - android.os.SystemClock.elapsedRealtime())
+            val events = usm.queryEvents(since, now)
+            val e = UsageEvents.Event()
+            val resumedAt = HashMap<String, Long>()
+            while (events.hasNextEvent()) {
+                events.getNextEvent(e)
+                when (e.eventType) {
+                    UsageEvents.Event.ACTIVITY_RESUMED -> resumedAt[e.packageName] = e.timeStamp
+                    UsageEvents.Event.ACTIVITY_PAUSED, UsageEvents.Event.ACTIVITY_STOPPED -> resumedAt.remove(e.packageName)
+                }
+            }
+            val pm = c.packageManager
+            resumedAt.entries.sortedByDescending { it.value }.map { it.key }.firstOrNull { pkg ->
+                // Meta's shell is itself an immersive app that is always "resumed": only what
+                // the user installed counts as a game
+                pkg != c.packageName && !preinstalled(pm, pkg) && pm.queryIntentActivities(
+                    Intent(Intent.ACTION_MAIN).addCategory(VR_CATEGORY).setPackage(pkg), 0
+                ).isNotEmpty()
+            }
+        } catch (e: Exception) {
+            Log.w("Shelf", "cannot tell what is running", e)
+            null
+        }
+    }
+
+    private fun preinstalled(pm: PackageManager, pkg: String): Boolean = try {
+        (pm.getApplicationInfo(pkg, 0).flags and ApplicationInfo.FLAG_SYSTEM) != 0
+    } catch (e: Exception) {
+        true
+    }
+
+    /** Looks again right now (heavy: from a background thread). */
+    fun refreshRunning(c: Context): String? = (pretendRunning ?: findRunning(c)).also {
+        if (it != running) Log.i("Shelf", "running now: ${it ?: "nothing"}")
+        running = it
+    }
+
     private fun usage(c: Context): Map<String, UsageStats> {
         if (!hasUsageAccess(c)) return emptyMap()
         return try {
@@ -198,6 +257,7 @@ object Apps {
     fun load(c: Context): List<AppEntry> {
         val pm = c.packageManager
         val usage = usage(c)
+        refreshRunning(c)
         val own = Store.launched()
         val out = ArrayList<AppEntry>()
         val fromStore = HashMap<String, String>()

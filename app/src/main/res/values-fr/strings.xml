@@ -168,6 +168,10 @@
     <string name="hero_continue">Continuer</string>
     <string name="hero_top">Les plus joués</string>
     <string name="hero_play">Jouer</string>
+    <string name="run_now">En cours</string>
+    <string name="run_back">Retour au jeu</string>
+    <string name="run_quit">Quitter le jeu</string>
+    <string name="t_quit_failed">Impossible de le quitter d\'ici. Utilise Quitter dans le menu Meta.</string>
     <string name="unpin">Revenir à l\'ordre automatique</string>
     <string name="reset_pins">Réinitialiser mon ordre</string>
     <string name="pl_note">Le casque ne compte le temps de jeu que depuis le %s</string>
