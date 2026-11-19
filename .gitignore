@@ -1,0 +1,13 @@
+# build output and tool caches
+.gradle/
+.kotlin/
+build/
+local.properties
+.idea/
+*.iml
+
+# built APK: produced by `gradle assembleDebug`, installed by install.ps1
+dist/
+
+# screenshots taken while working on the UI
+preview*.png

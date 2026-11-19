@@ -1,0 +1,212 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name" translatable="false">Shelf</string>
+    <string name="svc_label">Shelf: autostart and library replacement</string>
+    <string name="svc_desc">Opens Shelf after the headset starts and instead of the stock app library. It only watches which system window is in front; it does not read or send anything else.</string>
+
+    <string name="search_hint">Search by name or genre</string>
+    <string name="settings">Settings</string>
+    <string name="sort_title">Sort by</string>
+    <string name="sort_name">Name: A → Z</string>
+    <string name="sort_name_desc">Name: Z → A</string>
+    <string name="sort_recent">Recently played</string>
+    <string name="sort_installed">Recently installed</string>
+    <string name="sort_updated">Recently updated</string>
+    <string name="sort_time">Time played</string>
+    <string name="sort_manual">Custom order</string>
+
+    <string name="tab_all">All</string>
+    <string name="tab_fav">Favorites</string>
+    <string name="tab_side">Sideloaded</string>
+    <string name="tab_sys">System</string>
+    <string name="tab_hidden">Hidden</string>
+    <string name="tab_new_folder">Folder</string>
+
+    <string name="f_all">All</string>
+    <string name="f_installed">Installed</string>
+    <string name="f_not_installed">Not installed</string>
+    <string name="all_genres">All genres</string>
+    <string name="scanning">Looking for your purchased games…</string>
+
+    <string name="mark_demo">Demo</string>
+    <string name="mark_short">Barely played</string>
+    <string name="mark_bad">Didn\'t like</string>
+    <string name="mark_done">Completed</string>
+
+    <string name="move_hint">Pick the app to put “%s” in front of</string>
+    <string name="move_end">To the end</string>
+    <string name="cancel">Cancel</string>
+    <string name="ok">OK</string>
+    <string name="close">Close</string>
+
+    <string name="loading">Loading…</string>
+    <string name="nothing_found">Nothing found</string>
+    <string name="fav_empty">No favorites yet.\nTap the star on any tile.</string>
+    <string name="empty_here">Nothing here</string>
+
+    <string name="rename">Rename</string>
+    <string name="delete_folder">Delete folder</string>
+    <string name="folder_name">Folder name</string>
+    <string name="new_folder">New folder</string>
+    <string name="remove_from_folder">Remove from folder</string>
+    <string name="folder_for">Folder for “%s”</string>
+
+    <string name="launch">Launch</string>
+    <string name="install">Install (store page)</string>
+    <string name="favorite">Favorite</string>
+    <string name="store_page">Store page</string>
+    <string name="to_folder">Folder</string>
+    <string name="reorder">Move</string>
+    <string name="hide">Hide</string>
+    <string name="unhide">Unhide</string>
+    <string name="app_info">App info</string>
+    <string name="uninstall">Uninstall</string>
+    <string name="rename_title">Name (empty = as in the store)</string>
+
+    <string name="st_removed">Not installed · removed %s</string>
+    <string name="st_owned">Purchased, not installed</string>
+    <string name="st_system">System app</string>
+    <string name="st_side">Sideloaded on %s</string>
+    <string name="st_store">Installed from the store on %s</string>
+    <string name="pl_time_last">Played %1$s · last launch %2$s</string>
+    <string name="pl_time">Played %s</string>
+    <string name="pl_last">Last launch %s</string>
+    <string name="pl_unknown_removed">Play time unknown: the system forgets it when a game is removed</string>
+    <string name="pl_never">Never launched</string>
+    <string name="pl_unavailable">Play time unavailable</string>
+    <string name="d_lt_min">under a minute</string>
+    <string name="d_min">%d min</string>
+    <string name="d_h_min">%1$d h %2$d min</string>
+
+    <string name="t_launch_failed">Couldn\'t launch: %s</string>
+    <string name="t_no_store">The store page of this game is unknown</string>
+    <string name="t_open_failed">The system refused to open it: %s</string>
+
+    <string name="sec_status">Status</string>
+    <string name="sec_behavior">Behavior</string>
+    <string name="sec_look">Appearance</string>
+    <string name="sec_data">Data</string>
+    <string name="sec_advanced">Advanced</string>
+
+    <string name="set_service">Background service</string>
+    <string name="svc_running">Running</string>
+    <string name="svc_enabled_not_running">Enabled but not running — restart the headset</string>
+    <string name="svc_off">Off — run install.ps1 on the PC</string>
+    <string name="set_usage">Play statistics</string>
+    <string name="usage_ok">Available</string>
+    <string name="usage_no">No access — run install.ps1 on the PC</string>
+    <string name="set_owned">Purchased games</string>
+    <string name="owned_denied">The system denied access to the library</string>
+    <string name="owned_never">Not checked yet</string>
+    <string name="owned_status">%1$d of %2$d library entries recognised, %3$d not installed · checked %4$s</string>
+    <string name="busy_scan">Checking the library… %d</string>
+    <string name="busy_catalog">Downloading the store catalog… %d</string>
+    <string name="set_covers">Covers</string>
+    <string name="covers_status">%1$d of %2$d store games</string>
+    <string name="covers_pending">%1$d of %2$d store games, %3$d more loading</string>
+
+    <string name="opt_boot">Open after the headset starts</string>
+    <string name="opt_wake">Open when the headset wakes up</string>
+    <string name="opt_intercept">Open instead of the stock library</string>
+    <string name="opt_meta">Load covers, names and genres from the internet</string>
+
+    <string name="set_language">Language</string>
+    <string name="lang_system">Same as the headset</string>
+    <string name="set_tile">Tile size</string>
+    <string name="tile_small">Small</string>
+    <string name="tile_medium">Medium</string>
+    <string name="tile_large">Large</string>
+
+    <string name="act_retry_covers">Retry missing covers</string>
+    <string name="t_retrying">Asking again</string>
+    <string name="act_rescan">Re-check purchased games</string>
+    <string name="t_rescan">Checking the library, this takes about a minute</string>
+    <string name="act_catalog">Update the store catalog</string>
+    <string name="catalog_sub">120 MB download, needed only for brand-new releases</string>
+    <string name="catalog_sub_date">120 MB download, for brand-new releases · current one is from %s</string>
+    <string name="t_catalog">Downloading the catalog, this takes a few minutes</string>
+    <string name="act_learn">Teach interception</string>
+    <string name="learn_sub">10 seconds to open the window that Shelf should replace</string>
+    <string name="act_triggers">Saved triggers</string>
+    <string name="act_log">System event log</string>
+    <string name="act_a11y">System accessibility settings</string>
+
+    <string name="t_no_service">The background service is not running — run install.ps1 first</string>
+    <string name="t_learn">You have 10 seconds: open the window the usual way</string>
+    <string name="learn_pick">Which event should open Shelf?</string>
+    <string name="t_log_empty">The background service is not running — the log is empty</string>
+    <string name="log_title">Recent events (tap one to make it a trigger)</string>
+    <string name="t_no_events">No events caught</string>
+    <string name="t_too_broad">That event is too generic — it would fire on half the system. Pick another one</string>
+    <string name="t_trigger_saved">Trigger saved, interception is on</string>
+    <string name="t_no_triggers">No triggers yet</string>
+    <string name="triggers_title">Triggers (tap one to delete it)</string>
+    <string name="t_trigger_deleted">Trigger deleted</string>
+    <string name="ev_window">Window</string>
+    <string name="ev_hover">Hover</string>
+    <string name="ev_click">Click</string>
+    <string name="ev_other">Event</string>
+
+    <string name="sys_library">Meta library</string>
+    <string name="sys_settings">Headset settings</string>
+    <string name="sys_store">Store</string>
+    <string name="sys_quick">Quick settings</string>
+    <string name="sys_notifications">Notifications</string>
+    <string name="sys_profile">Profile</string>
+    <string name="sys_people">People</string>
+    <string name="sys_camera">Camera</string>
+    <string name="sys_browser">Browser</string>
+    <string name="t_press_meta">Now press the Meta button: this once, Meta\'s own library will open</string>
+
+    <string name="filters">Filters</string>
+    <string name="f_install_title">Installation</string>
+    <string name="f_marks">Marks</string>
+    <string name="f_genres">Genres</string>
+    <string name="f_reset">Clear filters</string>
+    <string name="hero_continue">Continue</string>
+    <string name="hero_top">Played most</string>
+    <string name="hero_play">Play</string>
+    <string name="unpin">Back to automatic order</string>
+    <string name="reset_pins">Reset my rearrangements</string>
+    <string name="pl_note">The headset has counted play time only since %s</string>
+
+    <string name="g_action">Action</string>
+    <string name="g_adventure">Adventure</string>
+    <string name="g_arcade">Arcade</string>
+    <string name="g_shooter">Shooter</string>
+    <string name="g_puzzle">Puzzle</string>
+    <string name="g_rhythm">Rhythm</string>
+    <string name="g_music">Music</string>
+    <string name="g_sports">Sports</string>
+    <string name="g_training">Sports training</string>
+    <string name="g_fitness">Fitness</string>
+    <string name="g_simulation">Simulation</string>
+    <string name="g_sandbox">Sandbox</string>
+    <string name="g_horror">Horror</string>
+    <string name="g_strategy">Strategy</string>
+    <string name="g_fighting">Fighting</string>
+    <string name="g_racing">Racing</string>
+    <string name="g_role_playing">Role playing</string>
+    <string name="g_platformer">Platformer</string>
+    <string name="g_survival">Survival</string>
+    <string name="g_narrative">Narrative</string>
+    <string name="g_exploration">Exploration</string>
+    <string name="g_casual">Casual</string>
+    <string name="g_social">Social</string>
+    <string name="g_party">Party game</string>
+    <string name="g_tabletop">Tabletop</string>
+    <string name="g_flying">Flying</string>
+    <string name="g_space">Space</string>
+    <string name="g_educational">Learning</string>
+    <string name="g_family">Kids &amp; family</string>
+    <string name="g_creativity">Creativity</string>
+    <string name="g_productivity">Productivity</string>
+    <string name="g_utility">Utilities</string>
+    <string name="g_travel">Travel</string>
+    <string name="g_media">Media</string>
+    <string name="g_movie">Movies</string>
+    <string name="g_meditation">Meditation</string>
+    <string name="g_stealth">Stealth</string>
+    <string name="g_combat">Combat</string>
+    <string name="g_dancing">Dancing</string>
+</resources>

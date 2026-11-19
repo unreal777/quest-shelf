@@ -1,0 +1,211 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="svc_label">Shelf: автозапуск и замена библиотеки</string>
+    <string name="svc_desc">Открывает Shelf после включения шлема и вместо штатной библиотеки приложений. Следит только за тем, какое системное окно сейчас впереди; больше ничего не читает и не отправляет.</string>
+
+    <string name="search_hint">Поиск по названию или жанру</string>
+    <string name="settings">Настройки</string>
+    <string name="sort_title">Сортировка</string>
+    <string name="sort_name">Имя: А → Я</string>
+    <string name="sort_name_desc">Имя: Я → А</string>
+    <string name="sort_recent">Недавно запущенные</string>
+    <string name="sort_installed">Недавно установленные</string>
+    <string name="sort_updated">Недавно обновленные</string>
+    <string name="sort_time">Время в игре</string>
+    <string name="sort_manual">Свой порядок</string>
+
+    <string name="tab_all">Все</string>
+    <string name="tab_fav">Избранное</string>
+    <string name="tab_side">Сторонние</string>
+    <string name="tab_sys">Системные</string>
+    <string name="tab_hidden">Скрытые</string>
+    <string name="tab_new_folder">Папка</string>
+
+    <string name="f_all">Все</string>
+    <string name="f_installed">Установленные</string>
+    <string name="f_not_installed">Не установленные</string>
+    <string name="all_genres">Все жанры</string>
+    <string name="scanning">Ищу купленные игры…</string>
+
+    <string name="mark_demo">Демо</string>
+    <string name="mark_short">Мало играл</string>
+    <string name="mark_bad">Не понравилось</string>
+    <string name="mark_done">Пройдено</string>
+
+    <string name="move_hint">Выбери приложение, перед которым поставить «%s»</string>
+    <string name="move_end">В конец</string>
+    <string name="cancel">Отмена</string>
+    <string name="ok">OK</string>
+    <string name="close">Закрыть</string>
+
+    <string name="loading">Загрузка…</string>
+    <string name="nothing_found">Ничего не найдено</string>
+    <string name="fav_empty">В избранном пусто.\nНажми на звезду на любой плитке.</string>
+    <string name="empty_here">Здесь пусто</string>
+
+    <string name="rename">Переименовать</string>
+    <string name="delete_folder">Удалить папку</string>
+    <string name="folder_name">Название папки</string>
+    <string name="new_folder">Новая папка</string>
+    <string name="remove_from_folder">Убрать из папки</string>
+    <string name="folder_for">Папка для «%s»</string>
+
+    <string name="launch">Запустить</string>
+    <string name="install">Установить (страница в магазине)</string>
+    <string name="favorite">Избранное</string>
+    <string name="store_page">В магазине</string>
+    <string name="to_folder">Папка</string>
+    <string name="reorder">Переместить</string>
+    <string name="hide">Скрыть</string>
+    <string name="unhide">Вернуть из скрытых</string>
+    <string name="app_info">О приложении</string>
+    <string name="uninstall">Удалить</string>
+    <string name="rename_title">Название (пусто — как в магазине)</string>
+
+    <string name="st_removed">Не установлено · удалено %s</string>
+    <string name="st_owned">Куплено, не установлено</string>
+    <string name="st_system">Системное приложение</string>
+    <string name="st_side">Установлено вручную %s</string>
+    <string name="st_store">Установлено из магазина %s</string>
+    <string name="pl_time_last">В игре %1$s · последний запуск %2$s</string>
+    <string name="pl_time">В игре %s</string>
+    <string name="pl_last">Последний запуск %s</string>
+    <string name="pl_unknown_removed">Время в игре неизвестно: система забывает его при удалении игры</string>
+    <string name="pl_never">Еще не запускалось</string>
+    <string name="pl_unavailable">Время в игре недоступно</string>
+    <string name="d_lt_min">меньше минуты</string>
+    <string name="d_min">%d мин</string>
+    <string name="d_h_min">%1$d ч %2$d мин</string>
+
+    <string name="t_launch_failed">Не удалось запустить: %s</string>
+    <string name="t_no_store">Страница этой игры в магазине неизвестна</string>
+    <string name="t_open_failed">Система не дала открыть: %s</string>
+
+    <string name="sec_status">Состояние</string>
+    <string name="sec_behavior">Поведение</string>
+    <string name="sec_look">Внешний вид</string>
+    <string name="sec_data">Данные</string>
+    <string name="sec_advanced">Дополнительно</string>
+
+    <string name="set_service">Фоновая служба</string>
+    <string name="svc_running">Работает</string>
+    <string name="svc_enabled_not_running">Включена, но не запущена — перезагрузи шлем</string>
+    <string name="svc_off">Выключена — запусти install.ps1 на компьютере</string>
+    <string name="set_usage">Статистика игр</string>
+    <string name="usage_ok">Доступна</string>
+    <string name="usage_no">Нет доступа — запусти install.ps1 на компьютере</string>
+    <string name="set_owned">Купленные игры</string>
+    <string name="owned_denied">Система не дала доступ к библиотеке</string>
+    <string name="owned_never">Еще не проверялись</string>
+    <string name="owned_status">Распознано %1$d из %2$d записей библиотеки, не установлено %3$d · проверено %4$s</string>
+    <string name="busy_scan">Проверка библиотеки… %d</string>
+    <string name="busy_catalog">Загрузка каталога магазина… %d</string>
+    <string name="set_covers">Обложки</string>
+    <string name="covers_status">%1$d из %2$d игр из магазина</string>
+    <string name="covers_pending">%1$d из %2$d игр из магазина, загружается еще %3$d</string>
+
+    <string name="opt_boot">Открывать после включения шлема</string>
+    <string name="opt_wake">Открывать при пробуждении шлема</string>
+    <string name="opt_intercept">Открывать вместо штатной библиотеки</string>
+    <string name="opt_meta">Загружать обложки, названия и жанры из интернета</string>
+
+    <string name="set_language">Язык</string>
+    <string name="lang_system">Как в шлеме</string>
+    <string name="set_tile">Размер плиток</string>
+    <string name="tile_small">Мелкие</string>
+    <string name="tile_medium">Средние</string>
+    <string name="tile_large">Крупные</string>
+
+    <string name="act_retry_covers">Повторить загрузку недостающих обложек</string>
+    <string name="t_retrying">Запрашиваю заново</string>
+    <string name="act_rescan">Проверить купленные игры заново</string>
+    <string name="t_rescan">Проверяю библиотеку, это около минуты</string>
+    <string name="act_catalog">Обновить каталог магазина</string>
+    <string name="catalog_sub">Загрузка 120 МБ, нужна только для самых новых игр</string>
+    <string name="catalog_sub_date">Загрузка 120 МБ, для самых новых игр · текущий от %s</string>
+    <string name="t_catalog">Загружаю каталог, это несколько минут</string>
+    <string name="act_learn">Обучить перехват</string>
+    <string name="learn_sub">10 секунд, чтобы открыть окно, которое Shelf должен заменять</string>
+    <string name="act_triggers">Сохраненные триггеры</string>
+    <string name="act_log">Журнал событий системы</string>
+    <string name="act_a11y">Системные настройки спец. возможностей</string>
+
+    <string name="t_no_service">Фоновая служба не работает — сначала запусти install.ps1</string>
+    <string name="t_learn">У тебя 10 секунд: открой нужное окно как обычно</string>
+    <string name="learn_pick">Какое событие должно открывать Shelf?</string>
+    <string name="t_log_empty">Фоновая служба не работает — журнал пуст</string>
+    <string name="log_title">Последние события (нажми, чтобы сделать триггером)</string>
+    <string name="t_no_events">Событий не поймано</string>
+    <string name="t_too_broad">Слишком общее событие — сработает на пол-системы. Выбери другое</string>
+    <string name="t_trigger_saved">Триггер сохранен, перехват включен</string>
+    <string name="t_no_triggers">Триггеров пока нет</string>
+    <string name="triggers_title">Триггеры (нажми, чтобы удалить)</string>
+    <string name="t_trigger_deleted">Триггер удален</string>
+    <string name="ev_window">Окно</string>
+    <string name="ev_hover">Наведение</string>
+    <string name="ev_click">Нажатие</string>
+    <string name="ev_other">Событие</string>
+
+    <string name="sys_library">Библиотека Meta</string>
+    <string name="sys_settings">Настройки шлема</string>
+    <string name="sys_store">Магазин</string>
+    <string name="sys_quick">Быстрые настройки</string>
+    <string name="sys_notifications">Уведомления</string>
+    <string name="sys_profile">Профиль</string>
+    <string name="sys_people">Люди</string>
+    <string name="sys_camera">Камера</string>
+    <string name="sys_browser">Браузер</string>
+    <string name="t_press_meta">Теперь нажми кнопку Meta: в этот раз откроется штатная библиотека</string>
+
+    <string name="filters">Фильтры</string>
+    <string name="f_install_title">Установка</string>
+    <string name="f_marks">Пометки</string>
+    <string name="f_genres">Жанры</string>
+    <string name="f_reset">Сбросить фильтры</string>
+    <string name="hero_continue">Продолжить</string>
+    <string name="hero_top">Чаще всего играешь</string>
+    <string name="hero_play">Играть</string>
+    <string name="unpin">Вернуть в общий порядок</string>
+    <string name="reset_pins">Сбросить свои перестановки</string>
+    <string name="pl_note">Шлем считает время в играх только с %s</string>
+
+    <string name="g_action">Экшен</string>
+    <string name="g_adventure">Приключения</string>
+    <string name="g_arcade">Аркады</string>
+    <string name="g_shooter">Шутеры</string>
+    <string name="g_puzzle">Головоломки</string>
+    <string name="g_rhythm">Ритм</string>
+    <string name="g_music">Музыка</string>
+    <string name="g_sports">Спорт</string>
+    <string name="g_training">Тренировки</string>
+    <string name="g_fitness">Фитнес</string>
+    <string name="g_simulation">Симуляторы</string>
+    <string name="g_sandbox">Песочницы</string>
+    <string name="g_horror">Хорроры</string>
+    <string name="g_strategy">Стратегии</string>
+    <string name="g_fighting">Файтинги</string>
+    <string name="g_racing">Гонки</string>
+    <string name="g_role_playing">Ролевые</string>
+    <string name="g_platformer">Платформеры</string>
+    <string name="g_survival">Выживание</string>
+    <string name="g_narrative">Сюжетные</string>
+    <string name="g_exploration">Исследование</string>
+    <string name="g_casual">Казуальные</string>
+    <string name="g_social">Общение</string>
+    <string name="g_party">Для компании</string>
+    <string name="g_tabletop">Настольные</string>
+    <string name="g_flying">Полеты</string>
+    <string name="g_space">Космос</string>
+    <string name="g_educational">Обучение</string>
+    <string name="g_family">Для всей семьи</string>
+    <string name="g_creativity">Творчество</string>
+    <string name="g_productivity">Работа</string>
+    <string name="g_utility">Утилиты</string>
+    <string name="g_travel">Путешествия</string>
+    <string name="g_media">Медиа</string>
+    <string name="g_movie">Кино</string>
+    <string name="g_meditation">Медитация</string>
+    <string name="g_stealth">Стелс</string>
+    <string name="g_combat">Бои</string>
+    <string name="g_dancing">Танцы</string>
+</resources>

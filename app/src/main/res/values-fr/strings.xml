@@ -1,0 +1,211 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="svc_label">Shelf : démarrage automatique et remplacement de la bibliothèque</string>
+    <string name="svc_desc">Ouvre Shelf au démarrage du casque et à la place de la bibliothèque d\'applications d\'origine. Il observe seulement quelle fenêtre système est au premier plan ; il ne lit et n\'envoie rien d\'autre.</string>
+
+    <string name="search_hint">Rechercher par nom ou par genre</string>
+    <string name="settings">Réglages</string>
+    <string name="sort_title">Trier par</string>
+    <string name="sort_name">Nom : A → Z</string>
+    <string name="sort_name_desc">Nom : Z → A</string>
+    <string name="sort_recent">Joués récemment</string>
+    <string name="sort_installed">Installés récemment</string>
+    <string name="sort_updated">Mis à jour récemment</string>
+    <string name="sort_time">Temps de jeu</string>
+    <string name="sort_manual">Ordre personnalisé</string>
+
+    <string name="tab_all">Tout</string>
+    <string name="tab_fav">Favoris</string>
+    <string name="tab_side">Externes</string>
+    <string name="tab_sys">Système</string>
+    <string name="tab_hidden">Masquées</string>
+    <string name="tab_new_folder">Dossier</string>
+
+    <string name="f_all">Tout</string>
+    <string name="f_installed">Installés</string>
+    <string name="f_not_installed">Non installés</string>
+    <string name="all_genres">Tous les genres</string>
+    <string name="scanning">Recherche de vos jeux achetés…</string>
+
+    <string name="mark_demo">Démo</string>
+    <string name="mark_short">À peine joué</string>
+    <string name="mark_bad">Pas aimé</string>
+    <string name="mark_done">Terminé</string>
+
+    <string name="move_hint">Choisissez l\'application devant laquelle placer « %s »</string>
+    <string name="move_end">À la fin</string>
+    <string name="cancel">Annuler</string>
+    <string name="ok">OK</string>
+    <string name="close">Fermer</string>
+
+    <string name="loading">Chargement…</string>
+    <string name="nothing_found">Aucun résultat</string>
+    <string name="fav_empty">Pas encore de favoris.\nTouchez l\'étoile d\'une vignette.</string>
+    <string name="empty_here">Rien ici</string>
+
+    <string name="rename">Renommer</string>
+    <string name="delete_folder">Supprimer le dossier</string>
+    <string name="folder_name">Nom du dossier</string>
+    <string name="new_folder">Nouveau dossier</string>
+    <string name="remove_from_folder">Retirer du dossier</string>
+    <string name="folder_for">Dossier pour « %s »</string>
+
+    <string name="launch">Lancer</string>
+    <string name="install">Installer (page du magasin)</string>
+    <string name="favorite">Favori</string>
+    <string name="store_page">Page du magasin</string>
+    <string name="to_folder">Dossier</string>
+    <string name="reorder">Déplacer</string>
+    <string name="hide">Masquer</string>
+    <string name="unhide">Réafficher</string>
+    <string name="app_info">Infos</string>
+    <string name="uninstall">Désinstaller</string>
+    <string name="rename_title">Nom (vide = comme dans le magasin)</string>
+
+    <string name="st_removed">Non installé · supprimé le %s</string>
+    <string name="st_owned">Acheté, non installé</string>
+    <string name="st_system">Application système</string>
+    <string name="st_side">Installé manuellement le %s</string>
+    <string name="st_store">Installé depuis le magasin le %s</string>
+    <string name="pl_time_last">Joué %1$s · dernier lancement %2$s</string>
+    <string name="pl_time">Joué %s</string>
+    <string name="pl_last">Dernier lancement %s</string>
+    <string name="pl_unknown_removed">Temps de jeu inconnu : le système l\'oublie quand un jeu est supprimé</string>
+    <string name="pl_never">Jamais lancé</string>
+    <string name="pl_unavailable">Temps de jeu indisponible</string>
+    <string name="d_lt_min">moins d\'une minute</string>
+    <string name="d_min">%d min</string>
+    <string name="d_h_min">%1$d h %2$d min</string>
+
+    <string name="t_launch_failed">Lancement impossible : %s</string>
+    <string name="t_no_store">La page de ce jeu dans le magasin est inconnue</string>
+    <string name="t_open_failed">Le système a refusé l\'ouverture : %s</string>
+
+    <string name="sec_status">État</string>
+    <string name="sec_behavior">Comportement</string>
+    <string name="sec_look">Apparence</string>
+    <string name="sec_data">Données</string>
+    <string name="sec_advanced">Avancé</string>
+
+    <string name="set_service">Service en arrière-plan</string>
+    <string name="svc_running">En marche</string>
+    <string name="svc_enabled_not_running">Activé mais pas démarré — redémarrez le casque</string>
+    <string name="svc_off">Désactivé — lancez install.ps1 sur le PC</string>
+    <string name="set_usage">Statistiques de jeu</string>
+    <string name="usage_ok">Disponibles</string>
+    <string name="usage_no">Pas d\'accès — lancez install.ps1 sur le PC</string>
+    <string name="set_owned">Jeux achetés</string>
+    <string name="owned_denied">Le système a refusé l\'accès à la bibliothèque</string>
+    <string name="owned_never">Pas encore vérifiés</string>
+    <string name="owned_status">%1$d entrées de la bibliothèque sur %2$d reconnues, %3$d non installées · vérifié le %4$s</string>
+    <string name="busy_scan">Vérification de la bibliothèque… %d</string>
+    <string name="busy_catalog">Téléchargement du catalogue du magasin… %d</string>
+    <string name="set_covers">Jaquettes</string>
+    <string name="covers_status">%1$d jeux du magasin sur %2$d</string>
+    <string name="covers_pending">%1$d jeux du magasin sur %2$d, encore %3$d en chargement</string>
+
+    <string name="opt_boot">Ouvrir au démarrage du casque</string>
+    <string name="opt_wake">Ouvrir au réveil du casque</string>
+    <string name="opt_intercept">Ouvrir à la place de la bibliothèque d\'origine</string>
+    <string name="opt_meta">Charger jaquettes, noms et genres depuis internet</string>
+
+    <string name="set_language">Langue</string>
+    <string name="lang_system">Celle du casque</string>
+    <string name="set_tile">Taille des vignettes</string>
+    <string name="tile_small">Petites</string>
+    <string name="tile_medium">Moyennes</string>
+    <string name="tile_large">Grandes</string>
+
+    <string name="act_retry_covers">Réessayer les jaquettes manquantes</string>
+    <string name="t_retrying">Nouvelle demande en cours</string>
+    <string name="act_rescan">Revérifier les jeux achetés</string>
+    <string name="t_rescan">Vérification de la bibliothèque, environ une minute</string>
+    <string name="act_catalog">Mettre à jour le catalogue du magasin</string>
+    <string name="catalog_sub">Téléchargement de 120 Mo, utile seulement pour les toutes dernières sorties</string>
+    <string name="catalog_sub_date">Téléchargement de 120 Mo, pour les toutes dernières sorties · l\'actuel date du %s</string>
+    <string name="t_catalog">Téléchargement du catalogue, quelques minutes</string>
+    <string name="act_learn">Apprendre l\'interception</string>
+    <string name="learn_sub">10 secondes pour ouvrir la fenêtre que Shelf doit remplacer</string>
+    <string name="act_triggers">Déclencheurs enregistrés</string>
+    <string name="act_log">Journal des événements système</string>
+    <string name="act_a11y">Réglages d\'accessibilité du système</string>
+
+    <string name="t_no_service">Le service en arrière-plan ne tourne pas — lancez d\'abord install.ps1</string>
+    <string name="t_learn">Vous avez 10 secondes : ouvrez la fenêtre comme d\'habitude</string>
+    <string name="learn_pick">Quel événement doit ouvrir Shelf ?</string>
+    <string name="t_log_empty">Le service en arrière-plan ne tourne pas — le journal est vide</string>
+    <string name="log_title">Événements récents (touchez-en un pour en faire un déclencheur)</string>
+    <string name="t_no_events">Aucun événement capté</string>
+    <string name="t_too_broad">Cet événement est trop général — il se déclencherait partout. Choisissez-en un autre</string>
+    <string name="t_trigger_saved">Déclencheur enregistré, interception activée</string>
+    <string name="t_no_triggers">Pas encore de déclencheurs</string>
+    <string name="triggers_title">Déclencheurs (touchez-en un pour le supprimer)</string>
+    <string name="t_trigger_deleted">Déclencheur supprimé</string>
+    <string name="ev_window">Fenêtre</string>
+    <string name="ev_hover">Survol</string>
+    <string name="ev_click">Clic</string>
+    <string name="ev_other">Événement</string>
+
+    <string name="sys_library">Bibliothèque Meta</string>
+    <string name="sys_settings">Réglages du casque</string>
+    <string name="sys_store">Magasin</string>
+    <string name="sys_quick">Réglages rapides</string>
+    <string name="sys_notifications">Notifications</string>
+    <string name="sys_profile">Profil</string>
+    <string name="sys_people">Contacts</string>
+    <string name="sys_camera">Caméra</string>
+    <string name="sys_browser">Navigateur</string>
+    <string name="t_press_meta">Appuyez maintenant sur le bouton Meta : cette fois, la bibliothèque d\'origine s\'ouvrira</string>
+
+    <string name="filters">Filtres</string>
+    <string name="f_install_title">Installation</string>
+    <string name="f_marks">Marques</string>
+    <string name="f_genres">Genres</string>
+    <string name="f_reset">Effacer les filtres</string>
+    <string name="hero_continue">Continuer</string>
+    <string name="hero_top">Les plus joués</string>
+    <string name="hero_play">Jouer</string>
+    <string name="unpin">Revenir à l\'ordre automatique</string>
+    <string name="reset_pins">Réinitialiser mon ordre</string>
+    <string name="pl_note">Le casque ne compte le temps de jeu que depuis le %s</string>
+
+    <string name="g_action">Action</string>
+    <string name="g_adventure">Aventure</string>
+    <string name="g_arcade">Arcade</string>
+    <string name="g_shooter">Tir</string>
+    <string name="g_puzzle">Réflexion</string>
+    <string name="g_rhythm">Rythme</string>
+    <string name="g_music">Musique</string>
+    <string name="g_sports">Sport</string>
+    <string name="g_training">Entraînement</string>
+    <string name="g_fitness">Fitness</string>
+    <string name="g_simulation">Simulation</string>
+    <string name="g_sandbox">Bac à sable</string>
+    <string name="g_horror">Horreur</string>
+    <string name="g_strategy">Stratégie</string>
+    <string name="g_fighting">Combat</string>
+    <string name="g_racing">Course</string>
+    <string name="g_role_playing">Jeu de rôle</string>
+    <string name="g_platformer">Plateforme</string>
+    <string name="g_survival">Survie</string>
+    <string name="g_narrative">Narratif</string>
+    <string name="g_exploration">Exploration</string>
+    <string name="g_casual">Casual</string>
+    <string name="g_social">Social</string>
+    <string name="g_party">Jeux de soirée</string>
+    <string name="g_tabletop">Jeux de plateau</string>
+    <string name="g_flying">Vol</string>
+    <string name="g_space">Espace</string>
+    <string name="g_educational">Apprentissage</string>
+    <string name="g_family">Enfants et famille</string>
+    <string name="g_creativity">Créativité</string>
+    <string name="g_productivity">Productivité</string>
+    <string name="g_utility">Utilitaires</string>
+    <string name="g_travel">Voyage</string>
+    <string name="g_media">Médias</string>
+    <string name="g_movie">Cinéma</string>
+    <string name="g_meditation">Méditation</string>
+    <string name="g_stealth">Infiltration</string>
+    <string name="g_combat">Affrontement</string>
+    <string name="g_dancing">Danse</string>
+</resources>
