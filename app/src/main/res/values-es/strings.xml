@@ -169,6 +169,11 @@
     <string name="reset_pins">Restablecer mi orden</string>
     <string name="pl_note">El visor solo cuenta el tiempo de juego desde el %s</string>
 
+    <string name="act_wallpaper">Usar como fondo</string>
+    <string name="act_wallpaper_auto">Fondo automático</string>
+    <string name="opt_wallpaper">Fondo a partir de una carátula</string>
+    <string name="tip_absent">No instalado</string>
+
     <string name="g_action">Acción</string>
     <string name="g_adventure">Aventura</string>
     <string name="g_arcade">Arcade</string>

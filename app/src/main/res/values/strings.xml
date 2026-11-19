@@ -170,6 +170,11 @@
     <string name="reset_pins">Reset my rearrangements</string>
     <string name="pl_note">The headset has counted play time only since %s</string>
 
+    <string name="act_wallpaper">Use as background</string>
+    <string name="act_wallpaper_auto">Automatic background</string>
+    <string name="opt_wallpaper">Background from a game cover</string>
+    <string name="tip_absent">Not installed</string>
+
     <string name="g_action">Action</string>
     <string name="g_adventure">Adventure</string>
     <string name="g_arcade">Arcade</string>

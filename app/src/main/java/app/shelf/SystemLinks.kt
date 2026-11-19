@@ -60,7 +60,7 @@ object SystemLinks {
         )
         add("store", R.string.sys_store, Ic.BAG, app(pm, "com.oculus.store"))
         add(
-            "quick", R.string.sys_quick, Ic.BOLT,
+            "quick", R.string.sys_quick, Ic.SWITCH,
             screen(pm, NAVIGATOR, "com.oculus.navigator.quickcontrols.app.NavigatorQuickControlsActivity")
         )
         add(

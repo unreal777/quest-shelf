@@ -115,6 +115,10 @@ class MainActivity : Activity() {
     private lateinit var filterScroll: HorizontalScrollView
     private lateinit var filterRow: LinearLayout
     private lateinit var heroBox: FrameLayout
+    private lateinit var wallpaper: ImageView
+    private lateinit var veil: View
+    private lateinit var genreBox: TextView
+    private var wallKey = "-"
     private lateinit var grid: DragGrid
     private lateinit var empty: TextView
 
@@ -184,10 +188,28 @@ class MainActivity : Activity() {
         ui = Kit(this)
         inst = Store.installFilter
 
-        val frame = FrameLayout(this)
+        val frame = FrameLayout(this).apply { background = ui.backdrop() }
+        // a game cover, blurred, behind everything; the dark veil over it keeps the text readable
+        wallpaper = ImageView(this).apply {
+            scaleType = ImageView.ScaleType.CENTER_CROP
+            alpha = 0.55f
+            visibility = View.GONE
+            if (Build.VERSION.SDK_INT >= 31) {
+                val r = dp(30).toFloat()
+                setRenderEffect(RenderEffect.createBlurEffect(r, r, Shader.TileMode.CLAMP))
+            }
+        }
+        frame.addView(wallpaper, FrameLayout.LayoutParams(MATCH, MATCH))
+        veil = View(this).apply {
+            background = GradientDrawable(
+                GradientDrawable.Orientation.TOP_BOTTOM,
+                intArrayOf(0x8C0E1118.toInt(), 0xCC0C0E14.toInt(), 0xF00B0D12.toInt())
+            )
+            visibility = View.GONE
+        }
+        frame.addView(veil, FrameLayout.LayoutParams(MATCH, MATCH))
         val root = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
-            background = ui.backdrop()
             setPadding(dp(28), dp(18), dp(28), dp(8))
             // takes initial focus so the keyboard does not pop up over the grid
             isFocusableInTouchMode = true
@@ -238,6 +260,23 @@ class MainActivity : Activity() {
             },
             LinearLayout.LayoutParams(0, WRAP, 1f)
         )
+        genreBox = ui.text("", 14f, Pal.TEXT).apply {
+            gravity = Gravity.CENTER_VERTICAL
+            minHeight = dp(40)
+            maxWidth = dp(240)
+            maxLines = 1
+            ellipsize = TextUtils.TruncateAt.END
+            setPadding(dp(14), 0, dp(10), 0)
+            background = ui.round(Pal.CARD, 14)
+            setCompoundDrawablesRelative(null, null, ui.icon(Ic.CHEVRON, Pal.DIM, 16), null)
+            compoundDrawablePadding = dp(8)
+            isClickable = true
+            isFocusable = true
+            setOnClickListener { showGenres() }
+            ui.hover(this, Pal.CARD, Pal.CARD_HI, 14)
+            visibility = View.GONE
+        }
+        tabBar.addView(genreBox, LinearLayout.LayoutParams(WRAP, WRAP).apply { leftMargin = dp(8) })
         tabBar.addView(ui.iconButton(Ic.PLUS, s(R.string.new_folder), size = 40, plain = true) {
             prompt(s(R.string.new_folder), "") { name ->
                 Store.addFolder(name)
@@ -581,7 +620,9 @@ class MainActivity : Activity() {
 
         buildTabs(folders)
         buildFilterRow()
+        buildGenreBox()
         buildHero()
+        buildWallpaper()
 
         (grid.adapter as BaseAdapter).notifyDataSetChanged()
         empty.text = when {
@@ -611,7 +652,27 @@ class MainActivity : Activity() {
         add("hidden", s(R.string.tab_hidden))
     }
 
-    private fun filtersActive() = inst != "all" || mark.isNotEmpty() || genre.isNotEmpty()
+    /** The filters that live in the filter sheet; the genre has its own dropdown. */
+    private fun filtersActive() = inst != "all" || mark.isNotEmpty()
+
+    private fun buildGenreBox() {
+        genreBox.text = genre.ifEmpty { s(R.string.all_genres) }
+        genreBox.setTextColor(if (genre.isEmpty()) Pal.TEXT else Pal.ACCENT_HI)
+        genreBox.visibility = if (genreCounts.isEmpty() && genre.isEmpty()) View.GONE else View.VISIBLE
+    }
+
+    /** The genres of what is on screen, most common first, as a list dropping from the box. */
+    private fun showGenres() {
+        val order = compareByDescending<Map.Entry<String, Int>> { it.value }.thenBy { it.key }
+        val names = genreCounts.entries.sortedWith(order)
+        val items = ArrayList<Kit.Item>()
+        items.add(Kit.Item(null, s(R.string.all_genres), checked = genre.isEmpty()))
+        for ((g, n) in names) items.add(Kit.Item(null, "$g · $n", checked = g == genre))
+        ui.dropdown(genreBox, items) { i ->
+            genre = if (i == 0) "" else names[i - 1].key
+            refresh()
+        }
+    }
 
     /** The funnel button, and one small removable label per filter that is switched on. */
     private fun buildFilterRow() {
@@ -633,7 +694,6 @@ class MainActivity : Activity() {
             "no" -> add(s(R.string.f_not_installed)) { setInstall("all") }
         }
         MARKS.firstOrNull { it.id == mark }?.let { m -> add(s(m.title)) { mark = "" } }
-        if (genre.isNotEmpty()) add(genre) { genre = "" }
         if (filterRow.childCount == 0 && Owned.busy.isNotEmpty() && Owned.time == 0L && !Owned.denied) {
             filterRow.addView(ui.text(s(R.string.scanning), 13f, Pal.DIM).apply { setPadding(dp(4), dp(8), 0, dp(8)) })
         }
@@ -658,7 +718,6 @@ class MainActivity : Activity() {
                         pick {
                             setInstall("all")
                             mark = ""
-                            genre = ""
                         }
                     },
                     LinearLayout.LayoutParams(MATCH, WRAP)
@@ -686,16 +745,6 @@ class MainActivity : Activity() {
                 twoColumns(body, markCounts.map { (m, n) ->
                     ui.row(null, m.ic, s(m.title), value = n.toString(), tint = m.color, checked = mark == m.id) {
                         pick { mark = if (mark == m.id) "" else m.id }
-                    }
-                })
-            }
-
-            if (genreCounts.isNotEmpty()) {
-                ui.section(body, s(R.string.f_genres))
-                val order = compareByDescending<Map.Entry<String, Int>> { it.value }.thenBy { it.key }
-                twoColumns(body, genreCounts.entries.sortedWith(order).map { (g, n) ->
-                    ui.row(null, null, g, value = n.toString(), checked = genre == g) {
-                        pick { genre = if (genre == g) "" else g }
                     }
                 })
             }
@@ -738,6 +787,33 @@ class MainActivity : Activity() {
                 refresh()
             }
         }
+    }
+
+    // ------------------------------------------------------------ wallpaper
+
+    /** The cover behind the whole screen: the game the user picked, else the one played most. */
+    private fun buildWallpaper() {
+        val games = all.filter { !it.isSystem && it.hasCover && it.pkg !in hidden }
+        val chosen = if (!Store.wallpaperOn) null else {
+            val own = Store.wallpaper
+            games.firstOrNull { it.pkg == own }
+                ?: games.filter { !it.notInstalled && it.playTime > 0 }.maxByOrNull { it.playTime }
+                ?: games.filter { !it.notInstalled && it.lastUsed > 0 }.maxByOrNull { it.lastUsed }
+        }
+        val bitmap = (chosen?.icon as? BitmapDrawable)?.bitmap
+        val key = if (chosen == null || bitmap == null) "" else "${chosen.pkg}:${bitmap.generationId}"
+        if (key == wallKey) return
+        wallKey = key
+        if (bitmap == null) {
+            wallpaper.setImageDrawable(null)
+            wallpaper.visibility = View.GONE
+            veil.visibility = View.GONE
+            return
+        }
+        // a tiny copy stretched over the panel is a soft blur by itself; newer systems smooth it further
+        wallpaper.setImageBitmap(android.graphics.Bitmap.createScaledBitmap(bitmap, 40, 40, true))
+        wallpaper.visibility = View.VISIBLE
+        veil.visibility = View.VISIBLE
     }
 
     // ----------------------------------------------------------------- hero
@@ -999,10 +1075,19 @@ class MainActivity : Activity() {
             isFocusable = false
             setOnClickListener { v -> (v.tag as? String)?.let(onClick) }
         }
+        /** Says on hover what a small sign on the cover means. */
+        fun explain(v: View, title: String) = v.setOnHoverListener { x, e ->
+            when (e.actionMasked) {
+                MotionEvent.ACTION_HOVER_ENTER -> ui.showTip(x, title)
+                MotionEvent.ACTION_HOVER_EXIT -> ui.hideTip()
+            }
+            true
+        }
         val star = corner { pkg ->
             Store.toggleFavorite(pkg)
             refresh()
         }
+        explain(star, s(R.string.favorite))
         val more = corner { pkg ->
             all.firstOrNull { it.pkg == pkg }?.let { showDetails(it) }
         }.apply {
@@ -1017,6 +1102,7 @@ class MainActivity : Activity() {
                 setPadding(p, p, p, p)
                 background = ui.oval(m.color)
                 visibility = View.GONE
+                explain(this, s(m.title))
             }
         }
         val badgeRow = LinearLayout(this).apply {
@@ -1029,6 +1115,7 @@ class MainActivity : Activity() {
             setPadding(p, p, p, p)
             background = ui.oval(Pal.ACCENT)
             visibility = View.GONE
+            explain(this, s(R.string.tip_absent))
         }
         val box = FrameLayout(this).apply {
             addView(icon, FrameLayout.LayoutParams(size, size))
@@ -1370,6 +1457,14 @@ class MainActivity : Activity() {
                     }
                 }
             }
+            if (a.hasCover) {
+                val isWall = Store.wallpaper == a.pkg
+                act(Ic.IMAGE, s(if (isWall) R.string.act_wallpaper_auto else R.string.act_wallpaper)) {
+                    Store.wallpaper = if (isWall) "" else a.pkg
+                    Store.wallpaperOn = true
+                    refresh()
+                }
+            }
             act(Ic.EDIT, s(R.string.rename)) {
                 prompt(s(R.string.rename_title), label(a), allowEmpty = true) { name ->
                     val default = a.storeName.ifEmpty { a.sysLabel }
@@ -1525,6 +1620,10 @@ class MainActivity : Activity() {
             ui.row(body, Ic.GLOBE, s(R.string.set_language), value = langName) {
                 d.dismiss()
                 chooseLanguage()
+            }
+            ui.toggle(body, Ic.IMAGE, s(R.string.opt_wallpaper), Store.wallpaperOn) {
+                Store.wallpaperOn = it
+                refresh()
             }
             var size: Kit.Row? = null
             size = ui.row(body, Ic.GRID, s(R.string.set_tile), value = tileSizeName()) {

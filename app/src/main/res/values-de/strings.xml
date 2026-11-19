@@ -169,6 +169,11 @@
     <string name="reset_pins">Eigene Anordnung zurücksetzen</string>
     <string name="pl_note">Das Headset zählt die Spielzeit erst seit %s</string>
 
+    <string name="act_wallpaper">Als Hintergrund verwenden</string>
+    <string name="act_wallpaper_auto">Hintergrund automatisch wählen</string>
+    <string name="opt_wallpaper">Hintergrund aus einem Spielcover</string>
+    <string name="tip_absent">Nicht installiert</string>
+
     <string name="g_action">Action</string>
     <string name="g_adventure">Abenteuer</string>
     <string name="g_arcade">Arcade</string>

@@ -169,6 +169,11 @@
     <string name="reset_pins">Réinitialiser mon ordre</string>
     <string name="pl_note">Le casque ne compte le temps de jeu que depuis le %s</string>
 
+    <string name="act_wallpaper">Utiliser comme fond</string>
+    <string name="act_wallpaper_auto">Fond automatique</string>
+    <string name="opt_wallpaper">Fond à partir d\'une jaquette</string>
+    <string name="tip_absent">Non installé</string>
+
     <string name="g_action">Action</string>
     <string name="g_adventure">Aventure</string>
     <string name="g_arcade">Arcade</string>

@@ -23,6 +23,7 @@ import android.widget.EditText
 import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.LinearLayout
+import android.widget.PopupWindow
 import android.widget.ScrollView
 import android.widget.TextView
 import java.util.Locale
@@ -75,7 +76,7 @@ object Lang {
 enum class Ic {
     PLAY, DOWNLOAD, STAR, STAR_LINE, MORE, BAG, FOLDER, TROPHY, SAD, FLASK, CLOCK, MOVE, EDIT,
     EYE, EYE_OFF, INFO, TRASH, SLIDERS, SORT, SEARCH, CHECK, CLOSE, PLUS, REFRESH, GLOBE, POWER,
-    SWAP, GRID, IMAGE, TARGET, LIST, OPEN, CHART, OK_CIRCLE, GEAR, BELL, CAMERA, BOLT, PEOPLE, USER, FUNNEL,
+    SWAP, GRID, IMAGE, TARGET, LIST, OPEN, CHART, OK_CIRCLE, GEAR, BELL, CAMERA, BOLT, PEOPLE, USER, FUNNEL, SWITCH, CHEVRON,
 }
 
 /** Line icons drawn in code on a 24-unit grid, so they stay sharp at any size and in any colour. */
@@ -302,15 +303,28 @@ class Icon(private val kind: Ic, color: Int) : Drawable() {
                 c.l(18f, 19f, 18f, 14.5f)
             }
             Ic.GEAR -> {
-                c.drawCircle(12f, 12f, 2.8f, line)
-                c.drawCircle(12f, 12f, 6.4f, line)
+                // eight teeth: each rises from the rim, runs flat and comes back down
+                path.rewind()
                 for (k in 0 until 8) {
-                    val a = Math.toRadians(k * 45.0)
-                    val cx = cos(a).toFloat()
-                    val sy = sin(a).toFloat()
-                    c.l(12f + 6.4f * cx, 12f + 6.4f * sy, 12f + 9.2f * cx, 12f + 9.2f * sy)
+                    val mid = k * 45.0
+                    val pts = arrayOf(mid - 17 to 7.0, mid - 10 to 9.6, mid + 10 to 9.6, mid + 17 to 7.0)
+                    for ((i, pt) in pts.withIndex()) {
+                        val a = Math.toRadians(pt.first)
+                        val x = 12f + (pt.second * cos(a)).toFloat()
+                        val y = 12f + (pt.second * sin(a)).toFloat()
+                        if (k == 0 && i == 0) path.moveTo(x, y) else path.lineTo(x, y)
+                    }
                 }
+                path.close()
+                c.drawPath(path, line)
+                c.drawCircle(12f, 12f, 3f, line)
             }
+            Ic.SWITCH -> {
+                box.set(2.5f, 7f, 21.5f, 17f)
+                c.drawRoundRect(box, 5f, 5f, line)
+                c.drawCircle(16.5f, 12f, 2.4f, fill)
+            }
+            Ic.CHEVRON -> c.poly(line, false, 6.5f, 9.5f, 12f, 15f, 17.5f, 9.5f)
             Ic.BELL -> {
                 path.rewind()
                 path.moveTo(6f, 17f)
@@ -502,6 +516,44 @@ class Kit(val c: Context) {
             }
             layoutParams = LinearLayout.LayoutParams(dp(size), dp(size)).apply { leftMargin = dp(8) }
         }
+    }
+
+    /** A list that drops down right under [anchor]; one item is picked and it closes. */
+    fun dropdown(anchor: View, items: List<Item>, width: Int = 300, onPick: (Int) -> Unit) {
+        val rows = LinearLayout(c).apply {
+            orientation = LinearLayout.VERTICAL
+            setPadding(dp(8), dp(8), dp(8), dp(4))
+        }
+        val panel = ScrollView(c).apply {
+            background = round(0xFF1D2230.toInt(), 20)
+            clipToOutline = true
+            isVerticalScrollBarEnabled = false
+            addView(rows)
+        }
+        val height = minOf(items.size * 50 + 12, 470)
+        val pop = PopupWindow(panel, dp(width), dp(height), true)
+        pop.setBackgroundDrawable(ColorDrawable(0))
+        pop.elevation = dp(12).toFloat()
+        items.forEachIndexed { i, it ->
+            val normal = if (it.checked) Pal.CARD_HI else 0
+            rows.addView(
+                text(it.title, 15f, if (it.checked) Pal.ACCENT_HI else Pal.TEXT, bold = it.checked).apply {
+                    gravity = Gravity.CENTER_VERTICAL
+                    setPadding(dp(14), 0, dp(14), 0)
+                    background = round(normal, 14)
+                    isClickable = true
+                    isFocusable = true
+                    setOnClickListener { _ ->
+                        pop.dismiss()
+                        onPick(i)
+                    }
+                    hover(this, normal, Pal.CARD_HI, 14)
+                },
+                LinearLayout.LayoutParams(match, dp(46)).apply { bottomMargin = dp(4) }
+            )
+        }
+        // right edges aligned: the box usually sits near the right side of the screen
+        pop.showAsDropDown(anchor, minOf(0, anchor.width - dp(width)), dp(6))
     }
 
     /** A plain-text tab; the selected one is brighter and underlined. */

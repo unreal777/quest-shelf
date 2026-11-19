@@ -60,6 +60,16 @@ object Store {
         get() = p.getBoolean("fetchMeta", true)
         set(v) = p.edit().putBoolean("fetchMeta", v).apply()
 
+    /** Whether a blurred game cover is drawn behind the whole screen. */
+    var wallpaperOn: Boolean
+        get() = p.getBoolean("wallpaperOn", true)
+        set(v) = p.edit().putBoolean("wallpaperOn", v).apply()
+
+    /** Package whose cover is the background, "" = the most played game. */
+    var wallpaper: String
+        get() = p.getString("wallpaper", "") ?: ""
+        set(v) = p.edit().putString("wallpaper", v).apply()
+
     /** UI language code, "" = follow the headset. */
     var lang: String
         get() = p.getString("lang", "") ?: ""

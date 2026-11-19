@@ -169,6 +169,11 @@
     <string name="reset_pins">Сбросить свои перестановки</string>
     <string name="pl_note">Шлем считает время в играх только с %s</string>
 
+    <string name="act_wallpaper">Сделать фоном</string>
+    <string name="act_wallpaper_auto">Фон выбирать автоматически</string>
+    <string name="opt_wallpaper">Фон из обложки игры</string>
+    <string name="tip_absent">Не установлено</string>
+
     <string name="g_action">Экшен</string>
     <string name="g_adventure">Приключения</string>
     <string name="g_arcade">Аркады</string>
