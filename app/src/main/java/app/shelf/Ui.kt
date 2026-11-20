@@ -84,7 +84,7 @@ object Lang {
 enum class Ic {
     PLAY, DOWNLOAD, STAR, STAR_LINE, MORE, BAG, FOLDER, TROPHY, SAD, FLASK, CLOCK, MOVE, EDIT,
     EYE, EYE_OFF, INFO, TRASH, SLIDERS, SORT, SEARCH, CHECK, CLOSE, PLUS, REFRESH, GLOBE, POWER,
-    SWAP, GRID, IMAGE, SPARK, PLAY_LINE, TARGET, LIST, OPEN, CHART, OK_CIRCLE, GEAR, BELL, CAMERA, BOLT, PEOPLE, USER, FUNNEL, SWITCH, CHEVRON,
+    SWAP, GRID, IMAGE, SPARK, PLAY_LINE, TARGET, LIST, OPEN, CHART, OK_CIRCLE, GEAR, BELL, CAMERA, BOLT, PEOPLE, USER, FUNNEL, SWITCH, CHEVRON, HEADSET,
 }
 
 /** Line icons drawn in code on a 24-unit grid, so they stay sharp at any size and in any colour. */
@@ -370,6 +370,14 @@ class Icon(private val kind: Ic, color: Int) : Drawable() {
             Ic.OK_CIRCLE -> {
                 c.drawCircle(12f, 12f, 9f, line)
                 c.poly(line, false, 8f, 12.3f, 11f, 15.3f, 16.2f, 9.2f)
+            }
+            // a headset seen from the front: the visor with a notch for the nose
+            Ic.HEADSET -> {
+                c.poly(
+                    line, true,
+                    5.5f, 7.5f, 18.5f, 7.5f, 21f, 9.5f, 21f, 15f, 18.5f, 17f,
+                    14.5f, 17f, 13f, 14.5f, 11f, 14.5f, 9.5f, 17f, 5.5f, 17f, 3f, 15f, 3f, 9.5f
+                )
             }
         }
         c.restore()

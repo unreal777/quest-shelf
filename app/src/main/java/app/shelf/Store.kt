@@ -65,6 +65,21 @@ object Store {
         get() = p.getBoolean("intercept", true)
         set(v) = p.edit().putBoolean("intercept", v).apply()
 
+    /** Replacing Meta's library is paused until this moment (0 = not paused). */
+    var pauseUntil: Long
+        get() = p.getLong("pauseUntil", 0L)
+        set(v) = p.edit().putLong("pauseUntil", v).apply()
+
+    /** The pause was started by the launcher itself because the replacement kept misfiring. */
+    var pausedBySafeMode: Boolean
+        get() = p.getBoolean("pausedBySafeMode", false)
+        set(v) = p.edit().putBoolean("pausedBySafeMode", v).apply()
+
+    fun paused() = pauseUntil > System.currentTimeMillis()
+
+    /** Whether the stock library is to be replaced right now: switched on and not paused. */
+    fun interceptNow() = intercept && !paused()
+
     /** Look up names, genres and covers of store apps online. */
     var fetchMeta: Boolean
         get() = p.getBoolean("fetchMeta", true)
@@ -89,6 +104,11 @@ object Store {
     var lang: String
         get() = p.getString("lang", "") ?: ""
         set(v) = p.edit().putString("lang", v).apply()
+
+    /** A game that has not been played for this many days is "forgotten". */
+    var idleDays: Int
+        get() = p.getInt("idleDays", 30)
+        set(v) = p.edit().putInt("idleDays", v).apply()
 
     /** all | yes (installed only) | no (not installed only) */
     var installFilter: String
@@ -258,6 +278,66 @@ object Store {
     fun addTrigger(t: Trigger) {
         val l = triggers()
         if (l.none { it.key() == t.key() }) setTriggers(l + t)
+    }
+
+    // ---- backup -----------------------------------------------------------
+
+    /** Settings that belong to this headset or this moment, not to the user: left out of a backup. */
+    private val NOT_BACKED_UP = setOf(
+        "setupSeen", "setupHushed", "libraryTitle", "triggers", "pauseUntil", "pausedBySafeMode",
+    )
+
+    /** Everything the user has set up (favorites, folders, order, marks, options) as one JSON text. */
+    fun exportJson(): String {
+        val values = JSONObject()
+        for ((k, v) in p.all) {
+            if (k in NOT_BACKED_UP) continue
+            val o = JSONObject()
+            when (v) {
+                is Boolean -> o.put("t", "b").put("v", v)
+                is Int -> o.put("t", "i").put("v", v)
+                is Long -> o.put("t", "l").put("v", v)
+                is Float -> o.put("t", "f").put("v", v.toDouble())
+                is String -> o.put("t", "s").put("v", v)
+                is Set<*> -> o.put("t", "set").put("v", JSONArray(v.map { it.toString() }))
+                else -> continue
+            }
+            values.put(k, o)
+        }
+        return JSONObject().put("app", "shelf").put("format", 1).put("values", values).toString(1)
+    }
+
+    /** Puts a backup made by [exportJson] back. False when the text is not one of ours. */
+    fun importJson(text: String): Boolean {
+        val values = try {
+            val root = JSONObject(text)
+            if (root.optString("app") != "shelf" || root.optInt("format", 0) != 1) return false
+            root.getJSONObject("values")
+        } catch (_: Exception) {
+            return false
+        }
+        val e = p.edit()
+        try {
+            for (k in values.keys()) {
+                if (k in NOT_BACKED_UP) continue
+                val o = values.getJSONObject(k)
+                when (o.getString("t")) {
+                    "b" -> e.putBoolean(k, o.getBoolean("v"))
+                    "i" -> e.putInt(k, o.getInt("v"))
+                    "l" -> e.putLong(k, o.getLong("v"))
+                    "f" -> e.putFloat(k, o.getDouble("v").toFloat())
+                    "s" -> e.putString(k, o.getString("v"))
+                    "set" -> {
+                        val a = o.getJSONArray("v")
+                        e.putStringSet(k, HashSet<String>().also { s -> for (i in 0 until a.length()) s.add(a.getString(i)) })
+                    }
+                }
+            }
+        } catch (_: Exception) {
+            return false
+        }
+        e.apply()
+        return true
     }
 
     // ---- json helpers -----------------------------------------------------

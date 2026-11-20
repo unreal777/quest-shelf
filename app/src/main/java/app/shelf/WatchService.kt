@@ -31,6 +31,11 @@ class WatchService : AccessibilityService() {
     companion object {
         private const val TAG = "Shelf"
         private const val LOG_SIZE = 120
+
+        // safe mode: this many replacements within this time count as a misfire
+        private const val SAFE_FIRES = 6
+        private const val SAFE_WINDOW_MS = 20_000L
+        private const val SAFE_PAUSE_MS = 10 * 60_000L
         // Not panels of the desktop: the shell's bars and dialogs, and Meta's menu with its library,
         // which shows up for a moment whenever the desktop is left without a single panel.
         private val SHELL_CHROME = setOf(
@@ -246,7 +251,7 @@ class WatchService : AccessibilityService() {
             return
         }
 
-        if (Store.intercept && Store.triggers().any { it.matches(ev) }) {
+        if (Store.interceptNow() && Store.triggers().any { it.matches(ev) }) {
             fire("trigger ${ev.key()}")
         }
     }
@@ -295,7 +300,7 @@ class WatchService : AccessibilityService() {
             }
         }
         // active only while the stock-library trigger is still in the user's list
-        if (appeared && Store.intercept && Store.triggers().any { it.key() == Store.STOCK_LIBRARY.key() }) {
+        if (appeared && Store.interceptNow() && Store.triggers().any { it.key() == Store.STOCK_LIBRARY.key() }) {
             handler.post { fire("library window appeared") }
         }
     }
@@ -414,8 +419,23 @@ class WatchService : AccessibilityService() {
         }
         if (now - lastFire < 1500) return
         lastFire = now
+        // Safe mode: a replacement that fires again and again within seconds is a misfire (for
+        // example after a system update changed the library's window). It is switched off for a
+        // while, so that the stock library stays reachable, and the launcher says so.
+        fires.addLast(now)
+        while (fires.isNotEmpty() && now - fires.first() > SAFE_WINDOW_MS) fires.removeFirst()
+        if (fires.size >= SAFE_FIRES) {
+            fires.clear()
+            Store.pausedBySafeMode = true
+            Store.pauseUntil = now + SAFE_PAUSE_MS
+            Log.w(TAG, "replacement fired $SAFE_FIRES times within ${SAFE_WINDOW_MS / 1000} s: paused (safe mode)")
+            return
+        }
         openLauncher(this, why)
     }
+
+    /** When the replacement last fired (main thread only). */
+    private val fires = ArrayDeque<Long>()
 
     override fun onInterrupt() {}
 

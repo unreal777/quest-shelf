@@ -49,6 +49,8 @@ class AppEntry(
     val removed: Long = 0,
     /** Turned up in the library lately and has not been on the headset since. */
     val fresh: Boolean = false,
+    /** Bytes the app takes on the headset (code and data), 0 = not known (yet). */
+    val size: Long = 0,
 ) {
     val demo: Boolean get() = Meta.isDemo(storeName.ifEmpty { sysLabel })
 }
@@ -248,6 +250,51 @@ object Apps {
         }
     }
 
+    // ---- how much room each app takes -----------------------------------------------------
+    // Asking the system takes a moment per app, so it is done in the background after the list is
+    // shown, kept for a while, and the list is told when the numbers are in.
+
+    private val sizes = java.util.concurrent.ConcurrentHashMap<String, Pair<Long, Long>>()
+    private val measuring = java.util.concurrent.atomic.AtomicBoolean(false)
+
+    /** Called (on a background thread) when new sizes have been measured. */
+    @Volatile
+    var onSizes: (() -> Unit)? = null
+
+    private const val SIZE_KEEP_MS = 30L * 60_000
+
+    private fun sizeKnown(pkg: String): Long = sizes[pkg]?.second ?: 0L
+
+    /** Measures the apps whose size is unknown or old; reading it needs the usage-access permission. */
+    private fun measureSizes(c: Context, pkgs: List<String>) {
+        if (pkgs.isEmpty() || !hasUsageAccess(c) || !measuring.compareAndSet(false, true)) return
+        val app = c.applicationContext
+        Thread {
+            try {
+                val stats = app.getSystemService(android.app.usage.StorageStatsManager::class.java)
+                val me = Process.myUserHandle()
+                val now = System.currentTimeMillis()
+                var got = 0
+                for (pkg in pkgs) {
+                    val bytes = try {
+                        val s = stats.queryStatsForPackage(android.os.storage.StorageManager.UUID_DEFAULT, pkg, me)
+                        s.appBytes + s.dataBytes
+                    } catch (e: Exception) {
+                        0L
+                    }
+                    sizes[pkg] = Pair(now, bytes)
+                    if (bytes > 0) got++
+                }
+                Log.i("Shelf", "sizes measured: $got of ${pkgs.size} apps")
+                onSizes?.invoke()
+            } catch (e: Throwable) {
+                Log.w("Shelf", "sizes could not be measured", e)
+            } finally {
+                measuring.set(false)
+            }
+        }.start()
+    }
+
     /** Heavy: call from a background thread. */
     @Synchronized
     fun load(c: Context): List<AppEntry> {
@@ -325,9 +372,14 @@ object Apps {
                     lastUsed = maxOf(own[pkg] ?: 0L, u?.lastTimeUsed ?: 0L),
                     playTime = u?.totalTimeInForeground ?: 0L,
                     storeId = meta?.storeId ?: "",
+                    size = if (isSystem) 0L else sizeKnown(pkg),
                 )
             )
         }
+
+        // sizes that are not known yet, or are old, are measured in the background
+        val stale = System.currentTimeMillis() - SIZE_KEEP_MS
+        measureSizes(c, out.filter { !it.isSystem && (sizes[it.pkg]?.first ?: 0L) < stale }.map { it.pkg })
 
         // remember play time while the app is still here; note when it disappears
         val now = System.currentTimeMillis()

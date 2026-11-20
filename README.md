@@ -14,7 +14,12 @@ Shelf is an unofficial tool. It is not made or endorsed by Meta.
 - Favorites, folders, genres, search, hidden apps.
 - Marks worked out by itself: new in the library, never launched, demo, barely played. Your own
   marks: completed, did not like.
+- A "Forgotten" segment: installed games not played for a number of days you choose (30 by
+  default), biggest first with their size on the tile, so it is clear what to uninstall to free
+  space. Sorting by size is also in the sort menu. Both need usage access.
 - A bar for the game that is running underneath, with "back to the game" and "quit the game".
+- A button in the bottom row that does what a double tap on the headset does: switches the home
+  between mixed reality (windows over passthrough) and Meta's virtual environment.
 - A row of buttons for Meta's own screens: its library, settings, store, notifications, browser and so on.
 - The cover of your most played (or chosen) game as the background.
 - English, Russian, German, Spanish, French.
@@ -34,7 +39,24 @@ No computer is needed after the APK is on the headset. If a headset has no such 
 `install.ps1` does the same from a PC over USB (it needs `adb`).
 
 To go back to Meta's library, switch the service off on the same Accessibility screen, or
-uninstall Shelf. Nothing in the system is changed for good.
+uninstall Shelf. Nothing in the system is changed for good. Inside Shelf, Settings → Behavior
+has a switch for replacing Meta's library and a "pause for an hour" row that opens Meta's own
+library meanwhile. If the replacement ever fires again and again within seconds (for example
+after a system update), Shelf pauses it by itself for ten minutes and says so on the main screen.
+
+## What the accessibility service does
+
+Android only lets an app start by itself when the headset boots, or react to the Meta button,
+through an accessibility service. Shelf's service watches two things: that the window of Meta's
+library has opened (it then opens Shelf instead), and which windows are open next to Shelf (to
+put Shelf back in the middle when another window closes). It does not read the content of other
+apps, does not type or tap for you, and sends nothing anywhere. The source is in this repository.
+
+## Backing up your settings
+
+Settings → Data → "Save settings to a file" writes your favorites, folders, tile order, marks and
+options as a small JSON file (through the system file picker); "Load settings from a file" puts
+them back. Use it before reinstalling Shelf or moving to another headset.
 
 ## What it sends over the network
 

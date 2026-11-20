@@ -237,4 +237,25 @@
     <string name="setup_reminder">Shelf пока не открывается вместо библиотеки Meta</string>
     <string name="setup_open">Настроить</string>
     <string name="setup_hide">Больше не напоминать</string>
+    <string name="paused_note">Замена библиотеки Meta приостановлена до %s</string>
+    <string name="paused_safe">Замена библиотеки Meta срабатывала слишком часто и приостановлена до %s</string>
+    <string name="paused_resume">Включить</string>
+    <string name="paused_resume_row">Снова заменять библиотеку Meta</string>
+    <string name="pause_row">Приостановить замену на час</string>
+    <string name="pause_sub">Откроется библиотека Meta; Shelf вернётся сам</string>
+    <string name="act_export">Сохранить настройки в файл</string>
+    <string name="export_sub">Избранное, папки, порядок, пометки и параметры</string>
+    <string name="act_import">Загрузить настройки из файла</string>
+    <string name="import_sub">Файл, сохранённый раньше в Shelf</string>
+    <string name="t_no_picker">В этом шлеме нет выбора файлов</string>
+    <string name="t_exported">Настройки сохранены</string>
+    <string name="t_export_failed">Не удалось сохранить файл</string>
+    <string name="t_imported">Настройки загружены</string>
+    <string name="t_import_failed">Это не файл настроек Shelf</string>
+    <string name="f_idle">Забытые</string>
+    <string name="sort_size">Размер: сначала большие</string>
+    <string name="set_idle">Игра считается забытой через</string>
+    <string name="idle_days">%d дн.</string>
+    <string name="sys_mr">Mixed Reality / окружение</string>
+    <string name="t_mr_failed">Не удалось связаться с системой Meta для переключения прохода камер</string>
 </resources>

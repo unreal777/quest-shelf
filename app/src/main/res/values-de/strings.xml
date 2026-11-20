@@ -237,4 +237,25 @@
     <string name="setup_reminder">Shelf öffnet sich noch nicht anstelle der Meta-Bibliothek</string>
     <string name="setup_open">Einrichten</string>
     <string name="setup_hide">Nicht mehr erinnern</string>
+    <string name="paused_note">Das Ersetzen der Meta-Bibliothek ist bis %s pausiert</string>
+    <string name="paused_safe">Das Ersetzen der Meta-Bibliothek löste zu oft aus und ist bis %s pausiert</string>
+    <string name="paused_resume">Einschalten</string>
+    <string name="paused_resume_row">Meta-Bibliothek wieder ersetzen</string>
+    <string name="pause_row">Ersetzen für eine Stunde pausieren</string>
+    <string name="pause_sub">Öffnet die Bibliothek von Meta; Shelf kommt von selbst zurück</string>
+    <string name="act_export">Einstellungen in Datei speichern</string>
+    <string name="export_sub">Favoriten, Ordner, Reihenfolge, Markierungen und Optionen</string>
+    <string name="act_import">Einstellungen aus Datei laden</string>
+    <string name="import_sub">Eine zuvor von Shelf gespeicherte Datei</string>
+    <string name="t_no_picker">Dieses Headset hat keine Dateiauswahl</string>
+    <string name="t_exported">Einstellungen gespeichert</string>
+    <string name="t_export_failed">Datei konnte nicht gespeichert werden</string>
+    <string name="t_imported">Einstellungen geladen</string>
+    <string name="t_import_failed">Das ist keine Shelf-Einstellungsdatei</string>
+    <string name="f_idle">Vergessen</string>
+    <string name="sort_size">Größe: größte zuerst</string>
+    <string name="set_idle">Ein Spiel gilt als vergessen nach</string>
+    <string name="idle_days">%d Tagen</string>
+    <string name="sys_mr">Mixed Reality / Umgebung</string>
+    <string name="t_mr_failed">Das Meta-System für die Durchsicht war nicht erreichbar</string>
 </resources>

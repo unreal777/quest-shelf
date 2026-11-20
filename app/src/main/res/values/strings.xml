@@ -238,4 +238,25 @@
     <string name="setup_reminder">Shelf does not open instead of Meta\'s library yet</string>
     <string name="setup_open">Set up</string>
     <string name="setup_hide">Do not remind me</string>
+    <string name="paused_note">Replacing Meta\'s library is paused until %s</string>
+    <string name="paused_safe">Replacing Meta\'s library fired too often and was paused until %s</string>
+    <string name="paused_resume">Turn on</string>
+    <string name="paused_resume_row">Resume replacing Meta\'s library</string>
+    <string name="pause_row">Pause replacing for an hour</string>
+    <string name="pause_sub">Opens Meta\'s own library; Shelf comes back by itself</string>
+    <string name="act_export">Save settings to a file</string>
+    <string name="export_sub">Favorites, folders, order, marks and options</string>
+    <string name="act_import">Load settings from a file</string>
+    <string name="import_sub">A file saved earlier by Shelf</string>
+    <string name="t_no_picker">This headset has no file picker</string>
+    <string name="t_exported">Settings saved</string>
+    <string name="t_export_failed">Could not save the file</string>
+    <string name="t_imported">Settings loaded</string>
+    <string name="t_import_failed">This is not a Shelf settings file</string>
+    <string name="f_idle">Forgotten</string>
+    <string name="sort_size">Size: largest first</string>
+    <string name="set_idle">A game is forgotten after</string>
+    <string name="idle_days">%d days</string>
+    <string name="sys_mr">Mixed reality / environment</string>
+    <string name="t_mr_failed">Could not reach Meta\'s system for switching passthrough</string>
 </resources>

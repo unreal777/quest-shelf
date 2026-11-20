@@ -237,4 +237,25 @@
     <string name="setup_reminder">Shelf ne s\'ouvre pas encore à la place de la bibliothèque Meta</string>
     <string name="setup_open">Configurer</string>
     <string name="setup_hide">Ne plus rappeler</string>
+    <string name="paused_note">Le remplacement de la bibliothèque Meta est en pause jusqu\'à %s</string>
+    <string name="paused_safe">Le remplacement de la bibliothèque Meta s\'est déclenché trop souvent et est en pause jusqu\'à %s</string>
+    <string name="paused_resume">Activer</string>
+    <string name="paused_resume_row">Remplacer de nouveau la bibliothèque Meta</string>
+    <string name="pause_row">Mettre le remplacement en pause une heure</string>
+    <string name="pause_sub">Ouvre la bibliothèque de Meta ; Shelf revient tout seul</string>
+    <string name="act_export">Enregistrer les réglages dans un fichier</string>
+    <string name="export_sub">Favoris, dossiers, ordre, marques et options</string>
+    <string name="act_import">Charger les réglages depuis un fichier</string>
+    <string name="import_sub">Un fichier enregistré plus tôt par Shelf</string>
+    <string name="t_no_picker">Ce casque n\'a pas de sélecteur de fichiers</string>
+    <string name="t_exported">Réglages enregistrés</string>
+    <string name="t_export_failed">Impossible d\'enregistrer le fichier</string>
+    <string name="t_imported">Réglages chargés</string>
+    <string name="t_import_failed">Ce n\'est pas un fichier de réglages Shelf</string>
+    <string name="f_idle">Oubliés</string>
+    <string name="sort_size">Taille : les plus gros d\'abord</string>
+    <string name="set_idle">Un jeu est oublié après</string>
+    <string name="idle_days">%d jours</string>
+    <string name="sys_mr">Réalité mixte / environnement</string>
+    <string name="t_mr_failed">Impossible de joindre le système Meta pour changer le passthrough</string>
 </resources>

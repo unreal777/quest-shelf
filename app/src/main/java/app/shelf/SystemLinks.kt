@@ -23,6 +23,35 @@ object SystemLinks {
     private const val SHELL = "com.oculus.vrshell"
     private const val HOME_PAGE = "https://www.google.com/"
 
+    const val PASSTHROUGH = "mr"
+    private const val PT_ACTION = "com.oculus.vrshell.intent.action.UPDATE_FULL_PASSTHROUGH"
+    private const val PT_RECEIVER = "com.oculus.vrshell.ShellControlBroadcastReceiver"
+
+    private fun passthroughIntent() = Intent(PT_ACTION)
+        .setClassName(SHELL, PT_RECEIVER)
+        // The shell wants to know where the request comes from; these are the names it accepts
+        // (found by trying: ActionButton, DoubleTap, KeyboardShortcut, QuickActionMenu, QuickControl,
+        // VoiceGaze). Without one it drops the request. "DoubleTap" is what a double tap on the
+        // headset sends: in the home world the shell answers it by switching between the mixed
+        // reality home and the virtual environment (seen in its log: TravelController.ToggleHomeWorld),
+        // inside an app by full passthrough. The other names always mean full passthrough, which hides
+        // the menus.
+        .putExtra("toggle_point", "DoubleTap")
+
+    /** Whether the shell has a receiver for the passthrough request (it is not a documented interface). */
+    private fun canTogglePassthrough(pm: PackageManager) =
+        pm.queryBroadcastReceivers(passthroughIntent(), 0).isNotEmpty()
+
+    /** Asks the shell to switch passthrough, the same way its own quick action does. */
+    fun togglePassthrough(c: Context): Boolean = try {
+        c.sendBroadcast(passthroughIntent())
+        Log.i("Shelf", "passthrough toggle requested")
+        true
+    } catch (e: Exception) {
+        Log.w("Shelf", "passthrough toggle failed", e)
+        false
+    }
+
     /**
      * A "system deep link", the way Meta documents it: the shell is started with the name of
      * one of its built-in apps (systemux://browser, systemux://store, ...) and opens that app
@@ -76,6 +105,9 @@ object SystemLinks {
 
         // always offered: when it cannot be started from here, the next Meta-button press shows it
         out.add(SysLink(LIBRARY, R.string.sys_library, Ic.GRID, screen(pm, NAVIGATOR, Store.STOCK_LIBRARY.cls)))
+        // not a screen: a request to the shell to switch passthrough (mixed reality) on or off;
+        // offered only where the shell has the receiver for it
+        if (canTogglePassthrough(pm)) out.add(SysLink(PASSTHROUGH, R.string.sys_mr, Ic.HEADSET, null))
         add(
             "settings", R.string.sys_settings, Ic.GEAR,
             app(pm, "com.oculus.panelapp.settings") ?: action(pm, Settings.ACTION_SETTINGS)

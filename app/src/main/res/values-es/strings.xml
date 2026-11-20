@@ -237,4 +237,25 @@
     <string name="setup_reminder">Shelf aún no se abre en lugar de la biblioteca de Meta</string>
     <string name="setup_open">Configurar</string>
     <string name="setup_hide">No recordar más</string>
+    <string name="paused_note">El reemplazo de la biblioteca de Meta está en pausa hasta las %s</string>
+    <string name="paused_safe">El reemplazo de la biblioteca de Meta se activó demasiadas veces y está en pausa hasta las %s</string>
+    <string name="paused_resume">Activar</string>
+    <string name="paused_resume_row">Volver a reemplazar la biblioteca de Meta</string>
+    <string name="pause_row">Pausar el reemplazo una hora</string>
+    <string name="pause_sub">Abre la biblioteca de Meta; Shelf vuelve solo</string>
+    <string name="act_export">Guardar ajustes en un archivo</string>
+    <string name="export_sub">Favoritos, carpetas, orden, marcas y opciones</string>
+    <string name="act_import">Cargar ajustes desde un archivo</string>
+    <string name="import_sub">Un archivo guardado antes por Shelf</string>
+    <string name="t_no_picker">Este visor no tiene selector de archivos</string>
+    <string name="t_exported">Ajustes guardados</string>
+    <string name="t_export_failed">No se pudo guardar el archivo</string>
+    <string name="t_imported">Ajustes cargados</string>
+    <string name="t_import_failed">Este no es un archivo de ajustes de Shelf</string>
+    <string name="f_idle">Olvidados</string>
+    <string name="sort_size">Tamaño: mayores primero</string>
+    <string name="set_idle">Un juego se considera olvidado tras</string>
+    <string name="idle_days">%d días</string>
+    <string name="sys_mr">Realidad mixta / entorno</string>
+    <string name="t_mr_failed">No se pudo contactar con el sistema de Meta para cambiar el passthrough</string>
 </resources>

@@ -2,9 +2,11 @@ package app.shelf
 
 import android.app.Dialog
 import android.app.Activity
+import android.content.BroadcastReceiver
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.graphics.Outline
 import android.graphics.RenderEffect
 import android.graphics.Shader
@@ -116,6 +118,7 @@ open class MainActivity : Activity() {
             "installed" to R.string.sort_installed,
             "updated" to R.string.sort_updated,
             "time" to R.string.sort_time,
+            "size" to R.string.sort_size,
         )
 
         /** Catalog spellings that mean the same genre (keys are lower case with "_" for the rest). */
@@ -145,6 +148,7 @@ open class MainActivity : Activity() {
         val badges: List<ImageView>,
         val absent: ImageView,
         val label: TextView,
+        val sizeTag: TextView,
     ) {
         var pkg = ""
         var fav = false
@@ -218,6 +222,7 @@ open class MainActivity : Activity() {
     private var countAll = 0
     private var countYes = 0
     private var countNo = 0
+    private var countIdle = 0
     private var markCounts: Map<Mark, Int> = emptyMap()
     private var genreCounts: Map<String, Int> = emptyMap()
     private var funnelState = -1
@@ -446,19 +451,46 @@ open class MainActivity : Activity() {
 
         // covers, names and the owned list arrive in the background; redraw at most every 2 s
         val later = {
-            handler.post {
-                if (!reloadQueued) {
-                    reloadQueued = true
-                    handler.postDelayed({
-                        reloadQueued = false
-                        reload()
-                    }, 2000)
-                }
-            }
+            reloadSoon(2000)
             Unit
         }
         Meta.onUpdate = later
         Owned.onUpdate = later
+        Apps.onSizes = later
+
+        // A game installed or removed in another window (Meta's store, SideQuest) used to show up
+        // here only after the launcher was started anew: now the system says so, and the list is read again.
+        val filter = IntentFilter().apply {
+            addAction(Intent.ACTION_PACKAGE_ADDED)
+            addAction(Intent.ACTION_PACKAGE_REMOVED)
+            addAction(Intent.ACTION_PACKAGE_REPLACED)
+            addDataScheme("package")
+        }
+        registerReceiver(packageReceiver, filter)
+        packageReceiverOn = true
+    }
+
+    private val packageReceiver = object : BroadcastReceiver() {
+        override fun onReceive(c: Context, i: Intent) {
+            val pkg = i.data?.schemeSpecificPart
+            android.util.Log.i("Shelf", "${i.action?.substringAfterLast('.')}: $pkg")
+            // the owned list and the covers of a new game are looked at again as well
+            reloadSoon(700)
+        }
+    }
+    private var packageReceiverOn = false
+
+    /** Reads the app list again after [ms], once however many reasons come in meanwhile. */
+    private fun reloadSoon(ms: Long) {
+        handler.post {
+            if (!reloadQueued) {
+                reloadQueued = true
+                handler.postDelayed({
+                    reloadQueued = false
+                    reload()
+                }, ms)
+            }
+        }
     }
 
     override fun onResume() {
@@ -497,6 +529,14 @@ open class MainActivity : Activity() {
         if (Panel.current === this) Panel.current = null
         Meta.onUpdate = null
         Owned.onUpdate = null
+        Apps.onSizes = null
+        if (packageReceiverOn) {
+            packageReceiverOn = false
+            try {
+                unregisterReceiver(packageReceiver)
+            } catch (_: Exception) {
+            }
+        }
         handler.removeCallbacksAndMessages(null)
         super.onDestroy()
     }
@@ -551,6 +591,7 @@ open class MainActivity : Activity() {
             "installed" -> compareByDescending<AppEntry> { it.installed }.then(byName)
             "updated" -> compareByDescending<AppEntry> { it.updated }.then(byName)
             "time" -> compareByDescending<AppEntry> { it.playTime }.then(byName)
+            "size" -> compareByDescending<AppEntry> { it.size }.then(byName)
             // last played first; a game that was just installed counts as fresh too
             else -> compareByDescending<AppEntry> { maxOf(it.lastUsed, it.installed) }.then(byName)
         }
@@ -647,8 +688,16 @@ open class MainActivity : Activity() {
 
     private fun effectiveSort(): String {
         val s = Store.sort
-        return if (SORTS.none { it.first == s } || (s == "time" && !usageAccess)) "recent" else s
+        return if (SORTS.none { it.first == s } || ((s == "time" || s == "size") && !usageAccess)) "recent" else s
     }
+
+    /** Installed, and not played (nor installed) for longer than the user's number of days. */
+    private fun isIdle(a: AppEntry): Boolean {
+        if (a.isSystem || a.notInstalled || !usageAccess) return false
+        return System.currentTimeMillis() - maxOf(a.lastUsed, a.installed) > Store.idleDays * DAY_MS
+    }
+
+    private fun sizeText(bytes: Long) = android.text.format.Formatter.formatShortFileSize(this, bytes)
 
     private fun refresh() {
         favs = Store.favorites()
@@ -697,9 +746,11 @@ open class MainActivity : Activity() {
         countAll = pool.size
         countYes = pool.count { !it.notInstalled }
         countNo = countAll - countYes
+        countIdle = pool.count { isIdle(it) }
         val byInst = when (inst) {
             "yes" -> pool.filter { !it.notInstalled }
             "no" -> pool.filter { it.notInstalled }
+            "idle" -> pool.filter { isIdle(it) }
             else -> pool
         }
 
@@ -716,9 +767,15 @@ open class MainActivity : Activity() {
         if (genre.isNotEmpty() && genre !in genres) genre = ""
         genreCounts = genres
 
-        shown = byMark
-            .filter { genre.isEmpty() || genre in genresOf(it) }
-            .sortedWith(compareBy<AppEntry> { ranks[it.pkg] ?: Int.MAX_VALUE }.then(comparator(sort)))
+        val wanted = byMark.filter { genre.isEmpty() || genre in genresOf(it) }
+        shown = if (inst == "idle") {
+            // what to clear first: the biggest on top, whatever the sort and the hand-placed tiles say
+            wanted.sortedWith(
+                compareByDescending<AppEntry> { it.size }.thenBy { label(it).lowercase() }
+            )
+        } else {
+            wanted.sortedWith(compareBy<AppEntry> { ranks[it.pkg] ?: Int.MAX_VALUE }.then(comparator(sort)))
+        }
 
         buildTabs(folders)
         buildFilterRow()
@@ -802,15 +859,21 @@ open class MainActivity : Activity() {
             }
         }
         filterRow.removeAllViews()
-        if (countNo > 0 || inst != "all") {
-            val ids = listOf("all", "yes", "no")
+        if (countNo > 0 || countIdle > 0 || inst != "all") {
+            val ids = ArrayList(listOf("all", "yes", "no"))
+            val names = arrayListOf(
+                "${s(R.string.f_all)} · $countAll",
+                "${s(R.string.f_installed)} · $countYes",
+                "${s(R.string.f_not_installed)} · $countNo",
+            )
+            // the forgotten ones need the play statistics; the segment is there when there are any
+            if (countIdle > 0 || inst == "idle") {
+                ids.add("idle")
+                names.add("${s(R.string.f_idle)} · $countIdle")
+            }
             filterRow.addView(
                 ui.segment(
-                    listOf(
-                        "${s(R.string.f_all)} · $countAll",
-                        "${s(R.string.f_installed)} · $countYes",
-                        "${s(R.string.f_not_installed)} · $countNo",
-                    ),
+                    names,
                     ids.indexOf(inst).coerceAtLeast(0),
                     compact = true
                 ) { i ->
@@ -836,7 +899,8 @@ open class MainActivity : Activity() {
 
     private fun setInstall(id: String) {
         inst = id
-        Store.installFilter = id
+        // "forgotten" is a look at the moment, not a way to open the launcher every time
+        Store.installFilter = if (id == "idle") "all" else id
     }
 
     private fun showFilters() {
@@ -1287,6 +1351,10 @@ open class MainActivity : Activity() {
             h.absent.visibility = if (a.notInstalled) View.VISIBLE else View.GONE
             h.label.text = label(a)
             h.label.setTextColor(if (a.notInstalled) Pal.DIM else Pal.TEXT)
+            // how much room it takes: where that is what the list is about
+            val showSize = (inst == "idle" || effectiveSort() == "size") && a.size > 0
+            h.sizeTag.visibility = if (showSize) View.VISIBLE else View.GONE
+            if (showSize) h.sizeTag.text = sizeText(a.size)
             MARKS.forEachIndexed { i, m ->
                 h.badges[i].visibility = if (hasMark(a, m.id)) View.VISIBLE else View.GONE
             }
@@ -1376,8 +1444,21 @@ open class MainActivity : Activity() {
             visibility = View.GONE
             explain(this, s(R.string.tip_absent))
         }
+        val sizeTag = ui.text("", 13f).apply {
+            setTextColor(Pal.TEXT)
+            background = ui.round(0xCC000000.toInt(), 12)
+            setPadding(dp(8), dp(3), dp(8), dp(3))
+            visibility = View.GONE
+        }
         val box = FrameLayout(this).apply {
             addView(icon, FrameLayout.LayoutParams(size, size))
+            addView(
+                sizeTag,
+                FrameLayout.LayoutParams(WRAP, WRAP, Gravity.BOTTOM or Gravity.END).apply {
+                    rightMargin = dp(7)
+                    bottomMargin = dp(7)
+                }
+            )
             addView(
                 more,
                 FrameLayout.LayoutParams(dp(40), dp(40), Gravity.TOP or Gravity.START).apply {
@@ -1414,7 +1495,7 @@ open class MainActivity : Activity() {
             minLines = 2
             ellipsize = TextUtils.TruncateAt.END
         }
-        val holder = Holder(box, icon, star, more, badges, absent, label)
+        val holder = Holder(box, icon, star, more, badges, absent, label, sizeTag)
         return HoverBox(this).apply {
             orientation = LinearLayout.VERTICAL
             gravity = Gravity.CENTER_HORIZONTAL
@@ -1469,6 +1550,10 @@ open class MainActivity : Activity() {
     }
 
     private fun openLink(link: SysLink) {
+        if (link.id == SystemLinks.PASSTHROUGH) {
+            if (!SystemLinks.togglePassthrough(this)) toast(s(R.string.t_mr_failed))
+            return
+        }
         val intent = link.intent
         if (link.id != SystemLinks.LIBRARY) {
             if (intent != null) open(intent, link.fallback)
@@ -1780,7 +1865,7 @@ open class MainActivity : Activity() {
 
     private fun showSortMenu() {
         val current = effectiveSort()
-        val offered = SORTS.filter { it.first != "time" || usageAccess }
+        val offered = SORTS.filter { (it.first != "time" && it.first != "size") || usageAccess }
         val items = ArrayList<Kit.Item>()
         for (o in offered) items.add(Kit.Item(null, s(o.second), checked = o.first == current))
         // tiles moved by hand stay put under any sort; this lets them go again
@@ -1831,13 +1916,123 @@ open class MainActivity : Activity() {
         Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse("package:$packageName")
     )
 
+    private fun resumeReplacing() {
+        Store.pauseUntil = 0L
+        Store.pausedBySafeMode = false
+        refresh()
+    }
+
+    /** Replacing Meta's library is switched off for an hour, and Meta's own library is opened. */
+    private fun pauseReplacing() {
+        Store.pauseUntil = System.currentTimeMillis() + 60 * 60_000L
+        Store.pausedBySafeMode = false
+        refresh()
+        links.firstOrNull { it.id == SystemLinks.LIBRARY }?.let { openLink(it) }
+    }
+
+    // ---- backup of the user's settings: a file chosen through the system's own picker
+
+    private val REQ_EXPORT = 7101
+    private val REQ_IMPORT = 7102
+
+    private fun exportSettings() {
+        val stamp = SimpleDateFormat("yyyy-MM-dd", java.util.Locale.US).format(Date())
+        try {
+            startActivityForResult(
+                Intent(Intent.ACTION_CREATE_DOCUMENT)
+                    .addCategory(Intent.CATEGORY_OPENABLE)
+                    .setType("application/json")
+                    .putExtra(Intent.EXTRA_TITLE, "shelf-settings-$stamp.json"),
+                REQ_EXPORT
+            )
+        } catch (e: Exception) {
+            toast(s(R.string.t_no_picker))
+        }
+    }
+
+    private fun importSettings() {
+        try {
+            startActivityForResult(
+                Intent(Intent.ACTION_OPEN_DOCUMENT)
+                    .addCategory(Intent.CATEGORY_OPENABLE)
+                    .setType("*/*"),
+                REQ_IMPORT
+            )
+        } catch (e: Exception) {
+            toast(s(R.string.t_no_picker))
+        }
+    }
+
+    @Deprecated("the platform way, without AndroidX")
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        val uri = data?.data
+        if (resultCode != Activity.RESULT_OK || uri == null) return
+        when (requestCode) {
+            REQ_EXPORT -> thread {
+                val ok = try {
+                    contentResolver.openOutputStream(uri, "wt")!!.use { it.write(Store.exportJson().toByteArray(Charsets.UTF_8)) }
+                    true
+                } catch (e: Exception) {
+                    android.util.Log.w("Shelf", "export failed", e)
+                    false
+                }
+                runOnUiThread { toast(s(if (ok) R.string.t_exported else R.string.t_export_failed)) }
+            }
+            REQ_IMPORT -> thread {
+                val ok = try {
+                    val text = contentResolver.openInputStream(uri)!!.use { it.readBytes() }.toString(Charsets.UTF_8)
+                    Store.importJson(text)
+                } catch (e: Exception) {
+                    android.util.Log.w("Shelf", "import failed", e)
+                    false
+                }
+                runOnUiThread {
+                    if (ok) {
+                        toast(s(R.string.t_imported))
+                        // every list, tile size and language is read anew
+                        recreate()
+                    } else {
+                        toast(s(R.string.t_import_failed))
+                    }
+                }
+            }
+        }
+    }
+
     /** The one line on the main screen that says the launcher is not doing its main job yet. */
     private fun buildSetupReminder() {
+        val paused = Store.paused()
+        if (!paused && Store.pausedBySafeMode) Store.pausedBySafeMode = false
         val needed = !serviceEnabled() && !Store.setupHushed
-        val key = if (needed) "on" else ""
+        val key = if (needed) "on" else if (paused) "paused:${Store.pauseUntil}:${Store.pausedBySafeMode}" else ""
         if (key == setupKey) return
         setupKey = key
         setupBox.removeAllViews()
+        if (!needed && paused) {
+            // the replacement is switched off for a while: say so, and offer the way back
+            val row = LinearLayout(this).apply {
+                orientation = LinearLayout.HORIZONTAL
+                gravity = Gravity.CENTER_VERTICAL
+                background = ui.round(Pal.GLASS, 24)
+                setPadding(dp(16), dp(8), dp(8), dp(8))
+            }
+            row.addView(
+                ImageView(this).apply { setImageDrawable(Icon(Ic.INFO, Pal.GOLD)) },
+                LinearLayout.LayoutParams(dp(24), dp(24)).apply { rightMargin = dp(12) }
+            )
+            val until = SimpleDateFormat("HH:mm", java.util.Locale.getDefault()).format(Date(Store.pauseUntil))
+            row.addView(
+                ui.text(
+                    s(if (Store.pausedBySafeMode) R.string.paused_safe else R.string.paused_note, until), 15f
+                ),
+                LinearLayout.LayoutParams(0, WRAP, 1f)
+            )
+            row.addView(ui.chip(s(R.string.paused_resume), true, small = true) { resumeReplacing() })
+            setupBox.addView(row, FrameLayout.LayoutParams(MATCH, WRAP))
+            setupBox.visibility = View.VISIBLE
+            return
+        }
         if (!needed) {
             setupBox.visibility = View.GONE
             return
@@ -2002,6 +2197,17 @@ open class MainActivity : Activity() {
             ui.toggle(body, Ic.POWER, s(R.string.opt_boot), Store.autostartBoot) { Store.autostartBoot = it }
             ui.toggle(body, Ic.EYE, s(R.string.opt_wake), Store.autostartWake) { Store.autostartWake = it }
             ui.toggle(body, Ic.SWAP, s(R.string.opt_intercept), Store.intercept) { Store.intercept = it }
+            if (Store.paused()) {
+                ui.row(body, Ic.SWAP, s(R.string.paused_resume_row)) {
+                    resumeReplacing()
+                    d.dismiss()
+                }
+            } else {
+                ui.row(body, Ic.SWAP, s(R.string.pause_row), sub = s(R.string.pause_sub)) {
+                    d.dismiss()
+                    pauseReplacing()
+                }
+            }
             ui.toggle(body, Ic.TARGET, s(R.string.opt_recenter), Store.recenter) { Store.recenter = it }
             ui.toggle(body, Ic.DOWNLOAD, s(R.string.opt_meta), Store.fetchMeta) {
                 Store.fetchMeta = it
@@ -2019,6 +2225,17 @@ open class MainActivity : Activity() {
                 Store.wallpaperOn = it
                 refresh()
             }
+            var idle: Kit.Row? = null
+            idle = ui.row(body, Ic.CLOCK, s(R.string.set_idle), value = s(R.string.idle_days, Store.idleDays)) {
+                Store.idleDays = when (Store.idleDays) {
+                    14 -> 30
+                    30 -> 60
+                    60 -> 90
+                    else -> 14
+                }
+                refresh()
+                idle?.value?.text = s(R.string.idle_days, Store.idleDays)
+            }
             var size: Kit.Row? = null
             size = ui.row(body, Ic.GRID, s(R.string.set_tile), value = tileSizeName()) {
                 Store.tile = when (Store.tile) {
@@ -2033,6 +2250,14 @@ open class MainActivity : Activity() {
 
             // ---- data
             ui.section(body, s(R.string.sec_data))
+            ui.row(body, Ic.DOWNLOAD, s(R.string.act_export), sub = s(R.string.export_sub)) {
+                d.dismiss()
+                exportSettings()
+            }
+            ui.row(body, Ic.OPEN, s(R.string.act_import), sub = s(R.string.import_sub)) {
+                d.dismiss()
+                importSettings()
+            }
             ui.row(body, Ic.REFRESH, s(R.string.act_rescan)) {
                 Owned.scan()
                 toast(s(R.string.t_rescan))
