@@ -8,6 +8,15 @@ you own but have not installed next to the ones you have.
 
 Quest Shelf is an unofficial tool. It is not made or endorsed by Meta.
 
+![Quest Shelf on Quest 3: the library window](docs/img/screenshot-1-library.jpg)
+
+| | |
+|---|---|
+| ![Not installed view](docs/img/screenshot-2-not-installed.jpg) | ![Forgotten games with sizes](docs/img/screenshot-3-forgotten.jpg) |
+| Games you own but have not installed | Forgotten games, with sizes |
+| ![The running game bar](docs/img/screenshot-4-running.jpg) | ![Game menu](docs/img/screenshot-6-details.jpg) |
+| A bar for the running game | One menu per game |
+
 ## What it does
 
 - Opens on the menu button in place of Meta's library, and after the headset starts.

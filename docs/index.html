@@ -8,6 +8,8 @@
 <meta property="og:title" content="Quest Shelf – a better app library for Meta Quest">
 <meta property="og:description" content="Press the Meta button, get a better library. Installed and owned games together, folders, sorting, forgotten games with sizes. Free, MIT.">
 <meta property="og:type" content="website">
+<meta property="og:image" content="https://unreal777.github.io/quest-shelf/img/screenshot-1-library.jpg">
+<meta name="twitter:card" content="summary_large_image">
 <meta name="theme-color" content="#14171f">
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
 <style>
@@ -69,44 +71,16 @@
   .cta { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; }
   .meta { margin-top: 18px; color: var(--dim); font-size: 14px; }
 
-  /* mockup of the library window */
-  .stage { padding: 34px 0 70px; perspective: 1400px; }
-  .window { width: min(980px, 100%); margin: 0 auto; border-radius: 28px; padding: 26px 28px 30px; position: relative; overflow: hidden;
-    background: linear-gradient(160deg, #3b2c3f 0%, #2a2d3d 45%, #1f3340 100%); border: 1px solid var(--line);
-    box-shadow: 0 40px 120px rgba(0,0,0,.55), 0 0 0 1px rgba(255,255,255,.04) inset; transform: rotateX(3deg); }
-  .window::before { content: ""; position: absolute; inset: 0; background: radial-gradient(ellipse at 30% 40%, rgba(255,160,100,.18), transparent 60%); }
-  .window > * { position: relative; }
-  .topbar { display: flex; gap: 10px; align-items: center; }
-  .search { flex: 1; height: 40px; border-radius: 999px; background: rgba(255,255,255,.10); color: rgba(255,255,255,.55); display: flex; align-items: center; padding: 0 18px; font-size: 14px; }
-  .circ { width: 40px; height: 40px; border-radius: 50%; background: rgba(255,255,255,.10); display: grid; place-items: center; }
-  .circ svg { width: 18px; height: 18px; stroke: #fff; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; opacity: .85; }
-  .tabs { display: flex; gap: 22px; margin: 18px 4px 12px; font-size: 14px; color: rgba(255,255,255,.65); }
-  .tabs .on { color: #fff; border-bottom: 2px solid #fff; padding-bottom: 3px; }
-  .seg { display: inline-flex; background: rgba(255,255,255,.10); border-radius: 999px; padding: 3px; font-size: 13px; margin-bottom: 14px; }
-  .seg span { padding: 6px 14px; border-radius: 999px; color: rgba(255,255,255,.75); white-space: nowrap; }
-  .seg .on { background: #f1f2f6; color: #14171f; font-weight: 600; }
-  .cont { display: flex; gap: 18px; align-items: center; background: rgba(0,0,0,.28); border-radius: 22px; padding: 14px 18px; margin-bottom: 18px; }
-  .cont .art { width: 82px; height: 82px; border-radius: 18px; flex: none; }
-  .cont small { letter-spacing: 2px; font-size: 11px; color: rgba(255,255,255,.6); }
-  .cont h4 { margin: 2px 0 8px; font-size: 20px; }
-  .cont .play { display: inline-block; background: #f1f2f6; color: #14171f; font-weight: 650; font-size: 14px; padding: 7px 18px; border-radius: 999px; }
-  .running { display: flex; align-items: center; gap: 14px; border: 2px solid var(--green); border-radius: 20px; padding: 10px 16px; margin-bottom: 18px; background: rgba(0,0,0,.30); font-size: 14px; }
-  .running .art { width: 40px; height: 40px; border-radius: 10px; }
-  .running b { display: block; }
-  .running small { color: var(--green); letter-spacing: 1.5px; font-size: 10.5px; }
-  .running .sp { flex: 1; }
-  .chip { padding: 7px 14px; border-radius: 999px; font-size: 13px; background: rgba(255,255,255,.14); white-space: nowrap; }
-  .chip.l { background: #f1f2f6; color: #14171f; font-weight: 600; }
-  .grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 16px; }
-  .tile { text-align: center; font-size: 12.5px; color: rgba(255,255,255,.9); }
-  .tile .art { aspect-ratio: 1; border-radius: 18px; margin-bottom: 8px; position: relative; display: grid; place-items: center; font-weight: 800; font-size: 22px; color: rgba(255,255,255,.92); text-shadow: 0 2px 8px rgba(0,0,0,.35); }
-  .tile .badge { position: absolute; left: 7px; bottom: 7px; width: 22px; height: 22px; border-radius: 50%; display: grid; place-items: center; font-size: 12px; font-weight: 700; color: #14171f; text-shadow: none; }
-  .tile .size { position: absolute; right: 7px; bottom: 7px; background: rgba(0,0,0,.72); border-radius: 12px; font-size: 11px; font-weight: 600; padding: 2px 8px; text-shadow: none; }
-  .tile.off .art { opacity: .42; }
-  .dock { margin: 22px auto 0; width: max-content; max-width: 100%; display: flex; gap: 22px; padding: 11px 24px; border-radius: 999px; background: rgba(40,40,46,.78); }
-  .dock i { width: 18px; height: 18px; border: 2px solid rgba(255,255,255,.85); border-radius: 6px; display: block; opacity: .85; }
-  .dock i:nth-child(3n) { border-radius: 50%; }
-  .note { text-align: center; color: var(--dim); font-size: 14px; margin-top: 22px; }
+  /* screenshots */
+  .stage { padding: 34px 0 70px; }
+  .shot { margin: 0; }
+  .shot img { display: block; width: 100%; height: auto; border-radius: 22px; border: 1px solid var(--line); box-shadow: 0 30px 90px rgba(0,0,0,.5); background: var(--bg2); }
+  .shot figcaption { color: var(--dim); font-size: 15px; margin-top: 12px; text-align: center; }
+  .shot figcaption b { color: var(--text); font-weight: 600; }
+  .shot.big { width: min(1040px, 100%); margin: 0 auto; }
+  .shot.big img { border-radius: 28px; box-shadow: 0 40px 120px rgba(0,0,0,.6); }
+  .gallery { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 440px), 1fr)); gap: 30px 24px; }
+  .gallery .shot figcaption { text-align: left; }
 
   /* sections */
   section { padding: 78px 0; }
@@ -143,11 +117,7 @@
 
   @media (max-width: 860px) {
     nav .links a:not(.btn) { display: none; }
-    .grid { grid-template-columns: repeat(3, 1fr); }
     .two { grid-template-columns: 1fr; }
-    .window { transform: none; padding: 18px; }
-    .tabs { gap: 14px; overflow: hidden; }
-    .running .chip:not(.l) { display: none; }
   }
   @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } .btn:hover { transform: none; } }
 </style>
@@ -163,6 +133,7 @@
     </a>
     <div class="links">
       <a href="#features">Features</a>
+      <a href="#screens">Screenshots</a>
       <a href="#install">Install</a>
       <a href="#privacy">Privacy</a>
       <a href="#faq">FAQ</a>
@@ -184,43 +155,11 @@
   <div class="meta">Version 1.0.1 · installs from SideQuest or with <code>adb</code> · no account, no ads, no analytics</div>
 </header>
 
-<div class="stage wrap" aria-label="Illustration of the Quest Shelf window">
-  <div class="window">
-    <div class="topbar">
-      <div class="search">⌕&nbsp; Search by name or genre</div>
-      <div class="circ"><svg viewBox="0 0 24 24"><path d="M4 5h16l-6 7.5V19l-4-2v-4.5z"/></svg></div>
-      <div class="circ"><svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h11M4 17h6"/></svg></div>
-      <div class="circ"><svg viewBox="0 0 24 24"><path d="M4 7h10M18 7h2M4 17h2M10 17h10"/><circle cx="16" cy="7" r="2"/><circle cx="8" cy="17" r="2"/></svg></div>
-    </div>
-    <div class="tabs"><span class="on">All</span><span>★ Favorites</span><span>Sideloaded</span><span>System</span><span>Hidden</span></div>
-    <div class="seg"><span>All · 269</span><span class="on">Installed · 75</span><span>Not installed · 194</span><span>Forgotten · 12</span></div>
-    <div class="cont">
-      <div class="art" style="background:linear-gradient(135deg,#b83b4b,#35142a)"></div>
-      <div><small>CONTINUE</small><h4>Space Raiders</h4><span class="play">▶ Play</span></div>
-    </div>
-    <div class="running">
-      <div class="art" style="background:linear-gradient(135deg,#2c8f7a,#16394a)"></div>
-      <div><small>● NOW RUNNING</small><b>Garden Defense VR</b></div>
-      <div class="sp"></div>
-      <span class="chip l">Back to the game</span><span class="chip">✕ Quit the game</span>
-    </div>
-    <div class="grid">
-      <div class="tile"><div class="art" style="background:linear-gradient(140deg,#e0a23a,#9b3d1f)">DW<span class="badge" style="background:var(--gold)">★</span></div>Dungeon Walkers</div>
-      <div class="tile"><div class="art" style="background:linear-gradient(140deg,#5b8bff,#2a3a8f)">NR<span class="badge" style="background:var(--green)">✦</span></div>Neon Rally</div>
-      <div class="tile"><div class="art" style="background:linear-gradient(140deg,#c94d6d,#521a3c)">SR</div>Space Raiders</div>
-      <div class="tile"><div class="art" style="background:linear-gradient(140deg,#4fb58a,#1c4e45)">GD</div>Garden Defense</div>
-      <div class="tile"><div class="art" style="background:linear-gradient(140deg,#8e6bd8,#33235f)">FD<span class="badge" style="background:var(--violet)">⚗</span></div>Frost Demo</div>
-      <div class="tile off"><div class="art" style="background:linear-gradient(140deg,#d8a65a,#6d3f1d)">TQ</div>Tower Quest</div>
-      <div class="tile"><div class="art" style="background:linear-gradient(140deg,#4aa3c9,#1a4260)">DF<span class="size">4.1 GB</span></div>Deep Fish</div>
-      <div class="tile"><div class="art" style="background:linear-gradient(140deg,#a3b84f,#3c4a1c)">RC<span class="size">2.7 GB</span></div>Rock Climb</div>
-      <div class="tile off"><div class="art" style="background:linear-gradient(140deg,#d86b8e,#5b1d33)">MB</div>Mirror Bay</div>
-      <div class="tile"><div class="art" style="background:linear-gradient(140deg,#6f7fa0,#262d44)">BF</div>Beat Forge</div>
-      <div class="tile"><div class="art" style="background:linear-gradient(140deg,#e07b53,#6a2c1a)">AR</div>Arena Run</div>
-      <div class="tile"><div class="art" style="background:linear-gradient(140deg,#52c0b4,#1b4a55)">SK</div>Sky Kit</div>
-    </div>
-    <div class="dock"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
-  </div>
-  <p class="note">An illustration, not a real library. Real screenshots are coming.</p>
+<div class="stage wrap">
+  <figure class="shot big">
+    <img src="img/screenshot-1-library.jpg" width="1440" height="810" alt="The Quest Shelf library window on Quest 3: continue card, most played games, a grid of covers">
+    <figcaption>Your whole library in one place, sorted by what you played last.</figcaption>
+  </figure>
 </div>
 
 <section id="features">
@@ -238,6 +177,21 @@
       <div class="card"><div class="ic" style="background:rgba(110,168,255,.16)">🌗</div><h3>Mixed reality button</h3><p>One button in the bottom row switches your home between mixed reality and Meta's virtual environment, like a double tap on the headset.</p></div>
       <div class="card"><div class="ic" style="background:rgba(243,201,105,.16)">🖼</div><h3>Looks like it belongs</h3><p>Neutral greys that match Meta's shell, with the cover of your most played game softly in the background.</p></div>
       <div class="card"><div class="ic" style="background:rgba(165,139,255,.16)">🌍</div><h3>Backup &amp; languages</h3><p>Save and load your settings as a file. English, Russian, German, Spanish and French.</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="screens">
+  <div class="wrap">
+    <div class="eyebrow">In action</div>
+    <h2>See it work</h2>
+    <p class="sub">Screenshots from a real Quest 3.</p>
+    <div class="gallery">
+      <figure class="shot"><img loading="lazy" src="img/screenshot-2-not-installed.jpg" width="1440" height="810" alt="The Not installed view: games you own, with a download mark and demo badges"><figcaption><b>Games you own but haven't installed</b> sit one tap away, with a download mark.</figcaption></figure>
+      <figure class="shot"><img loading="lazy" src="img/screenshot-3-forgotten.jpg" width="1440" height="810" alt="The Forgotten view: games not played for a month, with the room each one takes"><figcaption><b>Forgotten games, with sizes.</b> See what to uninstall to free up space.</figcaption></figure>
+      <figure class="shot"><img loading="lazy" src="img/screenshot-4-running.jpg" width="1440" height="810" alt="A green bar for the running game with Back to the game and Quit the game buttons"><figcaption><b>The running game gets a bar</b> with "Back to the game" and "Quit the game".</figcaption></figure>
+      <figure class="shot"><img loading="lazy" src="img/screenshot-5-genres.jpg" width="1440" height="810" alt="The genre list open, with counts per genre"><figcaption><b>Genres with counts,</b> search, and a filter for marks.</figcaption></figure>
+      <figure class="shot"><img loading="lazy" src="img/screenshot-6-details.jpg" width="1440" height="810" alt="A game's menu: launch, favorite, completed, didn't like, store page, folder, rename, hide"><figcaption><b>One menu per game:</b> favorite, completed, folder, rename, hide, store page.</figcaption></figure>
     </div>
   </div>
 </section>

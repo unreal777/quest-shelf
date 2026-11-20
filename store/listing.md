@@ -67,19 +67,18 @@ Free and open source (MIT).
 | Screenshots | 3–6, at least 1024×576, 16:9 | jpg or png | made on the headset |
 | Video (optional) | 16:9 | mov or avi | made on the headset |
 
-### Screenshots to take (in this order)
+### Screenshots (done)
 
-1. The main screen: a full library, sorted by last played, the "Continue" card visible.
-2. The "Installed / Not installed" switch with the not-installed side open (the owned games).
-3. The "Forgotten" view with sizes on the tiles.
-4. The "game is running" bar above the grid.
-5. The filter or genre menu open.
-6. (Optional) Settings.
+Cut from the demo recording, 1440x810 (16:9), in `docs/img/`:
 
-How to take them without your room in the picture: first press the Mixed Reality / environment
-button in Quest Shelf's bottom row so that Meta's virtual environment is behind the window; then use
-the headset's own screenshot. Use a library you do not mind showing (the cover art of paid games
-is fine, personal names and account details are not).
+1. `screenshot-1-library.jpg`: the main screen with the Continue card.
+2. `screenshot-2-not-installed.jpg`: games you own but have not installed.
+3. `screenshot-3-forgotten.jpg`: the Forgotten view with sizes.
+4. `screenshot-4-running.jpg`: the bar for the running game.
+5. `screenshot-5-genres.jpg`: the genre list.
+6. `screenshot-6-details.jpg`: a game's menu.
+
+For SideQuest use 1, 2, 3, 4 and 6 (3–6 screenshots are recommended). Upload the same files to itch.io.
 
 ### Video (30–60 seconds)
 
