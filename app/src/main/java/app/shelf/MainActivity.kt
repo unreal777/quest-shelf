@@ -2090,7 +2090,7 @@ open class MainActivity : Activity() {
                 if (!openSystemScreen(*accessibilityScreen())) toast(s(R.string.setup_no_screen))
             }
             if (!svcOk) {
-                note(s(R.string.setup_service_hint, "Shelf"))
+                note(s(R.string.setup_service_hint, "Quest Shelf"))
                 ui.row(body, Ic.INFO, s(R.string.setup_restricted), sub = s(R.string.setup_restricted_sub)) {
                     if (!openSystemScreen(*appDetails())) toast(s(R.string.setup_no_screen))
                 }

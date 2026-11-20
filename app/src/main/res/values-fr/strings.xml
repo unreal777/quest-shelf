@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="svc_label">Shelf : démarrage automatique et remplacement de la bibliothèque</string>
-    <string name="svc_desc">Ouvre Shelf au démarrage du casque et à la place de la bibliothèque d\'applications d\'origine. Il observe seulement quelle fenêtre système est au premier plan ; il ne lit et n\'envoie rien d\'autre.</string>
+    <string name="svc_label">Quest Shelf : démarrage automatique et remplacement de la bibliothèque</string>
+    <string name="svc_desc">Ouvre Quest Shelf au démarrage du casque et à la place de la bibliothèque d\'applications d\'origine. Il observe seulement quelle fenêtre système est au premier plan ; il ne lit et n\'envoie rien d\'autre.</string>
 
     <string name="search_hint">Rechercher par nom ou par genre</string>
     <string name="settings">Réglages</string>
@@ -128,14 +128,14 @@
     <string name="catalog_sub_date">Téléchargement de 120 Mo, pour les toutes dernières sorties · l\'actuel date du %s</string>
     <string name="t_catalog">Téléchargement du catalogue, quelques minutes</string>
     <string name="act_learn">Apprendre l\'interception</string>
-    <string name="learn_sub">10 secondes pour ouvrir la fenêtre que Shelf doit remplacer</string>
+    <string name="learn_sub">10 secondes pour ouvrir la fenêtre que Quest Shelf doit remplacer</string>
     <string name="act_triggers">Déclencheurs enregistrés</string>
     <string name="act_log">Journal des événements système</string>
     <string name="act_a11y">Réglages d\'accessibilité du système</string>
 
     <string name="t_no_service">Le service en arrière-plan ne tourne pas — lancez d\'abord install.ps1</string>
     <string name="t_learn">Vous avez 10 secondes : ouvrez la fenêtre comme d\'habitude</string>
-    <string name="learn_pick">Quel événement doit ouvrir Shelf ?</string>
+    <string name="learn_pick">Quel événement doit ouvrir Quest Shelf ?</string>
     <string name="t_log_empty">Le service en arrière-plan ne tourne pas — le journal est vide</string>
     <string name="log_title">Événements récents (touchez-en un pour en faire un déclencheur)</string>
     <string name="t_no_events">Aucun événement capté</string>
@@ -220,21 +220,21 @@
     <string name="g_stealth">Infiltration</string>
     <string name="g_combat">Affrontement</string>
     <string name="g_dancing">Danse</string>
-    <string name="setup_title">Configurer Shelf</string>
-    <string name="setup_intro">Shelf a besoin de deux choses qui s\'activent dans les réglages du casque. Chaque ligne ouvre le bon écran ; reviens ici ensuite.</string>
+    <string name="setup_title">Configurer Quest Shelf</string>
+    <string name="setup_intro">Quest Shelf a besoin de deux choses qui s\'activent dans les réglages du casque. Chaque ligne ouvre le bon écran ; reviens ici ensuite.</string>
     <string name="setup_go">Ouvrir</string>
     <string name="setup_service">S\'ouvrir à la place de la bibliothèque Meta</string>
-    <string name="setup_service_on">Activé. Shelf s\'ouvre avec le bouton menu et au démarrage du casque.</string>
-    <string name="setup_service_off">Désactivé. Tant que c\'est le cas, Shelf n\'est qu\'une app de plus dans la bibliothèque.</string>
-    <string name="setup_service_hint">Dans la liste, trouve « %s » et active-le. Android prévient que le service peut voir l\'écran : Shelf regarde seulement quelle fenêtre est devant.</string>
+    <string name="setup_service_on">Activé. Quest Shelf s\'ouvre avec le bouton menu et au démarrage du casque.</string>
+    <string name="setup_service_off">Désactivé. Tant que c\'est le cas, Quest Shelf n\'est qu\'une app de plus dans la bibliothèque.</string>
+    <string name="setup_service_hint">Dans la liste, trouve « %s » et active-le. Android prévient que le service peut voir l\'écran : Quest Shelf regarde seulement quelle fenêtre est devant.</string>
     <string name="setup_restricted">L\'interrupteur est grisé ?</string>
     <string name="setup_restricted_sub">Ouvre la page de l\'app, puis le menu ⋮ et « Autoriser les paramètres restreints », et réessaie.</string>
     <string name="setup_usage">Statistiques de jeu</string>
     <string name="setup_usage_on">Autorisé. « Derniers joués », le temps de jeu et le jeu en cours fonctionnent.</string>
-    <string name="setup_usage_off">Non autorisé. Dans la liste, trouve Shelf et autorise-le.</string>
-    <string name="setup_net_note">Pour obtenir une jaquette, Shelf la demande au service OculusDB (et à une source de secours sur GitHub) par le nom de paquet, le titre ou le numéro de boutique du jeu. Rien sur toi ni ton compte n\'est envoyé.</string>
+    <string name="setup_usage_off">Non autorisé. Dans la liste, trouve Quest Shelf et autorise-le.</string>
+    <string name="setup_net_note">Pour obtenir une jaquette, Quest Shelf la demande au service OculusDB (et à une source de secours sur GitHub) par le nom de paquet, le titre ou le numéro de boutique du jeu. Rien sur toi ni ton compte n\'est envoyé.</string>
     <string name="setup_no_screen">Ce casque n\'a pas cet écran. La méthode avec un ordinateur est dans le README.</string>
-    <string name="setup_reminder">Shelf ne s\'ouvre pas encore à la place de la bibliothèque Meta</string>
+    <string name="setup_reminder">Quest Shelf ne s\'ouvre pas encore à la place de la bibliothèque Meta</string>
     <string name="setup_open">Configurer</string>
     <string name="setup_hide">Ne plus rappeler</string>
     <string name="paused_note">Le remplacement de la bibliothèque Meta est en pause jusqu\'à %s</string>
@@ -242,16 +242,16 @@
     <string name="paused_resume">Activer</string>
     <string name="paused_resume_row">Remplacer de nouveau la bibliothèque Meta</string>
     <string name="pause_row">Mettre le remplacement en pause une heure</string>
-    <string name="pause_sub">Ouvre la bibliothèque de Meta ; Shelf revient tout seul</string>
+    <string name="pause_sub">Ouvre la bibliothèque de Meta ; Quest Shelf revient tout seul</string>
     <string name="act_export">Enregistrer les réglages dans un fichier</string>
     <string name="export_sub">Favoris, dossiers, ordre, marques et options</string>
     <string name="act_import">Charger les réglages depuis un fichier</string>
-    <string name="import_sub">Un fichier enregistré plus tôt par Shelf</string>
+    <string name="import_sub">Un fichier enregistré plus tôt par Quest Shelf</string>
     <string name="t_no_picker">Ce casque n\'a pas de sélecteur de fichiers</string>
     <string name="t_exported">Réglages enregistrés</string>
     <string name="t_export_failed">Impossible d\'enregistrer le fichier</string>
     <string name="t_imported">Réglages chargés</string>
-    <string name="t_import_failed">Ce n\'est pas un fichier de réglages Shelf</string>
+    <string name="t_import_failed">Ce n\'est pas un fichier de réglages Quest Shelf</string>
     <string name="f_idle">Oubliés</string>
     <string name="sort_size">Taille : les plus gros d\'abord</string>
     <string name="set_idle">Un jeu est oublié après</string>

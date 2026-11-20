@@ -5,11 +5,11 @@ images, video (no tables, no HTML).
 
 ## SideQuest
 
-**Title:** Shelf – app library
+**Title:** Quest Shelf – app library
 
 **Summary (one sentence):** A replacement for Meta's app library that sorts, searches and groups your games, with the ones you own but have not installed next to the ones you have.
 
-**Version code:** 3 (raise it with every release: that is what sends update notices to users)
+**Version code:** 4 (raise it with every release: that is what sends update notices to users)
 
 **Tags:** Utility, Launcher, Library, Tool
 
@@ -22,7 +22,7 @@ images, video (no tables, no HTML).
 **Description:**
 
 ```
-**Shelf opens where Meta's app library opens, and shows your games the way you want them.**
+**Quest Shelf opens where Meta's app library opens, and shows your games the way you want them.**
 
 Press the Meta button as usual: instead of the stock library you get a library that is sorted by what you played last, searchable, with folders and genres, and with your whole collection in one place.
 
@@ -41,7 +41,7 @@ Press the Meta button as usual: instead of the stock library you get a library t
 
 **Setup (a minute, no computer needed)**
 
-Install, open Shelf from "Unknown sources" and follow the short guide: it takes you to two system screens (Accessibility and Usage access) where you switch Shelf on. To go back to Meta's library, switch it off there, or use the pause button inside Shelf.
+Install, open Quest Shelf from "Unknown sources" and follow the short guide: it takes you to two system screens (Accessibility and Usage access) where you switch Quest Shelf on. To go back to Meta's library, switch it off there, or use the pause button inside Quest Shelf.
 
 **Privacy**
 
@@ -49,12 +49,12 @@ No account, no analytics. Covers and names are loaded from OculusDB (package nam
 
 **Good to know**
 
-Shelf relies on how Horizon OS behaves today, partly on things Meta does not document, so a system update can break something until Shelf is updated. Tested on Quest 3 with Horizon OS v209. It is an unofficial tool and not affiliated with Meta.
+Quest Shelf relies on how Horizon OS behaves today, partly on things Meta does not document, so a system update can break something until Quest Shelf is updated. Tested on Quest 3 with Horizon OS v209. It is an unofficial tool and not affiliated with Meta.
 
 Free and open source (MIT).
 ```
 
-**Changelog for 1.0.0:** First public release.
+**Changelog for 1.0.1:** The app is now called Quest Shelf. Nothing else changed from 1.0.0.
 
 **Links to add:** source code and issues on GitHub; (optional) donation link.
 
@@ -77,19 +77,19 @@ Free and open source (MIT).
 6. (Optional) Settings.
 
 How to take them without your room in the picture: first press the Mixed Reality / environment
-button in Shelf's bottom row so that Meta's virtual environment is behind the window; then use
+button in Quest Shelf's bottom row so that Meta's virtual environment is behind the window; then use
 the headset's own screenshot. Use a library you do not mind showing (the cover art of paid games
 is fine, personal names and account details are not).
 
 ### Video (30–60 seconds)
 
-Press the Meta button, Shelf opens in place of Meta's library, scroll, switch to "Not installed",
+Press the Meta button, Quest Shelf opens in place of Meta's library, scroll, switch to "Not installed",
 open "Forgotten", open a game, press the Meta button again, tap "quit the game". Voice or
 captions: "Press the Meta button, get a better library."
 
-## GitHub release (v1.0.0)
+## GitHub release (v1.0.1)
 
-**Tag:** v1.0.0   **Title:** Shelf 1.0.0   **File:** `Shelf-1.0.0.apk` (signed) and its SHA-256
+**Tag:** v1.0.1   **Title:** Quest Shelf 1.0.1   **File:** `QuestShelf-1.0.1.apk` (signed) and its SHA-256
 
 ```
 First public release.
@@ -98,14 +98,14 @@ A replacement for Meta's app library on Quest: installed and owned games togethe
 favorites, folders, genres, search, a view of forgotten games with sizes, a bar for the running
 game, a mixed reality / environment button, settings backup. Free, MIT.
 
-Install: enable developer mode, install the APK (SideQuest or `adb install`), open Shelf from
+Install: enable developer mode, install the APK (SideQuest or `adb install`), open Quest Shelf from
 "Unknown sources" and follow the short guide. See the README.
 Tested on Quest 3, Horizon OS v209.
 ```
 
 ## itch.io
 
-**Title:** Shelf – app library for Quest   **Kind:** Tools   **Pricing:** free (or "pay what you
+**Title:** Quest Shelf – app library for Quest   **Kind:** Tools   **Pricing:** free (or "pay what you
 want" with 0 minimum, for donations)   **Tags:** quest, meta-quest, launcher, utility, app library
 
 **Short description:** A better app library for Meta Quest: installed and owned games together,
@@ -119,7 +119,7 @@ Body: the SideQuest description above. Upload the same signed APK.
 
 ```
 Meta's library has no folders, no sorting by last played, and hides your sideloaded apps. I built
-Shelf: it opens when you press the Meta button, instead of the stock library.
+Quest Shelf: it opens when you press the Meta button, instead of the stock library.
 
 - installed + owned-but-not-installed games in one list
 - favorites, folders, genres, search

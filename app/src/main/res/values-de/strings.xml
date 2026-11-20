@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="svc_label">Shelf: Autostart und Ersatz der Bibliothek</string>
-    <string name="svc_desc">Öffnet Shelf nach dem Start des Headsets und anstelle der normalen App-Bibliothek. Beobachtet nur, welches Systemfenster gerade vorne ist; liest und sendet sonst nichts.</string>
+    <string name="svc_label">Quest Shelf: Autostart und Ersatz der Bibliothek</string>
+    <string name="svc_desc">Öffnet Quest Shelf nach dem Start des Headsets und anstelle der normalen App-Bibliothek. Beobachtet nur, welches Systemfenster gerade vorne ist; liest und sendet sonst nichts.</string>
 
     <string name="search_hint">Nach Name oder Genre suchen</string>
     <string name="settings">Einstellungen</string>
@@ -128,14 +128,14 @@
     <string name="catalog_sub_date">120 MB Download, für ganz neue Spiele · aktueller Stand vom %s</string>
     <string name="t_catalog">Katalog wird geladen, das dauert ein paar Minuten</string>
     <string name="act_learn">Abfangen anlernen</string>
-    <string name="learn_sub">10 Sekunden, um das Fenster zu öffnen, das Shelf ersetzen soll</string>
+    <string name="learn_sub">10 Sekunden, um das Fenster zu öffnen, das Quest Shelf ersetzen soll</string>
     <string name="act_triggers">Gespeicherte Auslöser</string>
     <string name="act_log">Systemereignisprotokoll</string>
     <string name="act_a11y">Bedienungshilfen des Systems</string>
 
     <string name="t_no_service">Der Hintergrunddienst läuft nicht — zuerst install.ps1 ausführen</string>
     <string name="t_learn">Du hast 10 Sekunden: Öffne das Fenster wie gewohnt</string>
-    <string name="learn_pick">Welches Ereignis soll Shelf öffnen?</string>
+    <string name="learn_pick">Welches Ereignis soll Quest Shelf öffnen?</string>
     <string name="t_log_empty">Der Hintergrunddienst läuft nicht — das Protokoll ist leer</string>
     <string name="log_title">Letzte Ereignisse (antippen, um einen Auslöser daraus zu machen)</string>
     <string name="t_no_events">Keine Ereignisse erfasst</string>
@@ -220,21 +220,21 @@
     <string name="g_stealth">Stealth</string>
     <string name="g_combat">Kampf</string>
     <string name="g_dancing">Tanzen</string>
-    <string name="setup_title">Shelf einrichten</string>
-    <string name="setup_intro">Shelf braucht zwei Dinge, die in den Einstellungen des Headsets eingeschaltet werden. Jede Zeile unten öffnet den passenden Bildschirm; komm danach hierher zurück.</string>
+    <string name="setup_title">Quest Shelf einrichten</string>
+    <string name="setup_intro">Quest Shelf braucht zwei Dinge, die in den Einstellungen des Headsets eingeschaltet werden. Jede Zeile unten öffnet den passenden Bildschirm; komm danach hierher zurück.</string>
     <string name="setup_go">Öffnen</string>
     <string name="setup_service">Anstelle der Meta-Bibliothek öffnen</string>
-    <string name="setup_service_on">Ein. Shelf öffnet sich mit der Menütaste und nach dem Start des Headsets.</string>
-    <string name="setup_service_off">Aus. Solange das so ist, ist Shelf nur eine weitere App in der Bibliothek.</string>
-    <string name="setup_service_hint">Suche in der Liste „%s“ und schalte es ein. Android warnt, dass der Dienst den Bildschirm sehen kann: Shelf schaut nur, welches Fenster vorn ist.</string>
+    <string name="setup_service_on">Ein. Quest Shelf öffnet sich mit der Menütaste und nach dem Start des Headsets.</string>
+    <string name="setup_service_off">Aus. Solange das so ist, ist Quest Shelf nur eine weitere App in der Bibliothek.</string>
+    <string name="setup_service_hint">Suche in der Liste „%s“ und schalte es ein. Android warnt, dass der Dienst den Bildschirm sehen kann: Quest Shelf schaut nur, welches Fenster vorn ist.</string>
     <string name="setup_restricted">Der Schalter ist ausgegraut?</string>
     <string name="setup_restricted_sub">Öffne die App-Seite, dann das Menü ⋮ und „Eingeschränkte Einstellungen zulassen“, und versuche es erneut.</string>
     <string name="setup_usage">Spielstatistik</string>
     <string name="setup_usage_on">Erlaubt. „Zuletzt gespielt“, Spielzeit und das laufende Spiel funktionieren.</string>
-    <string name="setup_usage_off">Nicht erlaubt. Suche in der Liste Shelf und erlaube den Zugriff.</string>
-    <string name="setup_net_note">Für ein Cover fragt Shelf den Dienst OculusDB (und eine Ersatzquelle auf GitHub) nach dem Paketnamen, dem Titel oder der Store-Nummer des Spiels. Über dich oder dein Konto wird nichts gesendet.</string>
+    <string name="setup_usage_off">Nicht erlaubt. Suche in der Liste Quest Shelf und erlaube den Zugriff.</string>
+    <string name="setup_net_note">Für ein Cover fragt Quest Shelf den Dienst OculusDB (und eine Ersatzquelle auf GitHub) nach dem Paketnamen, dem Titel oder der Store-Nummer des Spiels. Über dich oder dein Konto wird nichts gesendet.</string>
     <string name="setup_no_screen">Dieses Headset hat keinen solchen Bildschirm. Der Weg über den Computer steht in der README.</string>
-    <string name="setup_reminder">Shelf öffnet sich noch nicht anstelle der Meta-Bibliothek</string>
+    <string name="setup_reminder">Quest Shelf öffnet sich noch nicht anstelle der Meta-Bibliothek</string>
     <string name="setup_open">Einrichten</string>
     <string name="setup_hide">Nicht mehr erinnern</string>
     <string name="paused_note">Das Ersetzen der Meta-Bibliothek ist bis %s pausiert</string>
@@ -242,11 +242,11 @@
     <string name="paused_resume">Einschalten</string>
     <string name="paused_resume_row">Meta-Bibliothek wieder ersetzen</string>
     <string name="pause_row">Ersetzen für eine Stunde pausieren</string>
-    <string name="pause_sub">Öffnet die Bibliothek von Meta; Shelf kommt von selbst zurück</string>
+    <string name="pause_sub">Öffnet die Bibliothek von Meta; Quest Shelf kommt von selbst zurück</string>
     <string name="act_export">Einstellungen in Datei speichern</string>
     <string name="export_sub">Favoriten, Ordner, Reihenfolge, Markierungen und Optionen</string>
     <string name="act_import">Einstellungen aus Datei laden</string>
-    <string name="import_sub">Eine zuvor von Shelf gespeicherte Datei</string>
+    <string name="import_sub">Eine zuvor von Quest Shelf gespeicherte Datei</string>
     <string name="t_no_picker">Dieses Headset hat keine Dateiauswahl</string>
     <string name="t_exported">Einstellungen gespeichert</string>
     <string name="t_export_failed">Datei konnte nicht gespeichert werden</string>

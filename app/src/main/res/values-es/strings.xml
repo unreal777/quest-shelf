@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="svc_label">Shelf: inicio automático y sustituto de la biblioteca</string>
-    <string name="svc_desc">Abre Shelf al encender el visor y en lugar de la biblioteca de aplicaciones original. Solo observa qué ventana del sistema está delante; no lee ni envía nada más.</string>
+    <string name="svc_label">Quest Shelf: inicio automático y sustituto de la biblioteca</string>
+    <string name="svc_desc">Abre Quest Shelf al encender el visor y en lugar de la biblioteca de aplicaciones original. Solo observa qué ventana del sistema está delante; no lee ni envía nada más.</string>
 
     <string name="search_hint">Buscar por nombre o género</string>
     <string name="settings">Ajustes</string>
@@ -128,14 +128,14 @@
     <string name="catalog_sub_date">Descarga de 120 MB, para juegos muy nuevos · el actual es del %s</string>
     <string name="t_catalog">Descargando el catálogo, tarda unos minutos</string>
     <string name="act_learn">Enseñar la intercepción</string>
-    <string name="learn_sub">10 segundos para abrir la ventana que Shelf debe sustituir</string>
+    <string name="learn_sub">10 segundos para abrir la ventana que Quest Shelf debe sustituir</string>
     <string name="act_triggers">Disparadores guardados</string>
     <string name="act_log">Registro de eventos del sistema</string>
     <string name="act_a11y">Ajustes de accesibilidad del sistema</string>
 
     <string name="t_no_service">El servicio en segundo plano no está en marcha — ejecuta antes install.ps1</string>
     <string name="t_learn">Tienes 10 segundos: abre la ventana como siempre</string>
-    <string name="learn_pick">¿Qué evento debe abrir Shelf?</string>
+    <string name="learn_pick">¿Qué evento debe abrir Quest Shelf?</string>
     <string name="t_log_empty">El servicio en segundo plano no está en marcha — el registro está vacío</string>
     <string name="log_title">Eventos recientes (toca uno para convertirlo en disparador)</string>
     <string name="t_no_events">No se captó ningún evento</string>
@@ -220,21 +220,21 @@
     <string name="g_stealth">Sigilo</string>
     <string name="g_combat">Combate</string>
     <string name="g_dancing">Baile</string>
-    <string name="setup_title">Configurar Shelf</string>
-    <string name="setup_intro">Shelf necesita dos cosas que se activan en los ajustes del visor. Cada fila abre la pantalla correcta; vuelve aquí después.</string>
+    <string name="setup_title">Configurar Quest Shelf</string>
+    <string name="setup_intro">Quest Shelf necesita dos cosas que se activan en los ajustes del visor. Cada fila abre la pantalla correcta; vuelve aquí después.</string>
     <string name="setup_go">Abrir</string>
     <string name="setup_service">Abrir en lugar de la biblioteca de Meta</string>
-    <string name="setup_service_on">Activado. Shelf se abre con el botón de menú y al encender el visor.</string>
-    <string name="setup_service_off">Desactivado. Mientras siga así, Shelf es solo una app más de la biblioteca.</string>
-    <string name="setup_service_hint">En la lista, busca «%s» y actívalo. Android avisará de que el servicio puede ver la pantalla: Shelf solo mira qué ventana está delante.</string>
+    <string name="setup_service_on">Activado. Quest Shelf se abre con el botón de menú y al encender el visor.</string>
+    <string name="setup_service_off">Desactivado. Mientras siga así, Quest Shelf es solo una app más de la biblioteca.</string>
+    <string name="setup_service_hint">En la lista, busca «%s» y actívalo. Android avisará de que el servicio puede ver la pantalla: Quest Shelf solo mira qué ventana está delante.</string>
     <string name="setup_restricted">¿El interruptor está en gris?</string>
     <string name="setup_restricted_sub">Abre la página de la app, luego el menú ⋮ y «Permitir ajustes restringidos», y vuelve a intentarlo.</string>
     <string name="setup_usage">Estadísticas de juego</string>
     <string name="setup_usage_on">Permitido. Funcionan «últimos jugados», el tiempo de juego y el juego en ejecución.</string>
-    <string name="setup_usage_off">No permitido. En la lista, busca Shelf y permítelo.</string>
-    <string name="setup_net_note">Para obtener una carátula, Shelf la pide al servicio OculusDB (y a una fuente de reserva en GitHub) por el nombre del paquete, el título o el número de tienda del juego. No se envía nada sobre ti ni tu cuenta.</string>
+    <string name="setup_usage_off">No permitido. En la lista, busca Quest Shelf y permítelo.</string>
+    <string name="setup_net_note">Para obtener una carátula, Quest Shelf la pide al servicio OculusDB (y a una fuente de reserva en GitHub) por el nombre del paquete, el título o el número de tienda del juego. No se envía nada sobre ti ni tu cuenta.</string>
     <string name="setup_no_screen">Este visor no tiene esa pantalla. La forma con ordenador está en el README.</string>
-    <string name="setup_reminder">Shelf aún no se abre en lugar de la biblioteca de Meta</string>
+    <string name="setup_reminder">Quest Shelf aún no se abre en lugar de la biblioteca de Meta</string>
     <string name="setup_open">Configurar</string>
     <string name="setup_hide">No recordar más</string>
     <string name="paused_note">El reemplazo de la biblioteca de Meta está en pausa hasta las %s</string>
@@ -242,16 +242,16 @@
     <string name="paused_resume">Activar</string>
     <string name="paused_resume_row">Volver a reemplazar la biblioteca de Meta</string>
     <string name="pause_row">Pausar el reemplazo una hora</string>
-    <string name="pause_sub">Abre la biblioteca de Meta; Shelf vuelve solo</string>
+    <string name="pause_sub">Abre la biblioteca de Meta; Quest Shelf vuelve solo</string>
     <string name="act_export">Guardar ajustes en un archivo</string>
     <string name="export_sub">Favoritos, carpetas, orden, marcas y opciones</string>
     <string name="act_import">Cargar ajustes desde un archivo</string>
-    <string name="import_sub">Un archivo guardado antes por Shelf</string>
+    <string name="import_sub">Un archivo guardado antes por Quest Shelf</string>
     <string name="t_no_picker">Este visor no tiene selector de archivos</string>
     <string name="t_exported">Ajustes guardados</string>
     <string name="t_export_failed">No se pudo guardar el archivo</string>
     <string name="t_imported">Ajustes cargados</string>
-    <string name="t_import_failed">Este no es un archivo de ajustes de Shelf</string>
+    <string name="t_import_failed">Este no es un archivo de ajustes de Quest Shelf</string>
     <string name="f_idle">Olvidados</string>
     <string name="sort_size">Tamaño: mayores primero</string>
     <string name="set_idle">Un juego se considera olvidado tras</string>

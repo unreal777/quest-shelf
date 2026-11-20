@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name" translatable="false">Shelf</string>
-    <string name="svc_label">Shelf: autostart and library replacement</string>
-    <string name="svc_desc">Opens Shelf after the headset starts and instead of the stock app library. It only watches which system window is in front; it does not read or send anything else.</string>
+    <string name="app_name" translatable="false">Quest Shelf</string>
+    <string name="svc_label">Quest Shelf: autostart and library replacement</string>
+    <string name="svc_desc">Opens Quest Shelf after the headset starts and instead of the stock app library. It only watches which system window is in front; it does not read or send anything else.</string>
 
     <string name="search_hint">Search by name or genre</string>
     <string name="settings">Settings</string>
@@ -129,14 +129,14 @@
     <string name="catalog_sub_date">120 MB download, for brand-new releases · current one is from %s</string>
     <string name="t_catalog">Downloading the catalog, this takes a few minutes</string>
     <string name="act_learn">Teach interception</string>
-    <string name="learn_sub">10 seconds to open the window that Shelf should replace</string>
+    <string name="learn_sub">10 seconds to open the window that Quest Shelf should replace</string>
     <string name="act_triggers">Saved triggers</string>
     <string name="act_log">System event log</string>
     <string name="act_a11y">System accessibility settings</string>
 
     <string name="t_no_service">The background service is not running — run install.ps1 first</string>
     <string name="t_learn">You have 10 seconds: open the window the usual way</string>
-    <string name="learn_pick">Which event should open Shelf?</string>
+    <string name="learn_pick">Which event should open Quest Shelf?</string>
     <string name="t_log_empty">The background service is not running — the log is empty</string>
     <string name="log_title">Recent events (tap one to make it a trigger)</string>
     <string name="t_no_events">No events caught</string>
@@ -221,21 +221,21 @@
     <string name="g_stealth">Stealth</string>
     <string name="g_combat">Combat</string>
     <string name="g_dancing">Dancing</string>
-    <string name="setup_title">Setting up Shelf</string>
-    <string name="setup_intro">Shelf needs two things switched on in the headset\'s settings. Each row below opens the right screen; come back here afterwards.</string>
+    <string name="setup_title">Setting up Quest Shelf</string>
+    <string name="setup_intro">Quest Shelf needs two things switched on in the headset\'s settings. Each row below opens the right screen; come back here afterwards.</string>
     <string name="setup_go">Open</string>
     <string name="setup_service">Open instead of Meta\'s library</string>
-    <string name="setup_service_on">On. Shelf opens on the menu button and after the headset starts.</string>
-    <string name="setup_service_off">Off. Until it is on, Shelf is just one more app in the library.</string>
-    <string name="setup_service_hint">In the list that opens, find “%s” and switch it on. Android will warn that the service can see what is on screen: Shelf only looks at which window is in front.</string>
+    <string name="setup_service_on">On. Quest Shelf opens on the menu button and after the headset starts.</string>
+    <string name="setup_service_off">Off. Until it is on, Quest Shelf is just one more app in the library.</string>
+    <string name="setup_service_hint">In the list that opens, find “%s” and switch it on. Android will warn that the service can see what is on screen: Quest Shelf only looks at which window is in front.</string>
     <string name="setup_restricted">The switch is greyed out?</string>
     <string name="setup_restricted_sub">Open the app\'s page, then the ⋮ menu, then “Allow restricted settings”, and try again.</string>
     <string name="setup_usage">Play statistics</string>
     <string name="setup_usage_on">Allowed. “Last played”, play time and the running game work.</string>
-    <string name="setup_usage_off">Not allowed. In the list that opens, find Shelf and allow it.</string>
-    <string name="setup_net_note">To get a cover, Shelf asks the OculusDB service (and a spare source on GitHub) for it by the game\'s package name, title or store id. Nothing about you or your account is sent.</string>
+    <string name="setup_usage_off">Not allowed. In the list that opens, find Quest Shelf and allow it.</string>
+    <string name="setup_net_note">To get a cover, Quest Shelf asks the OculusDB service (and a spare source on GitHub) for it by the game\'s package name, title or store id. Nothing about you or your account is sent.</string>
     <string name="setup_no_screen">This headset has no such screen. See the README for the way with a computer.</string>
-    <string name="setup_reminder">Shelf does not open instead of Meta\'s library yet</string>
+    <string name="setup_reminder">Quest Shelf does not open instead of Meta\'s library yet</string>
     <string name="setup_open">Set up</string>
     <string name="setup_hide">Do not remind me</string>
     <string name="paused_note">Replacing Meta\'s library is paused until %s</string>
@@ -243,16 +243,16 @@
     <string name="paused_resume">Turn on</string>
     <string name="paused_resume_row">Resume replacing Meta\'s library</string>
     <string name="pause_row">Pause replacing for an hour</string>
-    <string name="pause_sub">Opens Meta\'s own library; Shelf comes back by itself</string>
+    <string name="pause_sub">Opens Meta\'s own library; Quest Shelf comes back by itself</string>
     <string name="act_export">Save settings to a file</string>
     <string name="export_sub">Favorites, folders, order, marks and options</string>
     <string name="act_import">Load settings from a file</string>
-    <string name="import_sub">A file saved earlier by Shelf</string>
+    <string name="import_sub">A file saved earlier by Quest Shelf</string>
     <string name="t_no_picker">This headset has no file picker</string>
     <string name="t_exported">Settings saved</string>
     <string name="t_export_failed">Could not save the file</string>
     <string name="t_imported">Settings loaded</string>
-    <string name="t_import_failed">This is not a Shelf settings file</string>
+    <string name="t_import_failed">This is not a Quest Shelf settings file</string>
     <string name="f_idle">Forgotten</string>
     <string name="sort_size">Size: largest first</string>
     <string name="set_idle">A game is forgotten after</string>

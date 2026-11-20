@@ -241,7 +241,7 @@ object Meta {
         val c = URL(url).openConnection() as HttpURLConnection
         c.connectTimeout = 15000
         c.readTimeout = 20000
-        c.setRequestProperty("User-Agent", "Shelf-launcher")
+        c.setRequestProperty("User-Agent", "QuestShelf-launcher")
         return c
     }
 

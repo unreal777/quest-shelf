@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="svc_label">Shelf: автозапуск и замена библиотеки</string>
-    <string name="svc_desc">Открывает Shelf после включения шлема и вместо штатной библиотеки приложений. Следит только за тем, какое системное окно сейчас впереди; больше ничего не читает и не отправляет.</string>
+    <string name="svc_label">Quest Shelf: автозапуск и замена библиотеки</string>
+    <string name="svc_desc">Открывает Quest Shelf после включения шлема и вместо штатной библиотеки приложений. Следит только за тем, какое системное окно сейчас впереди; больше ничего не читает и не отправляет.</string>
 
     <string name="search_hint">Поиск по названию или жанру</string>
     <string name="settings">Настройки</string>
@@ -128,14 +128,14 @@
     <string name="catalog_sub_date">Загрузка 120 МБ, для самых новых игр · текущий от %s</string>
     <string name="t_catalog">Загружаю каталог, это несколько минут</string>
     <string name="act_learn">Обучить перехват</string>
-    <string name="learn_sub">10 секунд, чтобы открыть окно, которое Shelf должен заменять</string>
+    <string name="learn_sub">10 секунд, чтобы открыть окно, которое Quest Shelf должен заменять</string>
     <string name="act_triggers">Сохраненные триггеры</string>
     <string name="act_log">Журнал событий системы</string>
     <string name="act_a11y">Системные настройки спец. возможностей</string>
 
     <string name="t_no_service">Фоновая служба не работает — сначала запусти install.ps1</string>
     <string name="t_learn">У тебя 10 секунд: открой нужное окно как обычно</string>
-    <string name="learn_pick">Какое событие должно открывать Shelf?</string>
+    <string name="learn_pick">Какое событие должно открывать Quest Shelf?</string>
     <string name="t_log_empty">Фоновая служба не работает — журнал пуст</string>
     <string name="log_title">Последние события (нажми, чтобы сделать триггером)</string>
     <string name="t_no_events">Событий не поймано</string>
@@ -220,21 +220,21 @@
     <string name="g_stealth">Стелс</string>
     <string name="g_combat">Бои</string>
     <string name="g_dancing">Танцы</string>
-    <string name="setup_title">Настройка Shelf</string>
-    <string name="setup_intro">Shelf нужны две вещи, которые включаются в настройках шлема. Каждая строка ниже открывает нужный экран; после этого вернись сюда.</string>
+    <string name="setup_title">Настройка Quest Shelf</string>
+    <string name="setup_intro">Quest Shelf нужны две вещи, которые включаются в настройках шлема. Каждая строка ниже открывает нужный экран; после этого вернись сюда.</string>
     <string name="setup_go">Открыть</string>
     <string name="setup_service">Открываться вместо библиотеки Meta</string>
-    <string name="setup_service_on">Включено. Shelf открывается по кнопке меню и после включения шлема.</string>
-    <string name="setup_service_off">Выключено. Пока это так, Shelf — просто ещё одно приложение в библиотеке.</string>
-    <string name="setup_service_hint">В открывшемся списке найди «%s» и включи. Android предупредит, что служба видит экран: Shelf смотрит только, какое окно сейчас впереди.</string>
+    <string name="setup_service_on">Включено. Quest Shelf открывается по кнопке меню и после включения шлема.</string>
+    <string name="setup_service_off">Выключено. Пока это так, Quest Shelf — просто ещё одно приложение в библиотеке.</string>
+    <string name="setup_service_hint">В открывшемся списке найди «%s» и включи. Android предупредит, что служба видит экран: Quest Shelf смотрит только, какое окно сейчас впереди.</string>
     <string name="setup_restricted">Переключатель серый и не нажимается?</string>
     <string name="setup_restricted_sub">Открой страницу приложения, затем меню ⋮ и «Разрешить ограниченные настройки», и попробуй снова.</string>
     <string name="setup_usage">Статистика игр</string>
     <string name="setup_usage_on">Разрешено. Работают «последние», время в играх и плашка запущенной игры.</string>
-    <string name="setup_usage_off">Не разрешено. В открывшемся списке найди Shelf и разреши.</string>
-    <string name="setup_net_note">Чтобы получить обложку, Shelf запрашивает её у сервиса OculusDB (и у запасного источника на GitHub) по имени пакета игры, её названию или номеру в магазине. Ничего о тебе и твоём аккаунте не отправляется.</string>
+    <string name="setup_usage_off">Не разрешено. В открывшемся списке найди Quest Shelf и разреши.</string>
+    <string name="setup_net_note">Чтобы получить обложку, Quest Shelf запрашивает её у сервиса OculusDB (и у запасного источника на GitHub) по имени пакета игры, её названию или номеру в магазине. Ничего о тебе и твоём аккаунте не отправляется.</string>
     <string name="setup_no_screen">В этом шлеме нет такого экрана. Способ через компьютер описан в README.</string>
-    <string name="setup_reminder">Shelf пока не открывается вместо библиотеки Meta</string>
+    <string name="setup_reminder">Quest Shelf пока не открывается вместо библиотеки Meta</string>
     <string name="setup_open">Настроить</string>
     <string name="setup_hide">Больше не напоминать</string>
     <string name="paused_note">Замена библиотеки Meta приостановлена до %s</string>
@@ -242,16 +242,16 @@
     <string name="paused_resume">Включить</string>
     <string name="paused_resume_row">Снова заменять библиотеку Meta</string>
     <string name="pause_row">Приостановить замену на час</string>
-    <string name="pause_sub">Откроется библиотека Meta; Shelf вернётся сам</string>
+    <string name="pause_sub">Откроется библиотека Meta; Quest Shelf вернётся сам</string>
     <string name="act_export">Сохранить настройки в файл</string>
     <string name="export_sub">Избранное, папки, порядок, пометки и параметры</string>
     <string name="act_import">Загрузить настройки из файла</string>
-    <string name="import_sub">Файл, сохранённый раньше в Shelf</string>
+    <string name="import_sub">Файл, сохранённый раньше в Quest Shelf</string>
     <string name="t_no_picker">В этом шлеме нет выбора файлов</string>
     <string name="t_exported">Настройки сохранены</string>
     <string name="t_export_failed">Не удалось сохранить файл</string>
     <string name="t_imported">Настройки загружены</string>
-    <string name="t_import_failed">Это не файл настроек Shelf</string>
+    <string name="t_import_failed">Это не файл настроек Quest Shelf</string>
     <string name="f_idle">Забытые</string>
     <string name="sort_size">Размер: сначала большие</string>
     <string name="set_idle">Игра считается забытой через</string>

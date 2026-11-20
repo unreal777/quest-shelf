@@ -258,7 +258,7 @@ object Owned {
         val c = URL(ALL_APPS).openConnection() as HttpURLConnection
         c.connectTimeout = 20000
         c.readTimeout = 60000
-        c.setRequestProperty("User-Agent", "Shelf-launcher")
+        c.setRequestProperty("User-Agent", "QuestShelf-launcher")
         // package -> (preference, line)
         val best = HashMap<String, Pair<String, String>>()
         try {
