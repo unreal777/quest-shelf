@@ -10,271 +10,408 @@
 <meta property="og:type" content="website">
 <meta property="og:image" content="https://unreal777.github.io/quest-shelf/img/screenshot-1-library.jpg">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="theme-color" content="#14171f">
+<meta name="theme-color" content="#09090f">
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="preload" href="fonts/PressStart2P-400.woff2" as="font" type="font/woff2" crossorigin>
 <style>
+  @font-face { font-family: "Press Start 2P"; src: url(fonts/PressStart2P-400.woff2) format("woff2"); font-weight: 400; font-display: swap; }
+  @font-face { font-family: "Chakra Petch"; src: url(fonts/ChakraPetch-400.woff2) format("woff2"); font-weight: 400; font-display: swap; }
+  @font-face { font-family: "Chakra Petch"; src: url(fonts/ChakraPetch-500.woff2) format("woff2"); font-weight: 500; font-display: swap; }
+  @font-face { font-family: "Chakra Petch"; src: url(fonts/ChakraPetch-600.woff2) format("woff2"); font-weight: 600; font-display: swap; }
+  @font-face { font-family: "Chakra Petch"; src: url(fonts/ChakraPetch-700.woff2) format("woff2"); font-weight: 700; font-display: swap; }
+
   :root {
-    --bg: #12151c;
-    --bg2: #181c26;
-    --card: rgba(255,255,255,.055);
-    --card-hi: rgba(255,255,255,.09);
-    --line: rgba(255,255,255,.10);
-    --text: #eceef4;
-    --dim: #a6adbd;
-    --accent: #6ea8ff;
-    --accent-hi: #8fbcff;
-    --green: #5fd4a0;
-    --gold: #f3c969;
-    --violet: #a58bff;
-    --radius: 20px;
+    --ink: #09090f;
+    --panel: #12121c;
+    --panel2: #1a1a2a;
+    --line: #34344f;
+    --text: #f1f1e6;
+    --dim: #a3a3bc;
+    --lime: #b6ff3b;
+    --pink: #ff3d81;
+    --cyan: #35e0ff;
+    --yellow: #ffd23f;
+    --px: "Press Start 2P", "Courier New", monospace;
+    --body: "Chakra Petch", system-ui, "Segoe UI", Roboto, sans-serif;
     color-scheme: dark;
   }
   * { box-sizing: border-box; }
-  html { scroll-behavior: smooth; }
+  html { scroll-behavior: smooth; scroll-padding-top: 90px; }
   body {
-    margin: 0; background: var(--bg); color: var(--text);
-    font: 17px/1.6 system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    margin: 0; color: var(--text); background: var(--ink);
+    font: 500 18px/1.55 var(--body);
+    background-image:
+      linear-gradient(rgba(255,255,255,.035) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,.035) 1px, transparent 1px);
+    background-size: 32px 32px;
     -webkit-font-smoothing: antialiased;
   }
-  a { color: var(--accent); text-decoration: none; }
-  a:hover { color: var(--accent-hi); }
-  .wrap { width: min(1120px, 100% - 40px); margin: 0 auto; }
+  a { color: var(--cyan); text-decoration: none; border-bottom: 2px solid transparent; }
+  a:hover { border-bottom-color: var(--cyan); }
+  ::selection { background: var(--pink); color: #fff; }
+  .wrap { width: min(1180px, 100% - 36px); margin: 0 auto; }
+  :focus-visible { outline: 3px dashed var(--yellow); outline-offset: 3px; }
 
-  /* background glow */
-  .glow { position: fixed; inset: 0; z-index: -1; pointer-events: none; overflow: hidden; }
-  .glow i { position: absolute; border-radius: 50%; filter: blur(110px); opacity: .5; }
-  .glow i:nth-child(1) { width: 640px; height: 640px; left: -160px; top: -200px; background: #3d6ccc; }
-  .glow i:nth-child(2) { width: 560px; height: 560px; right: -160px; top: 280px; background: #6a46c9; opacity: .38; }
-  .glow i:nth-child(3) { width: 500px; height: 500px; left: 30%; bottom: -260px; background: #1e8f86; opacity: .28; }
+  /* ---------- HUD bar ---------- */
+  .hud { position: sticky; top: 0; z-index: 20; background: var(--ink); border-bottom: 4px solid var(--lime); }
+  .hud .wrap { display: flex; align-items: center; gap: 24px; min-height: 64px; }
+  .logo { display: flex; align-items: center; gap: 12px; color: var(--text); font: 400 14px/1 var(--px); border: 0 !important; }
+  .logo svg { width: 30px; height: 30px; image-rendering: pixelated; }
+  .logo span b { color: var(--lime); font-weight: 400; }
+  .menu { margin-left: auto; display: flex; gap: 6px 22px; align-items: center; flex-wrap: wrap; justify-content: flex-end; }
+  .menu a { font: 400 10px/1 var(--px); color: var(--dim); padding: 8px 0; text-transform: uppercase; }
+  .menu a:hover { color: var(--lime); border-bottom-color: transparent; }
+  .menu a:hover::before { content: "▶ "; color: var(--lime); }
+  .menu a.btn, .menu a.btn:hover { color: #000; }
+  .menu a.btn:hover::before { content: ""; }
 
-  /* nav */
-  nav { position: sticky; top: 0; z-index: 10; backdrop-filter: blur(14px); background: rgba(18,21,28,.72); border-bottom: 1px solid var(--line); }
-  nav .wrap { display: flex; align-items: center; gap: 28px; height: 64px; }
-  .brand { display: flex; align-items: center; gap: 12px; color: var(--text); font-weight: 700; font-size: 18px; letter-spacing: .2px; }
-  .brand svg { width: 32px; height: 32px; }
-  nav .links { display: flex; gap: 22px; margin-left: auto; align-items: center; }
-  nav .links a { color: var(--dim); font-size: 15px; }
-  nav .links a:hover { color: var(--text); }
-  .btn { display: inline-flex; align-items: center; gap: 10px; padding: 13px 24px; border-radius: 999px; font-weight: 650; font-size: 16px; border: 1px solid var(--line); color: var(--text); background: var(--card); transition: background .15s, transform .15s; }
-  .btn:hover { background: var(--card-hi); color: var(--text); transform: translateY(-1px); }
-  .btn.primary { background: var(--accent); color: #0e1422; border-color: transparent; }
-  .btn.primary:hover { background: var(--accent-hi); color: #0e1422; }
-  nav .btn { padding: 9px 18px; font-size: 14px; }
+  /* ---------- buttons ---------- */
+  .btn { display: inline-block; font: 400 13px/1.2 var(--px); text-transform: uppercase; padding: 17px 22px; border: 3px solid #000; color: #000; background: var(--lime); box-shadow: 6px 6px 0 var(--pink); transition: transform .08s, box-shadow .08s; cursor: pointer; }
+  .btn:hover { transform: translate(-2px,-2px); box-shadow: 9px 9px 0 var(--pink); border-color: #000; }
+  .btn:active { transform: translate(4px,4px); box-shadow: 2px 2px 0 var(--pink); }
+  .btn.alt { background: var(--ink); color: var(--text); border-color: var(--text); box-shadow: 6px 6px 0 #000; }
+  .btn.alt:hover { box-shadow: 9px 9px 0 #000; }
+  .hud .btn { padding: 11px 14px; font-size: 10px; box-shadow: 4px 4px 0 var(--pink); }
 
-  /* hero */
-  .hero { padding: 84px 0 40px; text-align: center; }
-  .pill { display: inline-block; padding: 6px 14px; border-radius: 999px; background: var(--card); border: 1px solid var(--line); color: var(--dim); font-size: 14px; margin-bottom: 26px; }
-  .pill b { color: var(--green); font-weight: 600; }
-  h1 { font-size: clamp(38px, 6.4vw, 70px); line-height: 1.05; margin: 0 0 22px; letter-spacing: -1.2px; }
-  h1 em { font-style: normal; background: linear-gradient(100deg, #8fbcff, #b79cff 60%, #7fe0c0); -webkit-background-clip: text; background-clip: text; color: transparent; }
-  .lead { font-size: clamp(18px, 2.2vw, 21px); color: var(--dim); max-width: 680px; margin: 0 auto 34px; }
-  .cta { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; }
-  .meta { margin-top: 18px; color: var(--dim); font-size: 14px; }
+  /* ---------- hero ---------- */
+  .hero { position: relative; padding: 70px 0 54px; overflow: hidden; }
+  .hero::before { /* stars */
+    content: ""; position: absolute; inset: 0; z-index: -1; opacity: .9;
+    background-image:
+      radial-gradient(2px 2px at 12% 22%, var(--cyan) 50%, transparent 52%),
+      radial-gradient(2px 2px at 78% 14%, var(--yellow) 50%, transparent 52%),
+      radial-gradient(3px 3px at 90% 60%, var(--pink) 50%, transparent 52%),
+      radial-gradient(2px 2px at 44% 8%, #fff 50%, transparent 52%),
+      radial-gradient(2px 2px at 6% 72%, #fff 50%, transparent 52%),
+      radial-gradient(3px 3px at 62% 84%, var(--lime) 50%, transparent 52%),
+      radial-gradient(2px 2px at 30% 52%, #fff 50%, transparent 52%);
+    animation: twinkle 3.2s steps(2) infinite;
+  }
+  @keyframes twinkle { 50% { opacity: .35; } }
+  .hero .wrap { display: grid; grid-template-columns: 1.02fr 1.25fr; gap: 54px; align-items: center; }
+  .tag { display: inline-block; font: 400 10px/1.6 var(--px); color: #000; background: var(--yellow); padding: 6px 10px; margin-bottom: 26px; text-transform: uppercase; }
+  h1 { font: 400 clamp(30px, 5.2vw, 66px)/1.12 var(--px); margin: 0 0 26px; text-transform: uppercase; letter-spacing: -1px; color: var(--text); text-shadow: 5px 5px 0 var(--pink), 10px 10px 0 #000; }
+  h1 .q { color: var(--lime); }
+  .party h1 { animation: party 1s linear infinite; }
+  @keyframes party { to { filter: hue-rotate(360deg); } }
+  .sub1 { font: 700 clamp(20px, 2.3vw, 26px)/1.3 var(--body); margin: 0 0 14px; }
+  .sub1 mark { background: var(--lime); color: #000; padding: 0 6px; }
+  .lead { color: var(--dim); margin: 0 0 32px; max-width: 520px; }
+  .cta { display: flex; gap: 22px 20px; flex-wrap: wrap; }
+  .blink { animation: blink 1.1s steps(2) infinite; }
+  @keyframes blink { 50% { opacity: 0; } }
+  .meta { margin-top: 26px; font: 500 14px/1.5 var(--body); color: var(--dim); letter-spacing: .5px; }
+  .meta b { color: var(--text); }
+
+  /* the window: a console-style frame around the real screenshot */
+  .rig { transform: rotate(1.6deg); }
+  .win { background: var(--panel); border: 4px solid var(--text); box-shadow: 12px 12px 0 var(--pink), 24px 24px 0 #000; }
+  .win .bar { display: flex; align-items: center; gap: 8px; padding: 9px 12px; background: var(--text); color: #000; font: 400 10px/1 var(--px); text-transform: uppercase; }
+  .win .bar i { width: 12px; height: 12px; background: #000; display: block; }
+  .win .bar i:nth-of-type(1) { background: var(--pink); }
+  .win .bar i:nth-of-type(2) { background: var(--yellow); }
+  .win .bar i:nth-of-type(3) { background: var(--lime); }
+  .win .bar span { margin-left: auto; }
+  .win img { display: block; width: 100%; height: auto; }
+  .scan { position: relative; }
+  .scan::after { content: ""; position: absolute; inset: 0; pointer-events: none; background: repeating-linear-gradient(0deg, rgba(0,0,0,.08) 0 1px, transparent 1px 4px); }
+
+  /* ---------- ticker ---------- */
+  .ticker { border-block: 4px solid var(--text); background: var(--yellow); color: #000; overflow: hidden; white-space: nowrap; font: 400 12px/1 var(--px); text-transform: uppercase; }
+  .ticker div { display: inline-block; padding: 17px 0; animation: tick 38s linear infinite; }
+  .ticker span { padding: 0 22px; }
+  .ticker span:nth-child(even) { color: var(--pink); }
+  @keyframes tick { to { transform: translateX(-50%); } }
+
+  /* ---------- sections ---------- */
+  section { padding: 88px 0 24px; }
+  .kicker { font: 400 11px/1 var(--px); color: var(--cyan); margin-bottom: 18px; text-transform: uppercase; }
+  .kicker b { color: var(--pink); font-weight: 400; }
+  h2 { font: 400 clamp(20px, 3.4vw, 36px)/1.3 var(--px); margin: 0 0 18px; text-transform: uppercase; text-shadow: 3px 3px 0 #000; }
+  .sub { color: var(--dim); max-width: 680px; margin: 0 0 40px; font-size: 19px; }
+
+  /* inventory */
+  .inv { display: grid; grid-template-columns: repeat(auto-fill, minmax(330px, 1fr)); gap: 30px; }
+  .slot { background: var(--panel); border: 4px solid var(--c, var(--text)); box-shadow: 8px 8px 0 #000; padding: 22px 22px 24px; position: relative; transition: transform .1s, box-shadow .1s; }
+  .slot:hover { transform: translate(-3px,-3px); box-shadow: 11px 11px 0 var(--c, #000); }
+  .slot .no { position: absolute; top: -4px; right: -4px; background: var(--c, var(--text)); color: #000; font: 400 9px/1 var(--px); padding: 7px 9px; }
+  .slot .art { width: 58px; height: 58px; display: grid; place-items: center; background: var(--ink); border: 3px solid var(--c, var(--text)); margin-bottom: 18px; }
+  .slot .art svg { width: 36px; height: 36px; shape-rendering: crispEdges; }
+  .slot h3 { font: 400 13px/1.5 var(--px); margin: 0 0 10px; text-transform: uppercase; color: var(--c, var(--text)); }
+  .slot p { margin: 0; color: var(--dim); font-size: 17px; }
+  .common { --c: var(--text); } .rare { --c: var(--cyan); } .epic { --c: var(--pink); } .legend { --c: var(--yellow); } .uncommon { --c: var(--lime); }
 
   /* screenshots */
-  .stage { padding: 34px 0 70px; }
-  .shot { margin: 0; }
-  .shot img { display: block; width: 100%; height: auto; border-radius: 22px; border: 1px solid var(--line); box-shadow: 0 30px 90px rgba(0,0,0,.5); background: var(--bg2); }
-  .shot figcaption { color: var(--dim); font-size: 15px; margin-top: 12px; text-align: center; }
-  .shot figcaption b { color: var(--text); font-weight: 600; }
-  .shot.big { width: min(1040px, 100%); margin: 0 auto; }
-  .shot.big img { border-radius: 28px; box-shadow: 0 40px 120px rgba(0,0,0,.6); }
-  .gallery { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 440px), 1fr)); gap: 30px 24px; }
-  .gallery .shot figcaption { text-align: left; }
+  .shots { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 500px), 1fr)); gap: 44px 34px; }
+  .cart { margin: 0; }
+  .cart .frame { border: 4px solid var(--text); box-shadow: 9px 9px 0 var(--c); background: var(--panel); transition: transform .12s, box-shadow .12s; }
+  .cart:hover .frame { transform: translate(-3px,-3px) rotate(-.4deg); box-shadow: 13px 13px 0 var(--c); }
+  .cart img { display: block; width: 100%; height: auto; }
+  .cart figcaption { margin-top: 22px; }
+  .cart figcaption small { display: inline-block; font: 400 9px/1 var(--px); background: var(--c); color: #000; padding: 6px 8px; margin-right: 10px; vertical-align: middle; }
+  .cart figcaption b { font-weight: 700; color: var(--text); }
+  .cart figcaption { color: var(--dim); font-size: 17px; }
 
-  /* sections */
-  section { padding: 78px 0; }
-  .eyebrow { color: var(--accent); font-weight: 650; font-size: 14px; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 12px; }
-  h2 { font-size: clamp(30px, 4.4vw, 46px); line-height: 1.1; margin: 0 0 16px; letter-spacing: -.8px; }
-  .sub { color: var(--dim); max-width: 700px; font-size: 18px; margin: 0 0 40px; }
-  .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 18px; }
-  .card { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 26px; }
-  .card .ic { width: 46px; height: 46px; border-radius: 14px; display: grid; place-items: center; margin-bottom: 16px; font-size: 22px; }
-  .card h3 { margin: 0 0 8px; font-size: 19px; }
-  .card p { margin: 0; color: var(--dim); font-size: 15.5px; }
-  .steps { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 18px; counter-reset: s; }
-  .step { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 26px 26px 26px 26px; position: relative; }
-  .step::before { counter-increment: s; content: counter(s); display: grid; place-items: center; width: 38px; height: 38px; border-radius: 50%; background: var(--accent); color: #0e1422; font-weight: 800; margin-bottom: 14px; }
-  .step h3 { margin: 0 0 8px; font-size: 19px; }
-  .step p { margin: 0; color: var(--dim); font-size: 15.5px; }
-  code { background: rgba(255,255,255,.09); padding: 2px 7px; border-radius: 7px; font-size: .92em; }
-  .two { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
-  .panel { background: var(--bg2); border: 1px solid var(--line); border-radius: var(--radius); padding: 28px; }
-  .panel h3 { margin: 0 0 12px; font-size: 20px; }
-  .panel ul { margin: 0; padding-left: 20px; color: var(--dim); }
-  .panel li { margin: 6px 0; }
-  details { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 4px 22px; margin-bottom: 12px; }
-  summary { cursor: pointer; font-weight: 650; padding: 16px 0; list-style: none; display: flex; justify-content: space-between; gap: 16px; }
+  /* quest log */
+  .log { border: 4px solid var(--text); background: var(--panel); box-shadow: 10px 10px 0 #000; }
+  .log header { display: flex; justify-content: space-between; gap: 16px; align-items: center; flex-wrap: wrap; padding: 14px 20px; background: var(--text); color: #000; font: 400 11px/1.4 var(--px); text-transform: uppercase; }
+  .quest { display: grid; grid-template-columns: 46px 1fr auto; gap: 8px 20px; padding: 26px 24px; border-top: 4px solid var(--line); align-items: start; }
+  .quest:first-of-type { border-top: 0; }
+  .chk { width: 36px; height: 36px; border: 4px solid var(--lime); display: grid; place-items: center; font: 400 14px/1 var(--px); color: var(--lime); }
+  .quest h3 { font: 400 13px/1.6 var(--px); margin: 0 0 6px; text-transform: uppercase; }
+  .quest p { margin: 0; color: var(--dim); }
+  .quest .xp { font: 400 10px/1.4 var(--px); color: var(--yellow); white-space: nowrap; padding-top: 4px; }
+  .reward { padding: 20px 24px; border-top: 4px dashed var(--yellow); background: var(--panel2); font: 400 12px/1.8 var(--px); text-transform: uppercase; }
+  .reward b { color: var(--lime); font-weight: 400; }
+  code { font: 500 .9em var(--body); background: #000; color: var(--lime); padding: 2px 8px; border: 1px solid var(--line); }
+  .bar2 { height: 20px; border: 3px solid var(--text); margin-top: 14px; background: var(--ink); max-width: 420px; display: flex; gap: 3px; padding: 2px; }
+  .bar2 i { flex: 1; background: var(--lime); }
+
+  /* save data */
+  .two { display: grid; grid-template-columns: 1fr 1fr; gap: 34px; }
+  .panel { background: var(--panel); border: 4px solid var(--c); box-shadow: 8px 8px 0 #000; padding: 26px; }
+  .panel h3 { font: 400 13px/1.6 var(--px); margin: 0 0 14px; color: var(--c); text-transform: uppercase; }
+  .panel ul { margin: 0; padding: 0; list-style: none; color: var(--dim); }
+  .panel li { padding: 7px 0 7px 26px; position: relative; }
+  .panel li::before { content: "■"; position: absolute; left: 0; color: var(--c); font-size: 14px; top: 8px; }
+  .panel li b { color: var(--text); }
+
+  /* dialogue boxes */
+  details { background: var(--panel); border: 4px solid var(--text); box-shadow: 7px 7px 0 #000; margin-bottom: 26px; }
+  summary { cursor: pointer; list-style: none; padding: 18px 22px; font: 400 12px/1.7 var(--px); text-transform: uppercase; display: flex; gap: 14px; }
   summary::-webkit-details-marker { display: none; }
-  summary::after { content: "+"; color: var(--accent); font-size: 22px; line-height: 1; }
-  details[open] summary::after { content: "–"; }
-  details p { color: var(--dim); margin: 0 0 18px; font-size: 16px; }
-  .final { text-align: center; background: linear-gradient(160deg, rgba(110,168,255,.16), rgba(165,139,255,.12)); border: 1px solid var(--line); border-radius: 32px; padding: 64px 24px; }
-  .final h2 { margin-bottom: 14px; }
-  footer { border-top: 1px solid var(--line); padding: 34px 0 60px; color: var(--dim); font-size: 14px; }
-  footer .wrap { display: flex; gap: 20px 40px; flex-wrap: wrap; justify-content: space-between; }
-  footer p { margin: 0 0 6px; max-width: 560px; }
+  summary::before { content: "?"; flex: none; width: 28px; height: 28px; background: var(--cyan); color: #000; display: grid; place-items: center; font-size: 13px; }
+  summary::after { content: "▼"; margin-left: auto; color: var(--pink); font-size: 11px; }
+  details[open] summary::after { content: "▲"; }
+  details[open] summary { border-bottom: 4px solid var(--line); color: var(--lime); }
+  details p { margin: 0; padding: 20px 22px 24px 64px; color: var(--dim); font-size: 18px; }
 
-  @media (max-width: 860px) {
-    nav .links a:not(.btn) { display: none; }
-    .two { grid-template-columns: 1fr; }
+  /* continue */
+  .cont { margin: 100px 0 0; text-align: center; padding: 70px 24px 80px; border: 4px solid var(--text); background: var(--panel); box-shadow: 12px 12px 0 var(--pink); position: relative; overflow: hidden; }
+  .cont::before { content: ""; position: absolute; inset: 0; background: repeating-linear-gradient(0deg, rgba(0,0,0,.2) 0 2px, transparent 2px 5px); pointer-events: none; }
+  .cont h2 { font-size: clamp(30px, 7vw, 76px); text-shadow: 5px 5px 0 var(--pink), 10px 10px 0 #000; margin-bottom: 8px; color: var(--yellow); }
+  .count { font: 400 clamp(36px, 8vw, 90px)/1 var(--px); color: var(--lime); text-shadow: 5px 5px 0 #000; margin: 10px 0 34px; }
+  .cont .cta { justify-content: center; position: relative; }
+  .cont p { color: var(--dim); position: relative; margin: 0 0 30px; }
+
+  footer { margin-top: 90px; border-top: 4px solid var(--text); background: #000; padding: 38px 0 60px; font-size: 16px; color: var(--dim); }
+  footer .wrap { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; }
+  footer h4 { font: 400 11px/1.6 var(--px); color: var(--yellow); margin: 0 0 12px; text-transform: uppercase; }
+  footer p { margin: 0 0 6px; }
+  .thanks { grid-column: 1 / -1; font: 400 10px/1.8 var(--px); color: var(--lime); text-transform: uppercase; border-top: 4px dashed var(--line); padding-top: 24px; }
+
+  @media (max-width: 900px) {
+    .hero .wrap { grid-template-columns: 1fr; gap: 56px; }
+    .rig { transform: none; }
+    .menu a:not(.btn) { display: none; }
+    .two, footer .wrap { grid-template-columns: 1fr; }
+    .quest { grid-template-columns: 46px 1fr; }
+    .quest .xp { grid-column: 2; }
+    details p { padding-left: 22px; }
+    .win { box-shadow: 8px 8px 0 var(--pink); }
   }
-  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } .btn:hover { transform: none; } }
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    .ticker div, .blink, .hero::before, .party h1 { animation: none; }
+    .btn, .slot, .cart .frame { transition: none; }
+  }
 </style>
 </head>
 <body>
-<div class="glow"><i></i><i></i><i></i></div>
 
-<nav>
+<div class="hud">
   <div class="wrap">
-    <a class="brand" href="#top">
-      <svg viewBox="0 0 108 108" aria-hidden="true"><path fill="#1E222C" d="M20,0h68a20,20 0,0 1,20 20v68a20,20 0,0 1,-20 20h-68a20,20 0,0 1,-20 -20v-68a20,20 0,0 1,20 -20z"/><path fill="#6EA8FF" d="M24,24h26v26h-26z M58,24h26v26h-26z M24,58h26v26h-26z"/><path fill="#E8EAF0" d="M58,58h26v26h-26z"/></svg>
-      Quest Shelf
+    <a class="logo" href="#top" aria-label="Quest Shelf">
+      <svg viewBox="0 0 8 8" aria-hidden="true"><rect width="8" height="8" fill="#1e222c"/><rect x="1" y="1" width="2.6" height="2.6" fill="#35e0ff"/><rect x="4.4" y="1" width="2.6" height="2.6" fill="#b6ff3b"/><rect x="1" y="4.4" width="2.6" height="2.6" fill="#ff3d81"/><rect x="4.4" y="4.4" width="2.6" height="2.6" fill="#f1f1e6"/></svg>
+      <span>QUEST<b>SHELF</b></span>
     </a>
-    <div class="links">
+    <nav class="menu">
       <a href="#features">Features</a>
-      <a href="#screens">Screenshots</a>
+      <a href="#screens">Screens</a>
       <a href="#install">Install</a>
       <a href="#privacy">Privacy</a>
       <a href="#faq">FAQ</a>
       <a href="https://github.com/unreal777/quest-shelf">GitHub</a>
-      <a class="btn primary" href="https://github.com/unreal777/quest-shelf/releases/latest">Download</a>
-    </div>
+      <a class="btn" href="https://github.com/unreal777/quest-shelf/releases/latest">Download</a>
+    </nav>
   </div>
-</nav>
-
-<main id="top">
-<header class="hero wrap">
-  <span class="pill"><b>Free</b> &amp; open source · MIT · for Meta Quest 3</span>
-  <h1>Press the Meta button.<br><em>Get a better library.</em></h1>
-  <p class="lead">Quest Shelf opens in place of Meta's app library and shows your games the way you want them: sorted, searchable, in folders, with the ones you own but haven't installed right next to the ones you have.</p>
-  <div class="cta">
-    <a class="btn primary" href="https://github.com/unreal777/quest-shelf/releases/latest">⬇ Download for Quest</a>
-    <a class="btn" href="#install">How to install</a>
-  </div>
-  <div class="meta">Version 1.0.1 · installs from SideQuest or with <code>adb</code> · no account, no ads, no analytics</div>
-</header>
-
-<div class="stage wrap">
-  <figure class="shot big">
-    <img src="img/screenshot-1-library.jpg" width="1440" height="810" alt="The Quest Shelf library window on Quest 3: continue card, most played games, a grid of covers">
-    <figcaption>Your whole library in one place, sorted by what you played last.</figcaption>
-  </figure>
 </div>
 
-<section id="features">
-  <div class="wrap">
-    <div class="eyebrow">What it does</div>
-    <h2>Everything Meta's library should have had</h2>
-    <p class="sub">Open the library the way you always do. The difference is what you see.</p>
-    <div class="cards">
-      <div class="card"><div class="ic" style="background:rgba(110,168,255,.16)">🗂</div><h3>Installed and owned, together</h3><p>Games you own but haven't installed sit next to the ones you have. One tap switches between all, installed and not installed.</p></div>
-      <div class="card"><div class="ic" style="background:rgba(243,201,105,.16)">🕘</div><h3>Sorted by last played</h3><p>The game you were just in is first. Drag a tile where you want it and it stays there.</p></div>
-      <div class="card"><div class="ic" style="background:rgba(95,212,160,.16)">📁</div><h3>Favorites, folders, genres, search</h3><p>Group your games your way, filter by genre, find anything by name. Hide what you never use.</p></div>
-      <div class="card"><div class="ic" style="background:rgba(165,139,255,.16)">🏷</div><h3>Marks that work themselves out</h3><p>New in your library, never launched, demo, barely played. Add your own: completed, didn't like.</p></div>
-      <div class="card"><div class="ic" style="background:rgba(255,140,120,.16)">💾</div><h3>Forgotten games, with sizes</h3><p>See what you haven't played in 30 days (you choose), biggest first, to know what to uninstall to free up space.</p></div>
-      <div class="card"><div class="ic" style="background:rgba(95,212,160,.16)">▶</div><h3>A bar for the running game</h3><p>Open the menu while playing and get "back to the game" and "quit the game" right there, instead of a blocked panel.</p></div>
-      <div class="card"><div class="ic" style="background:rgba(110,168,255,.16)">🌗</div><h3>Mixed reality button</h3><p>One button in the bottom row switches your home between mixed reality and Meta's virtual environment, like a double tap on the headset.</p></div>
-      <div class="card"><div class="ic" style="background:rgba(243,201,105,.16)">🖼</div><h3>Looks like it belongs</h3><p>Neutral greys that match Meta's shell, with the cover of your most played game softly in the background.</p></div>
-      <div class="card"><div class="ic" style="background:rgba(165,139,255,.16)">🌍</div><h3>Backup &amp; languages</h3><p>Save and load your settings as a file. English, Russian, German, Spanish and French.</p></div>
-    </div>
-  </div>
-</section>
-
-<section id="screens">
-  <div class="wrap">
-    <div class="eyebrow">In action</div>
-    <h2>See it work</h2>
-    <p class="sub">Screenshots from a real Quest 3.</p>
-    <div class="gallery">
-      <figure class="shot"><img loading="lazy" src="img/screenshot-2-not-installed.jpg" width="1440" height="810" alt="The Not installed view: games you own, with a download mark and demo badges"><figcaption><b>Games you own but haven't installed</b> sit one tap away, with a download mark.</figcaption></figure>
-      <figure class="shot"><img loading="lazy" src="img/screenshot-3-forgotten.jpg" width="1440" height="810" alt="The Forgotten view: games not played for a month, with the room each one takes"><figcaption><b>Forgotten games, with sizes.</b> See what to uninstall to free up space.</figcaption></figure>
-      <figure class="shot"><img loading="lazy" src="img/screenshot-4-running.jpg" width="1440" height="810" alt="A green bar for the running game with Back to the game and Quit the game buttons"><figcaption><b>The running game gets a bar</b> with "Back to the game" and "Quit the game".</figcaption></figure>
-      <figure class="shot"><img loading="lazy" src="img/screenshot-5-genres.jpg" width="1440" height="810" alt="The genre list open, with counts per genre"><figcaption><b>Genres with counts,</b> search, and a filter for marks.</figcaption></figure>
-      <figure class="shot"><img loading="lazy" src="img/screenshot-6-details.jpg" width="1440" height="810" alt="A game's menu: launch, favorite, completed, didn't like, store page, folder, rename, hide"><figcaption><b>One menu per game:</b> favorite, completed, folder, rename, hide, store page.</figcaption></figure>
-    </div>
-  </div>
-</section>
-
-<section id="install">
-  <div class="wrap">
-    <div class="eyebrow">Install</div>
-    <h2>Three steps, no computer needed</h2>
-    <p class="sub">You need developer mode once, because Quest Shelf is installed from outside Meta's store.</p>
-    <div class="steps">
-      <div class="step"><h3>Turn on developer mode</h3><p>In the Meta Horizon phone app: Devices → your headset → Developer mode. Needs a free developer account.</p></div>
-      <div class="step"><h3>Install the APK</h3><p>Download it from <a href="https://github.com/unreal777/quest-shelf/releases/latest">the latest release</a> and install it with SideQuest, or run <code>adb install QuestShelf-1.0.1.apk</code>.</p></div>
-      <div class="step"><h3>Follow the short guide</h3><p>Open Quest Shelf from <b>Unknown sources</b>. It walks you to two system screens, Accessibility and Usage access, where you switch it on. Done.</p></div>
-    </div>
-    <p class="sub" style="margin:26px 0 0">To go back to Meta's library at any time, use the pause button inside the app, switch the service off on the same Accessibility screen, or uninstall the app. Nothing in the system is changed for good.</p>
-  </div>
-</section>
-
-<section id="privacy">
-  <div class="wrap">
-    <div class="eyebrow">Privacy &amp; permissions</div>
-    <h2>No account. No analytics. Nothing sold.</h2>
-    <p class="sub">Everything the app knows about you stays on your headset.</p>
-    <div class="two">
-      <div class="panel">
-        <h3>What it sends</h3>
-        <ul>
-          <li>Only to load game names, genres and covers: the package name, title or store id of a game, to OculusDB (and a spare source on GitHub).</li>
-          <li>Nothing about you, your account, your play time or your settings.</li>
-          <li>One switch turns all network use off.</li>
-        </ul>
+<main id="top">
+  <header class="hero">
+    <div class="wrap">
+      <div>
+        <span class="tag">▶ 1 player · free · open source</span>
+        <h1><span class="q">Quest</span><br>Shelf</h1>
+        <p class="sub1">Press the Meta button.<br><mark>Get a better library.</mark></p>
+        <p class="lead">It opens in place of Meta's app library and shows your games the way you want them: sorted, in folders, with the ones you own but haven't installed right next to the ones you have.</p>
+        <div class="cta">
+          <a class="btn" href="https://github.com/unreal777/quest-shelf/releases/latest"><span class="blink">▶</span> Press start: download</a>
+          <a class="btn alt" href="#install">How to install</a>
+        </div>
+        <p class="meta"><b>v1.0.1</b> · Quest 3 · SideQuest or <code>adb</code> · no account · no ads · no analytics</p>
       </div>
-      <div class="panel">
-        <h3>Why it asks for permissions</h3>
-        <ul>
-          <li><b>Accessibility service:</b> the only way to start by itself and notice that Meta's library opened. It watches which windows are open, and nothing else.</li>
-          <li><b>Usage access:</b> your own play statistics, "last played" and app sizes.</li>
-          <li>The source is open, so you can check all of this.</li>
-        </ul>
+      <div class="rig">
+        <div class="win">
+          <div class="bar"><i></i><i></i><i></i><span>quest_shelf.exe</span></div>
+          <div class="scan"><img src="img/screenshot-1-library.jpg" width="1440" height="810" alt="The Quest Shelf library window on Quest 3: continue card, most played games, a grid of covers"></div>
+        </div>
       </div>
     </div>
-    <p class="sub" style="margin:22px 0 0"><a href="https://github.com/unreal777/quest-shelf/blob/main/PRIVACY.md">Read the full privacy notes →</a></p>
-  </div>
-</section>
+  </header>
 
-<section id="faq">
-  <div class="wrap">
-    <div class="eyebrow">Questions</div>
-    <h2>Good to know</h2>
-    <p class="sub"></p>
-    <details><summary>Is it safe? Will it break my headset?</summary><p>It's a normal Android app that doesn't touch the system. It can be switched off or uninstalled at any time and Meta's library comes right back. The code is open (MIT).</p></details>
-    <details><summary>Which headsets does it work on?</summary><p>It was built and tested on Quest 3 with Horizon OS v209. It may work on other Quest headsets, but that hasn't been tested.</p></details>
-    <details><summary>Why does it need an accessibility service?</summary><p>Android only lets an app start by itself after the headset boots, or react to the Meta button, through an accessibility service. Quest Shelf uses it to notice that Meta's library window opened and to open itself instead. It doesn't read what other apps show, and it doesn't tap or type for you.</p></details>
-    <details><summary>Can a Meta update break it?</summary><p>Possibly. It relies on how Horizon OS behaves today, partly on things Meta doesn't document. If it ever misfires over and over, it pauses itself so that Meta's library stays reachable, and an update will follow.</p></details>
-    <details><summary>Is it free?</summary><p>Yes, free and open source under the MIT license. No ads, no account.</p></details>
-    <details><summary>Is it from Meta?</summary><p>No. Quest Shelf is an unofficial tool and isn't affiliated with Meta. "Meta" and "Quest" belong to their owners.</p></details>
+  <div class="ticker" aria-hidden="true">
+    <div>
+      <span>265 games</span><span>74 installed</span><span>191 not installed</span><span>63 forgotten</span><span>0 accounts</span><span>0 ads</span><span>0 dollars</span><span>MIT license</span><span>press the meta button</span><span>get a better library</span>
+      <span>265 games</span><span>74 installed</span><span>191 not installed</span><span>63 forgotten</span><span>0 accounts</span><span>0 ads</span><span>0 dollars</span><span>MIT license</span><span>press the meta button</span><span>get a better library</span>
+    </div>
   </div>
-</section>
 
-<section>
+  <section id="features">
+    <div class="wrap">
+      <div class="kicker"><b>01</b> // inventory</div>
+      <h2>Loot you get on install</h2>
+      <p class="sub">Open the library the way you always do. The difference is what you see.</p>
+      <div class="inv">
+        <div class="slot legend"><span class="no">ITEM 01</span><div class="art"><i class="px" data-art="###.###/###.###/###.###/......./###.ooo/###.ooo/###.ooo"></i></div><h3>Installed + owned</h3><p>Games you own but haven't installed sit next to the ones you have. One tap switches between all, installed and not installed.</p></div>
+        <div class="slot rare"><span class="no">ITEM 02</span><div class="art"><i class="px" data-art="..###..../.#...#.../#..o..#../#..o..#../#..ooo.#/#.......#/.#.....#./..#####.."></i></div><h3>Sorted by last played</h3><p>The game you were just in comes first. Drag a tile where you want it and it stays there.</p></div>
+        <div class="slot uncommon"><span class="no">ITEM 03</span><div class="art"><i class="px" data-art="oooo...../#########/#.......#/#.......#/#.......#/#########"></i></div><h3>Folders, genres, search</h3><p>Favorites, your own folders, genre filters with counts. Hide what you never use.</p></div>
+        <div class="slot epic"><span class="no">ITEM 04</span><div class="art"><i class="px" data-art="#oooooo/#oooooo/#oooooo/#oooooo/#....../#....../#....../#......"></i></div><h3>Self-made marks</h3><p>New in your library, never launched, demo, barely played. Add your own: completed, didn't like.</p></div>
+        <div class="slot legend"><span class="no">ITEM 05</span><div class="art"><i class="px" data-art="#########/.#.....#./..#...#../...#.#.../....#..../...#.#.../..#ooo#../.#ooooo#./#########"></i></div><h3>Forgotten games</h3><p>Not played for 30 days (you choose), biggest first, with sizes. See what to uninstall to free up space.</p></div>
+        <div class="slot rare"><span class="no">ITEM 06</span><div class="art"><i class="px" data-art="o......../ooo....../ooooo..../ooooooo../ooooooooo/ooooooo../ooooo..../ooo....../o........"></i></div><h3>Running-game bar</h3><p>Open the menu while playing and get "back to the game" and "quit the game" right there.</p></div>
+        <div class="slot epic"><span class="no">ITEM 07</span><div class="art"><i class="px" data-art=".#########./###########/#ooooooooo#/#ooooooooo#/###ooooo###/..##...##.."></i></div><h3>MR / environment</h3><p>One button flips your home between mixed reality and Meta's virtual environment, like a double tap on the headset.</p></div>
+        <div class="slot uncommon"><span class="no">ITEM 08</span><div class="art"><i class="px" data-art="#########/#.......#/#.oo....#/#.oo....#/#..#..#.#/#.###.###/#########"></i></div><h3>Looks like it belongs</h3><p>Neutral greys that match Meta's shell, with the cover of your most played game softly in the background.</p></div>
+        <div class="slot common"><span class="no">ITEM 09</span><div class="art"><i class="px" data-art="#########/#.......#/#.ooooo.#/#.......#/#########/...##..../..#......"></i></div><h3>Backup + 5 languages</h3><p>Save and load your settings as a file. English, Russian, German, Spanish and French.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="screens">
+    <div class="wrap">
+      <div class="kicker"><b>02</b> // screenshots</div>
+      <h2>Gameplay footage</h2>
+      <p class="sub">Straight from a real Quest 3.</p>
+      <div class="shots">
+        <figure class="cart" style="--c: var(--cyan)"><div class="frame scan"><img loading="lazy" src="img/screenshot-2-not-installed.jpg" width="1440" height="810" alt="The Not installed view: games you own, with a download mark and demo badges"></div><figcaption><small>STAGE 1</small><b>Games you own but haven't installed</b> sit one tap away, with a download mark.</figcaption></figure>
+        <figure class="cart" style="--c: var(--yellow)"><div class="frame scan"><img loading="lazy" src="img/screenshot-3-forgotten.jpg" width="1440" height="810" alt="The Forgotten view: games not played for a month, with the room each one takes"></div><figcaption><small>STAGE 2</small><b>Forgotten games, with sizes.</b> See what to uninstall to free up space.</figcaption></figure>
+        <figure class="cart" style="--c: var(--lime)"><div class="frame scan"><img loading="lazy" src="img/screenshot-4-running.jpg" width="1440" height="810" alt="A green bar for the running game with Back to the game and Quit the game buttons"></div><figcaption><small>STAGE 3</small><b>The running game gets a bar</b> with "Back to the game" and "Quit the game".</figcaption></figure>
+        <figure class="cart" style="--c: var(--pink)"><div class="frame scan"><img loading="lazy" src="img/screenshot-5-genres.jpg" width="1440" height="810" alt="The genre list open, with counts per genre"></div><figcaption><small>STAGE 4</small><b>Genres with counts,</b> search, and a filter for marks.</figcaption></figure>
+        <figure class="cart" style="--c: var(--cyan)"><div class="frame scan"><img loading="lazy" src="img/screenshot-6-details.jpg" width="1440" height="810" alt="A game's menu: launch, favorite, completed, didn't like, store page, folder, rename, hide"></div><figcaption><small>STAGE 5</small><b>One menu per game:</b> favorite, completed, folder, rename, hide, store page.</figcaption></figure>
+      </div>
+    </div>
+  </section>
+
+  <section id="install">
+    <div class="wrap">
+      <div class="kicker"><b>03</b> // quest log</div>
+      <h2>Active quest: install</h2>
+      <p class="sub">Developer mode is needed once, because Quest Shelf comes from outside Meta's store. No computer needed after the APK is on the headset.</p>
+      <div class="log">
+        <header><span>Main quest · 3 steps</span><span>Difficulty: easy</span></header>
+        <div class="quest"><div class="chk">1</div><div><h3>Turn on developer mode</h3><p>In the Meta Horizon phone app: Devices → your headset → Developer mode. Needs a free developer account.</p></div><div class="xp">+100 XP</div></div>
+        <div class="quest"><div class="chk">2</div><div><h3>Install the APK</h3><p>Download it from <a href="https://github.com/unreal777/quest-shelf/releases/latest">the latest release</a> and install it with SideQuest, or run <code>adb install QuestShelf-1.0.1.apk</code>.</p></div><div class="xp">+100 XP</div></div>
+        <div class="quest"><div class="chk">3</div><div><h3>Follow the short guide</h3><p>Open Quest Shelf from <b>Unknown sources</b>. It walks you to two system screens, Accessibility and Usage access, where you switch it on.</p></div><div class="xp">+100 XP</div></div>
+        <div class="reward">Reward: <b>a better library</b> · pause button inside the app · Meta's library is one switch away</div>
+      </div>
+      <p class="sub" style="margin:28px 0 0">Want out? Use the pause button inside the app, switch the service off on the same Accessibility screen, or uninstall. Nothing in the system is changed for good.</p>
+    </div>
+  </section>
+
+  <section id="privacy">
+    <div class="wrap">
+      <div class="kicker"><b>04</b> // save data</div>
+      <h2>No account. No analytics.</h2>
+      <p class="sub">Everything the app knows about you stays on your headset. Nothing is sold, because there is nobody to sell it to.</p>
+      <div class="two">
+        <div class="panel" style="--c: var(--lime)">
+          <h3>What it sends</h3>
+          <ul>
+            <li>Only to load game names, genres and covers: the package name, title or store id of a game, to OculusDB (and a spare source on GitHub).</li>
+            <li>Nothing about you, your account, your play time or your settings.</li>
+            <li>One switch turns all network use off.</li>
+          </ul>
+        </div>
+        <div class="panel" style="--c: var(--pink)">
+          <h3>Why it asks for permissions</h3>
+          <ul>
+            <li><b>Accessibility service:</b> the only way to start by itself and notice that Meta's library opened. It watches which windows are open, and nothing else.</li>
+            <li><b>Usage access:</b> your own play statistics: "last played" and app sizes.</li>
+            <li>The source is open: check it yourself.</li>
+          </ul>
+        </div>
+      </div>
+      <p class="sub" style="margin:28px 0 0"><a href="https://github.com/unreal777/quest-shelf/blob/main/PRIVACY.md">▶ Read the full privacy notes</a></p>
+    </div>
+  </section>
+
+  <section id="faq">
+    <div class="wrap">
+      <div class="kicker"><b>05</b> // dialogue</div>
+      <h2>Ask the shopkeeper</h2>
+      <p class="sub"></p>
+      <details><summary>Is it safe? Will it break my headset?</summary><p>It's a normal Android app that doesn't touch the system. It can be switched off or uninstalled at any time and Meta's library comes right back. The code is open (MIT).</p></details>
+      <details><summary>Which headsets does it work on?</summary><p>It was built and tested on Quest 3 with Horizon OS v209. It may work on other Quest headsets, but that hasn't been tested.</p></details>
+      <details><summary>Why does it need an accessibility service?</summary><p>Android only lets an app start by itself after the headset boots, or react to the Meta button, through an accessibility service. Quest Shelf uses it to notice that Meta's library window opened and to open itself instead. It doesn't read what other apps show, and it doesn't tap or type for you.</p></details>
+      <details><summary>Can a Meta update break it?</summary><p>Possibly. It relies on how Horizon OS behaves today, partly on things Meta doesn't document. If it ever misfires over and over, it pauses itself so that Meta's library stays reachable, and an update will follow.</p></details>
+      <details><summary>Is it free?</summary><p>Yes. Free and open source under the MIT license. No ads, no account, no microtransactions.</p></details>
+      <details><summary>Is it from Meta?</summary><p>No. Quest Shelf is an unofficial tool and isn't affiliated with Meta. "Meta" and "Quest" belong to their owners.</p></details>
+    </div>
+  </section>
+
   <div class="wrap">
-    <div class="final">
-      <h2>Give your library a shelf</h2>
-      <p class="sub" style="margin:0 auto 28px">Free, open source, a minute to set up.</p>
+    <div class="cont">
+      <h2>Continue?</h2>
+      <div class="count" id="count">9</div>
+      <p>Free, open source, a minute to set up.</p>
       <div class="cta">
-        <a class="btn primary" href="https://github.com/unreal777/quest-shelf/releases/latest">⬇ Download Quest Shelf</a>
-        <a class="btn" href="https://github.com/unreal777/quest-shelf">View the source</a>
+        <a class="btn" href="https://github.com/unreal777/quest-shelf/releases/latest">▶ Yes: download</a>
+        <a class="btn alt" href="https://github.com/unreal777/quest-shelf">View the source</a>
       </div>
     </div>
   </div>
-</section>
 </main>
 
 <footer>
   <div class="wrap">
     <div>
-      <p><b>Quest Shelf</b> · MIT license · <a href="https://github.com/unreal777/quest-shelf">GitHub</a> · <a href="https://github.com/unreal777/quest-shelf/issues">Report a problem</a></p>
+      <h4>Credits</h4>
+      <p><b style="color:var(--text)">Quest Shelf</b> · MIT license · <a href="https://github.com/unreal777/quest-shelf">GitHub</a> · <a href="https://github.com/unreal777/quest-shelf/issues">Report a bug</a></p>
       <p>Unofficial. Not affiliated with Meta. Game covers belong to their publishers.</p>
     </div>
     <div>
-      <p>Covers and names via <a href="https://oculusdb.rui2015.me">OculusDB</a> and <a href="https://github.com/basti564/LauncherIcons">LauncherIcons</a>.</p>
+      <h4>Special thanks</h4>
+      <p><a href="https://oculusdb.rui2015.me">OculusDB</a> for names and covers · <a href="https://github.com/basti564/LauncherIcons">LauncherIcons</a> for spare covers · Fonts: Press Start 2P and Chakra Petch (SIL Open Font License).</p>
     </div>
+    <div class="thanks">Thanks for playing ◆ press the meta button ◆ get a better library</div>
   </div>
 </footer>
+
+<script>
+  // pixel icons: ASCII art -> SVG ( # = ink colour, o = accent colour )
+  document.querySelectorAll('i.px').forEach(function (el) {
+    var rows = el.dataset.art.split('/'), w = Math.max.apply(null, rows.map(function (r) { return r.length; })), h = rows.length, d = '', a = '';
+    rows.forEach(function (r, y) {
+      for (var x = 0; x < r.length; x++) {
+        if (r[x] === '#') d += 'M' + x + ' ' + y + 'h1v1h-1z';
+        if (r[x] === 'o') a += 'M' + x + ' ' + y + 'h1v1h-1z';
+      }
+    });
+    el.outerHTML = '<svg viewBox="0 0 ' + w + ' ' + h + '" aria-hidden="true"><path d="' + d + '" fill="currentColor"/><path d="' + a + '" fill="var(--c)"/></svg>';
+  });
+  document.querySelectorAll('.slot .art').forEach(function (a) { a.style.color = '#f1f1e6'; });
+
+  // the "continue?" countdown
+  var n = 9, c = document.getElementById('count');
+  if (!matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    setInterval(function () { n = n === 0 ? 9 : n - 1; c.textContent = n; }, 1000);
+  }
+
+  // up up down down left right left right B A
+  var code = [38,38,40,40,37,39,37,39,66,65], pos = 0;
+  addEventListener('keydown', function (e) {
+    pos = e.keyCode === code[pos] ? pos + 1 : (e.keyCode === code[0] ? 1 : 0);
+    if (pos === code.length) { document.body.classList.toggle('party'); pos = 0; }
+  });
+</script>
 </body>
 </html>
