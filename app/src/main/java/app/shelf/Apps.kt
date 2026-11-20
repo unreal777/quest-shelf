@@ -130,10 +130,6 @@ object Apps {
     var running: String? = null
         private set
 
-    /** For looking at the "running now" bar where no game can run: `am start ... --es running <package>`. */
-    @Volatile
-    var pretendRunning: String? = null
-
     private fun findRunning(c: Context): String? {
         if (!hasUsageAccess(c)) return null
         return try {
@@ -172,7 +168,7 @@ object Apps {
     }
 
     /** Looks again right now (heavy: from a background thread). */
-    fun refreshRunning(c: Context): String? = (pretendRunning ?: findRunning(c)).also {
+    fun refreshRunning(c: Context): String? = findRunning(c).also {
         if (it != running) Log.i("Shelf", "running now: ${it ?: "nothing"}")
         running = it
     }

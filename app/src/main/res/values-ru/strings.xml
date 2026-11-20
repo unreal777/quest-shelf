@@ -92,10 +92,10 @@
     <string name="set_service">Фоновая служба</string>
     <string name="svc_running">Работает</string>
     <string name="svc_enabled_not_running">Включена, но не запущена — перезагрузи шлем</string>
-    <string name="svc_off">Выключена — запусти install.ps1 на компьютере</string>
+    <string name="svc_off">Выключена — нажми, чтобы включить</string>
     <string name="set_usage">Статистика игр</string>
     <string name="usage_ok">Доступна</string>
-    <string name="usage_no">Нет доступа — запусти install.ps1 на компьютере</string>
+    <string name="usage_no">Нет доступа — нажми, чтобы разрешить</string>
     <string name="set_owned">Купленные игры</string>
     <string name="owned_denied">Система не дала доступ к библиотеке</string>
     <string name="owned_never">Еще не проверялись</string>
@@ -220,4 +220,21 @@
     <string name="g_stealth">Стелс</string>
     <string name="g_combat">Бои</string>
     <string name="g_dancing">Танцы</string>
+    <string name="setup_title">Настройка Shelf</string>
+    <string name="setup_intro">Shelf нужны две вещи, которые включаются в настройках шлема. Каждая строка ниже открывает нужный экран; после этого вернись сюда.</string>
+    <string name="setup_go">Открыть</string>
+    <string name="setup_service">Открываться вместо библиотеки Meta</string>
+    <string name="setup_service_on">Включено. Shelf открывается по кнопке меню и после включения шлема.</string>
+    <string name="setup_service_off">Выключено. Пока это так, Shelf — просто ещё одно приложение в библиотеке.</string>
+    <string name="setup_service_hint">В открывшемся списке найди «%s» и включи. Android предупредит, что служба видит экран: Shelf смотрит только, какое окно сейчас впереди.</string>
+    <string name="setup_restricted">Переключатель серый и не нажимается?</string>
+    <string name="setup_restricted_sub">Открой страницу приложения, затем меню ⋮ и «Разрешить ограниченные настройки», и попробуй снова.</string>
+    <string name="setup_usage">Статистика игр</string>
+    <string name="setup_usage_on">Разрешено. Работают «последние», время в играх и плашка запущенной игры.</string>
+    <string name="setup_usage_off">Не разрешено. В открывшемся списке найди Shelf и разреши.</string>
+    <string name="setup_net_note">Чтобы получить обложку, Shelf запрашивает её у сервиса OculusDB (и у запасного источника на GitHub) по имени пакета игры, её названию или номеру в магазине. Ничего о тебе и твоём аккаунте не отправляется.</string>
+    <string name="setup_no_screen">В этом шлеме нет такого экрана. Способ через компьютер описан в README.</string>
+    <string name="setup_reminder">Shelf пока не открывается вместо библиотеки Meta</string>
+    <string name="setup_open">Настроить</string>
+    <string name="setup_hide">Больше не напоминать</string>
 </resources>

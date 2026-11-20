@@ -92,10 +92,10 @@
     <string name="set_service">Servicio en segundo plano</string>
     <string name="svc_running">En marcha</string>
     <string name="svc_enabled_not_running">Activado pero sin iniciar — reinicia el visor</string>
-    <string name="svc_off">Desactivado — ejecuta install.ps1 en el PC</string>
+    <string name="svc_off">Desactivado — toca para activarlo</string>
     <string name="set_usage">Estadísticas de juego</string>
     <string name="usage_ok">Disponibles</string>
-    <string name="usage_no">Sin acceso — ejecuta install.ps1 en el PC</string>
+    <string name="usage_no">Sin acceso — toca para permitirlo</string>
     <string name="set_owned">Juegos comprados</string>
     <string name="owned_denied">El sistema negó el acceso a la biblioteca</string>
     <string name="owned_never">Aún sin comprobar</string>
@@ -220,4 +220,21 @@
     <string name="g_stealth">Sigilo</string>
     <string name="g_combat">Combate</string>
     <string name="g_dancing">Baile</string>
+    <string name="setup_title">Configurar Shelf</string>
+    <string name="setup_intro">Shelf necesita dos cosas que se activan en los ajustes del visor. Cada fila abre la pantalla correcta; vuelve aquí después.</string>
+    <string name="setup_go">Abrir</string>
+    <string name="setup_service">Abrir en lugar de la biblioteca de Meta</string>
+    <string name="setup_service_on">Activado. Shelf se abre con el botón de menú y al encender el visor.</string>
+    <string name="setup_service_off">Desactivado. Mientras siga así, Shelf es solo una app más de la biblioteca.</string>
+    <string name="setup_service_hint">En la lista, busca «%s» y actívalo. Android avisará de que el servicio puede ver la pantalla: Shelf solo mira qué ventana está delante.</string>
+    <string name="setup_restricted">¿El interruptor está en gris?</string>
+    <string name="setup_restricted_sub">Abre la página de la app, luego el menú ⋮ y «Permitir ajustes restringidos», y vuelve a intentarlo.</string>
+    <string name="setup_usage">Estadísticas de juego</string>
+    <string name="setup_usage_on">Permitido. Funcionan «últimos jugados», el tiempo de juego y el juego en ejecución.</string>
+    <string name="setup_usage_off">No permitido. En la lista, busca Shelf y permítelo.</string>
+    <string name="setup_net_note">Para obtener una carátula, Shelf la pide al servicio OculusDB (y a una fuente de reserva en GitHub) por el nombre del paquete, el título o el número de tienda del juego. No se envía nada sobre ti ni tu cuenta.</string>
+    <string name="setup_no_screen">Este visor no tiene esa pantalla. La forma con ordenador está en el README.</string>
+    <string name="setup_reminder">Shelf aún no se abre en lugar de la biblioteca de Meta</string>
+    <string name="setup_open">Configurar</string>
+    <string name="setup_hide">No recordar más</string>
 </resources>

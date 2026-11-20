@@ -11,3 +11,8 @@ dist/
 
 # screenshots taken while working on the UI
 preview*.png
+
+# the release signing key and the file that points at it: never in the repository
+keystore.properties
+*.jks
+*.keystore

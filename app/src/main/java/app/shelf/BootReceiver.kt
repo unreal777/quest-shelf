@@ -7,9 +7,8 @@ import android.os.Handler
 import android.os.Looper
 
 /**
- * Fallback autostart for when the accessibility service is not enabled.
- * Works only if the app may start activities from the background
- * (install.ps1 grants SYSTEM_ALERT_WINDOW for that).
+ * Fallback autostart for when the accessibility service is not enabled. Works only where the
+ * system lets the app start an activity from the background; normally the service does this.
  */
 class BootReceiver : BroadcastReceiver() {
     override fun onReceive(c: Context, i: Intent) {

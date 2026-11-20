@@ -93,10 +93,10 @@
     <string name="set_service">Background service</string>
     <string name="svc_running">Running</string>
     <string name="svc_enabled_not_running">Enabled but not running — restart the headset</string>
-    <string name="svc_off">Off — run install.ps1 on the PC</string>
+    <string name="svc_off">Off — tap to switch it on</string>
     <string name="set_usage">Play statistics</string>
     <string name="usage_ok">Available</string>
-    <string name="usage_no">No access — run install.ps1 on the PC</string>
+    <string name="usage_no">No access — tap to allow it</string>
     <string name="set_owned">Purchased games</string>
     <string name="owned_denied">The system denied access to the library</string>
     <string name="owned_never">Not checked yet</string>
@@ -221,4 +221,21 @@
     <string name="g_stealth">Stealth</string>
     <string name="g_combat">Combat</string>
     <string name="g_dancing">Dancing</string>
+    <string name="setup_title">Setting up Shelf</string>
+    <string name="setup_intro">Shelf needs two things switched on in the headset\'s settings. Each row below opens the right screen; come back here afterwards.</string>
+    <string name="setup_go">Open</string>
+    <string name="setup_service">Open instead of Meta\'s library</string>
+    <string name="setup_service_on">On. Shelf opens on the menu button and after the headset starts.</string>
+    <string name="setup_service_off">Off. Until it is on, Shelf is just one more app in the library.</string>
+    <string name="setup_service_hint">In the list that opens, find “%s” and switch it on. Android will warn that the service can see what is on screen: Shelf only looks at which window is in front.</string>
+    <string name="setup_restricted">The switch is greyed out?</string>
+    <string name="setup_restricted_sub">Open the app\'s page, then the ⋮ menu, then “Allow restricted settings”, and try again.</string>
+    <string name="setup_usage">Play statistics</string>
+    <string name="setup_usage_on">Allowed. “Last played”, play time and the running game work.</string>
+    <string name="setup_usage_off">Not allowed. In the list that opens, find Shelf and allow it.</string>
+    <string name="setup_net_note">To get a cover, Shelf asks the OculusDB service (and a spare source on GitHub) for it by the game\'s package name, title or store id. Nothing about you or your account is sent.</string>
+    <string name="setup_no_screen">This headset has no such screen. See the README for the way with a computer.</string>
+    <string name="setup_reminder">Shelf does not open instead of Meta\'s library yet</string>
+    <string name="setup_open">Set up</string>
+    <string name="setup_hide">Do not remind me</string>
 </resources>

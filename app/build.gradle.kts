@@ -1,3 +1,4 @@
+import java.util.Properties
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
@@ -5,16 +6,43 @@ plugins {
     id("org.jetbrains.kotlin.android")
 }
 
+// The release key lives outside the repository: keystore.properties (not in git) says where.
+// Without that file `assembleRelease` still builds, but the APK comes out unsigned.
+val keystoreFile = rootProject.file("keystore.properties")
+val keystore = Properties().apply {
+    if (keystoreFile.exists()) keystoreFile.inputStream().use { load(it) }
+}
+
 android {
     namespace = "app.shelf"
     compileSdk = 35
 
+    signingConfigs {
+        if (keystoreFile.exists()) {
+            create("release") {
+                storeFile = rootProject.file(keystore.getProperty("storeFile"))
+                storePassword = keystore.getProperty("storePassword")
+                keyAlias = keystore.getProperty("keyAlias")
+                keyPassword = keystore.getProperty("keyPassword")
+            }
+        }
+    }
+
+    buildTypes {
+        release {
+            isMinifyEnabled = false
+            signingConfig = signingConfigs.findByName("release")
+        }
+    }
+
     defaultConfig {
-        applicationId = "app.shelf"
+        // -PappId=app.shelf.fresh builds a copy that installs next to the real one: a way to
+        // see the first start without wiping the real one's settings
+        applicationId = (project.findProperty("appId") as String?) ?: "app.shelf"
         minSdk = 29
         targetSdk = 34
-        versionCode = 1
-        versionName = "0.1"
+        versionCode = 2
+        versionName = "0.9.0"
     }
 
     compileOptions {

@@ -92,10 +92,10 @@
     <string name="set_service">Service en arrière-plan</string>
     <string name="svc_running">En marche</string>
     <string name="svc_enabled_not_running">Activé mais pas démarré — redémarrez le casque</string>
-    <string name="svc_off">Désactivé — lancez install.ps1 sur le PC</string>
+    <string name="svc_off">Désactivé — touche pour l\'activer</string>
     <string name="set_usage">Statistiques de jeu</string>
     <string name="usage_ok">Disponibles</string>
-    <string name="usage_no">Pas d\'accès — lancez install.ps1 sur le PC</string>
+    <string name="usage_no">Pas d\'accès — touche pour l\'autoriser</string>
     <string name="set_owned">Jeux achetés</string>
     <string name="owned_denied">Le système a refusé l\'accès à la bibliothèque</string>
     <string name="owned_never">Pas encore vérifiés</string>
@@ -220,4 +220,21 @@
     <string name="g_stealth">Infiltration</string>
     <string name="g_combat">Affrontement</string>
     <string name="g_dancing">Danse</string>
+    <string name="setup_title">Configurer Shelf</string>
+    <string name="setup_intro">Shelf a besoin de deux choses qui s\'activent dans les réglages du casque. Chaque ligne ouvre le bon écran ; reviens ici ensuite.</string>
+    <string name="setup_go">Ouvrir</string>
+    <string name="setup_service">S\'ouvrir à la place de la bibliothèque Meta</string>
+    <string name="setup_service_on">Activé. Shelf s\'ouvre avec le bouton menu et au démarrage du casque.</string>
+    <string name="setup_service_off">Désactivé. Tant que c\'est le cas, Shelf n\'est qu\'une app de plus dans la bibliothèque.</string>
+    <string name="setup_service_hint">Dans la liste, trouve « %s » et active-le. Android prévient que le service peut voir l\'écran : Shelf regarde seulement quelle fenêtre est devant.</string>
+    <string name="setup_restricted">L\'interrupteur est grisé ?</string>
+    <string name="setup_restricted_sub">Ouvre la page de l\'app, puis le menu ⋮ et « Autoriser les paramètres restreints », et réessaie.</string>
+    <string name="setup_usage">Statistiques de jeu</string>
+    <string name="setup_usage_on">Autorisé. « Derniers joués », le temps de jeu et le jeu en cours fonctionnent.</string>
+    <string name="setup_usage_off">Non autorisé. Dans la liste, trouve Shelf et autorise-le.</string>
+    <string name="setup_net_note">Pour obtenir une jaquette, Shelf la demande au service OculusDB (et à une source de secours sur GitHub) par le nom de paquet, le titre ou le numéro de boutique du jeu. Rien sur toi ni ton compte n\'est envoyé.</string>
+    <string name="setup_no_screen">Ce casque n\'a pas cet écran. La méthode avec un ordinateur est dans le README.</string>
+    <string name="setup_reminder">Shelf ne s\'ouvre pas encore à la place de la bibliothèque Meta</string>
+    <string name="setup_open">Configurer</string>
+    <string name="setup_hide">Ne plus rappeler</string>
 </resources>

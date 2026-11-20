@@ -1,5 +1,6 @@
 package app.shelf
 
+import android.app.Dialog
 import android.app.Activity
 import android.content.ComponentName
 import android.content.Context
@@ -161,7 +162,13 @@ open class MainActivity : Activity() {
     private lateinit var filterRow: LinearLayout
     private lateinit var heroBox: FrameLayout
     private lateinit var runBox: FrameLayout
+    private lateinit var setupBox: FrameLayout
+    private var setupKey = "-"
+    private var setupDialog: Dialog? = null
     private var runKey = "-"
+
+    /** The game the user has just told to quit: its bar is not shown while that is being checked. */
+    private var quitting: String? = null
     private lateinit var backdrop: Backdrop
 
     /** Grid position to come back to after the window was made anew, -1 = none. */
@@ -351,6 +358,10 @@ open class MainActivity : Activity() {
         }
         root.addView(filterScroll, LinearLayout.LayoutParams(MATCH, WRAP).apply { topMargin = dp(8) })
 
+        // ---- a reminder for as long as the launcher has not been switched on in the system
+        setupBox = FrameLayout(this).apply { visibility = View.GONE }
+        root.addView(setupBox, LinearLayout.LayoutParams(MATCH, WRAP).apply { topMargin = dp(10) })
+
         // ---- the game that is running under the launcher: back to it, or quit it
         runBox = FrameLayout(this).apply { visibility = View.GONE }
         root.addView(runBox, LinearLayout.LayoutParams(MATCH, WRAP).apply { topMargin = dp(10) })
@@ -416,6 +427,8 @@ open class MainActivity : Activity() {
         }
         links = SystemLinks.build(this)
         for (link in links) {
+            // Meta's library is what this launcher stands in for: the way to it is in the settings
+            if (link.id == SystemLinks.LIBRARY) continue
             dock.addView(ui.iconButton(link.ic, s(link.title), size = 46, plain = true) { openLink(link) })
         }
         root.addView(
@@ -453,6 +466,13 @@ open class MainActivity : Activity() {
         reload()
         WatchService.endStockLibraryPass()
         openRequested(intent)
+        // back from a system screen: show what has changed there
+        if (setupDialog?.isShowing == true) {
+            showSetup()
+        } else if (!Store.setupSeen) {
+            Store.setupSeen = true
+            if (!serviceEnabled() || !Apps.hasUsageAccess(this)) showSetup()
+        }
     }
 
     override fun onNewIntent(intent: Intent) {
@@ -462,10 +482,6 @@ open class MainActivity : Activity() {
 
     /** `--es open <id>` on the launch intent opens that system shortcut, e.g. from a script. */
     private fun openRequested(i: Intent?) {
-        i?.getStringExtra("running")?.let {
-            i.removeExtra("running")
-            Apps.pretendRunning = it.ifEmpty { null }
-        }
         val id = i?.getStringExtra("open") ?: return
         i.removeExtra("open")
         links.firstOrNull { it.id == id }?.let { openLink(it) }
@@ -707,6 +723,7 @@ open class MainActivity : Activity() {
         buildTabs(folders)
         buildFilterRow()
         buildGenreBox()
+        buildSetupReminder()
         buildRunning()
         buildHero()
         buildWallpaper()
@@ -935,7 +952,9 @@ open class MainActivity : Activity() {
      * game is running underneath.
      */
     private fun buildRunning() {
-        val a = Apps.running?.let { pkg -> all.firstOrNull { it.pkg == pkg && !it.notInstalled && !it.isSystem } }
+        val a = Apps.running?.takeIf { it != quitting }?.let { pkg ->
+            all.firstOrNull { it.pkg == pkg && !it.notInstalled && !it.isSystem }
+        }
         val key = if (a == null) "" else "${a.pkg}:${label(a)}:${a.hasCover}"
         if (key == runKey) return
         runKey = key
@@ -1039,24 +1058,33 @@ open class MainActivity : Activity() {
         } catch (e: Exception) {
             android.util.Log.w("Shelf", "could not ask the shell to go home", e)
         }
-        handler.postDelayed({
-            thread {
-                val still = Apps.refreshRunning(this) == a.pkg
-                runOnUiThread {
-                    if (isDestroyed) return@runOnUiThread
-                    if (still) {
-                        android.util.Log.i("Shelf", "${a.pkg} is still running: showing Meta's menu")
-                        toast(s(R.string.t_quit_failed))
-                        links.firstOrNull { it.id == SystemLinks.LIBRARY }?.let { openLink(it) }
-                    } else {
-                        android.util.Log.i("Shelf", "${a.pkg} was quit")
-                        // back in front, in case the trip home put the launcher away
-                        WatchService.openLauncher(applicationContext, "game quit")
-                        reload()
-                    }
+        // The bar goes at once: the game is gone within a second, while the system's record of
+        // it lags behind. Whether it really went is checked in the background.
+        quitting = a.pkg
+        refresh()
+        thread {
+            var still = true
+            for (i in 0 until 12) {
+                Thread.sleep(350)
+                still = Apps.refreshRunning(this) == a.pkg
+                if (!still) break
+            }
+            runOnUiThread {
+                quitting = null
+                if (isDestroyed) return@runOnUiThread
+                if (still) {
+                    android.util.Log.i("Shelf", "${a.pkg} is still running: showing Meta's menu")
+                    refresh()
+                    toast(s(R.string.t_quit_failed))
+                    links.firstOrNull { it.id == SystemLinks.LIBRARY }?.let { openLink(it) }
+                } else {
+                    android.util.Log.i("Shelf", "${a.pkg} was quit")
+                    // back in front, in case the trip home put the launcher away
+                    WatchService.openLauncher(applicationContext, "game quit")
+                    reload()
                 }
             }
-        }, 2500)
+        }
     }
 
     private fun buildHero() {
@@ -1766,6 +1794,133 @@ open class MainActivity : Activity() {
 
     // ------------------------------------------------------------- settings
 
+    // ---------------------------------------------------------------- setup
+
+    /** Opens the first of these system screens that this headset has. */
+    private fun openSystemScreen(vararg intents: Intent): Boolean {
+        for (i in intents) {
+            if (i.resolveActivity(packageManager) == null) continue
+            try {
+                startActivity(i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+                return true
+            } catch (e: Exception) {
+                android.util.Log.w("Shelf", "could not open $i", e)
+            }
+        }
+        return false
+    }
+
+    /**
+     * A screen of Android's own settings app, asked for by name first. Horizon OS answers the
+     * usual settings actions with Meta's settings, which have no such pages; the Android ones
+     * are still on the headset and open when named directly.
+     */
+    private fun androidScreen(cls: String, action: String, data: Uri? = null): Array<Intent> = arrayOf(
+        Intent(action, data).setClassName("com.android.settings", "com.android.settings.$cls"),
+        Intent(action, data),
+    )
+
+    private fun accessibilityScreen() =
+        androidScreen("Settings\$AccessibilitySettingsActivity", Settings.ACTION_ACCESSIBILITY_SETTINGS)
+
+    private fun usageScreen() =
+        androidScreen("Settings\$UsageAccessSettingsActivity", Settings.ACTION_USAGE_ACCESS_SETTINGS)
+
+    private fun appDetails() = androidScreen(
+        "applications.InstalledAppDetails",
+        Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse("package:$packageName")
+    )
+
+    /** The one line on the main screen that says the launcher is not doing its main job yet. */
+    private fun buildSetupReminder() {
+        val needed = !serviceEnabled() && !Store.setupHushed
+        val key = if (needed) "on" else ""
+        if (key == setupKey) return
+        setupKey = key
+        setupBox.removeAllViews()
+        if (!needed) {
+            setupBox.visibility = View.GONE
+            return
+        }
+        val row = LinearLayout(this).apply {
+            orientation = LinearLayout.HORIZONTAL
+            gravity = Gravity.CENTER_VERTICAL
+            background = ui.round(Pal.GLASS, 24)
+            setPadding(dp(16), dp(8), dp(4), dp(8))
+        }
+        row.addView(
+            ImageView(this).apply { setImageDrawable(Icon(Ic.INFO, Pal.GOLD)) },
+            LinearLayout.LayoutParams(dp(24), dp(24)).apply { rightMargin = dp(12) }
+        )
+        row.addView(ui.text(s(R.string.setup_reminder), 15f), LinearLayout.LayoutParams(0, WRAP, 1f))
+        row.addView(ui.chip(s(R.string.setup_open), true, small = true) { showSetup() })
+        row.addView(ui.iconButton(Ic.CLOSE, s(R.string.setup_hide), size = 40, plain = true) {
+            Store.setupHushed = true
+            refresh()
+        })
+        setupBox.addView(row, FrameLayout.LayoutParams(MATCH, WRAP))
+        setupBox.visibility = View.VISIBLE
+    }
+
+    /**
+     * The guide that stands in for an install script: what the launcher needs from the system,
+     * whether it has it, and the system screen where it is switched on. Shown by itself on the
+     * first start, and again (rebuilt) every time the user comes back from one of those screens.
+     */
+    private fun showSetup() {
+        setupDialog?.dismiss()
+        setupDialog = ui.sheet(s(R.string.setup_title), 760) { body, _ ->
+            body.addView(ui.text(s(R.string.setup_intro), 15f, Pal.DIM).apply {
+                setPadding(dp(6), 0, dp(6), dp(10))
+            })
+            fun note(text: String) = body.addView(ui.text(text, 13f, Pal.DIM).apply {
+                setPadding(dp(8), 0, dp(8), dp(10))
+            })
+
+            // ---- 1. the service: opening in place of Meta's library, autostart, back to the middle
+            val svcOn = serviceEnabled()
+            val svcOk = svcOn && WatchService.running
+            ui.row(
+                body, if (svcOk) Ic.OK_CIRCLE else Ic.SWAP, s(R.string.setup_service),
+                sub = s(
+                    when {
+                        svcOk -> R.string.setup_service_on
+                        svcOn -> R.string.svc_enabled_not_running
+                        else -> R.string.setup_service_off
+                    }
+                ),
+                value = if (svcOk) null else s(R.string.setup_go),
+                tint = if (svcOk) Pal.GREEN else Pal.GOLD
+            ) {
+                if (!openSystemScreen(*accessibilityScreen())) toast(s(R.string.setup_no_screen))
+            }
+            if (!svcOk) {
+                note(s(R.string.setup_service_hint, "Shelf"))
+                ui.row(body, Ic.INFO, s(R.string.setup_restricted), sub = s(R.string.setup_restricted_sub)) {
+                    if (!openSystemScreen(*appDetails())) toast(s(R.string.setup_no_screen))
+                }
+            }
+
+            // ---- 2. usage statistics: "last played", play time, the running game
+            val usageOk = Apps.hasUsageAccess(this)
+            ui.row(
+                body, if (usageOk) Ic.OK_CIRCLE else Ic.CHART, s(R.string.setup_usage),
+                sub = s(if (usageOk) R.string.setup_usage_on else R.string.setup_usage_off),
+                value = if (usageOk) null else s(R.string.setup_go),
+                tint = if (usageOk) Pal.GREEN else Pal.GOLD
+            ) {
+                if (!openSystemScreen(*usageScreen())) toast(s(R.string.setup_no_screen))
+            }
+
+            // ---- 3. what goes over the network, said plainly, with its switch
+            ui.toggle(body, Ic.DOWNLOAD, s(R.string.opt_meta), Store.fetchMeta) {
+                Store.fetchMeta = it
+                if (it) reload()
+            }
+            note(s(R.string.setup_net_note))
+        }
+    }
+
     private fun serviceEnabled(): Boolean {
         val s = Settings.Secure.getString(contentResolver, Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES)
             ?: return false
@@ -1799,7 +1954,10 @@ open class MainActivity : Activity() {
                     }
                 ),
                 tint = if (svcOk) Pal.GREEN else Pal.RED
-            )
+            ) {
+                d.dismiss()
+                showSetup()
+            }
             val usageOk = Apps.hasUsageAccess(this)
             ui.row(
                 body, Ic.CHART, s(R.string.set_usage),
@@ -1809,7 +1967,10 @@ open class MainActivity : Activity() {
                     else -> s(R.string.usage_ok)
                 },
                 tint = if (usageOk) Pal.GREEN else Pal.RED
-            )
+            ) {
+                d.dismiss()
+                showSetup()
+            }
             ui.row(
                 body, Ic.BAG, s(R.string.set_owned),
                 sub = when {
@@ -1910,8 +2071,14 @@ open class MainActivity : Activity() {
                 d.dismiss()
                 showEventLog()
             }
+            links.firstOrNull { it.id == SystemLinks.LIBRARY }?.let { library ->
+                ui.row(body, Ic.GRID, s(R.string.sys_library)) {
+                    d.dismiss()
+                    openLink(library)
+                }
+            }
             ui.row(body, Ic.OPEN, s(R.string.act_a11y)) {
-                open(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS))
+                if (!openSystemScreen(*accessibilityScreen())) toast(s(R.string.setup_no_screen))
             }
         }
     }

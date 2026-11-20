@@ -51,6 +51,16 @@ object Store {
         get() = p.getBoolean("autostartWake", false)
         set(v) = p.edit().putBoolean("autostartWake", v).apply()
 
+    /** The first-run guide has been shown once. */
+    var setupSeen: Boolean
+        get() = p.getBoolean("setupSeen", false)
+        set(v) = p.edit().putBoolean("setupSeen", v).apply()
+
+    /** The user closed the "not set up yet" reminder on the main screen. */
+    var setupHushed: Boolean
+        get() = p.getBoolean("setupHushed", false)
+        set(v) = p.edit().putBoolean("setupHushed", v).apply()
+
     var intercept: Boolean
         get() = p.getBoolean("intercept", true)
         set(v) = p.edit().putBoolean("intercept", v).apply()
