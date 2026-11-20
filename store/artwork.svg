@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720">
+  <!-- Listing artwork: transparent background, the app's icon and its name. -->
+  <g transform="translate(250 210) scale(3.6)">
+    <path fill="#1E222C" d="M20,0h68a20,20 0,0 1,20 20v68a20,20 0,0 1,-20 20h-68a20,20 0,0 1,-20 -20v-68a20,20 0,0 1,20 -20z"/>
+    <path fill="#6EA8FF" d="M24,24h26v26h-26z M58,24h26v26h-26z M24,58h26v26h-26z"/>
+    <path fill="#E8EAF0" d="M58,58h26v26h-26z"/>
+  </g>
+  <text x="680" y="372" font-family="Segoe UI, Roboto, Helvetica, Arial, sans-serif" font-size="150" font-weight="700" fill="#FFFFFF" stroke="#1E222C" stroke-width="6" paint-order="stroke">Shelf</text>
+  <text x="684" y="448" font-family="Segoe UI, Roboto, Helvetica, Arial, sans-serif" font-size="44" font-weight="500" fill="#FFFFFF" stroke="#1E222C" stroke-width="5" paint-order="stroke">a better app library for Quest</text>
+</svg>

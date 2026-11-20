@@ -62,12 +62,13 @@ them back. Use it before reinstalling Shelf or moving to another headset.
 
 Covers, store names and genres come from [OculusDB](https://oculusdb.rui2015.me), with
 [LauncherIcons](https://github.com/basti564/LauncherIcons) as a spare source for covers. To get
-them, Shelf sends the package name, the title or the store id of a game, nothing else: no account, no list of
-what you own, no usage data. A catalog of store apps is bundled with the app, so the list of
-owned games is worked out on the headset. The switch "Load covers, names and genres from the
-internet" turns all network use off.
+them, Shelf sends the package name, the title or the store id of a game, nothing else: no account,
+no usage data, no settings. Games are asked for one by one, so those services can tell which games
+are in your list. A catalog of store apps is bundled with the app, so which games you own is worked
+out on the headset. The switch "Load covers, names and genres from the internet" turns all network
+use off.
 
-Shelf has no analytics and no account of its own.
+Shelf has no analytics and no account of its own. Details: [PRIVACY.md](PRIVACY.md).
 
 ## Limits worth knowing
 
@@ -87,23 +88,22 @@ Android Studio is not required: JDK 17, the Android SDK and Gradle are.
 gradle assembleDebug
 ```
 
-For a release build, create a signing key once and keep it safe (without it no update can be
-published):
+For a release build, create a signing key once and keep a copy of it safe (without it no update
+can be published). On Windows this script does it, asking only for a password:
 
 ```
-keytool -genkeypair -v -keystore shelf-release.jks -alias shelf -keyalg RSA -keysize 4096 -validity 10000
+powershell -ExecutionPolicy Bypass -File tools\make-release-key.ps1
 ```
 
-Then put a `keystore.properties` next to `settings.gradle.kts` (it is not in git):
+It writes `shelf-release.jks` and `keystore.properties` next to `settings.gradle.kts`; both are
+in `.gitignore`. By hand: `keytool -genkeypair -v -keystore shelf-release.jks -alias shelf
+-keyalg RSA -keysize 4096 -validity 10000`, then a `keystore.properties` with the lines
+`storeFile`, `storePassword`, `keyAlias`, `keyPassword`. Then run `gradle assembleRelease`.
 
-```
-storeFile=shelf-release.jks
-storePassword=...
-keyAlias=shelf
-keyPassword=...
-```
+## License
 
-and run `gradle assembleRelease`.
+[MIT](LICENSE). Shelf is unofficial and not affiliated with Meta. "Meta" and "Quest" belong to
+their owners.
 
 ## Credits
 
