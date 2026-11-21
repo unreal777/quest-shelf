@@ -463,6 +463,7 @@
   var BUDGET = 30000;                       // cents
   var W = 0, H = 0, S = 76;
   var state = 'idle', why = '', roundLen = 60;
+  var dupes = 0;
   var items = [], lib = [], pops = [], wallet = BUDGET, spent = 0, listSum = 0, t = 0, last = 0, spawnT = 0, flash = 0, shake = 0;
   var coupon = null, lastX = 0, targetQueue = [];
   var best = 0, visible = true, soundOn = false, ac = null;
@@ -513,7 +514,7 @@
   // ---- the game ----
   function reset() {
     items = []; lib = []; pops = []; wallet = BUDGET; spent = 0; listSum = 0; t = 0; spawnT = 0.5; flash = 0; shake = 0;
-    coupon = null; targetQueue = []; lastX = W / 2; why = '';
+    coupon = null; targetQueue = []; lastX = W / 2; why = ''; dupes = 0;
   }
   function start() { reset(); state = 'play'; last = performance.now(); beep(440, 0.08); beep(660, 0.12); }
 
@@ -547,7 +548,9 @@
     if (r < 0.07) {
       items.push({ kind: 'next', x: spawnX(), y: -S, s: S, vy: speed(t / roundLen), rot: 0, pct: pick([20, 25, 30, 40, 50]) });
     } else if (r < 0.12) {
-      var g = pick(GAMES);
+      // a secret coupon is for a game you do not own yet
+      var fresh = GAMES.filter(function (x) { return lib.indexOf(x) < 0; });
+      var g = pick(fresh.length ? fresh : GAMES);
       items.push({ kind: 'target', g: g, x: spawnX(), y: -S, s: S, vy: speed(t / roundLen), rot: 0 });
       // the game the coupon is for is sure to fall soon, so the coupon is worth catching
       targetQueue.push({ g: g, at: t + 1.4 + Math.random() * 1.2 });
@@ -556,8 +559,16 @@
 
   function pop(x, y, lines, life) { pops.push({ x: x, y: y, lines: lines, life: life || 1.4, max: life || 1.4 }); }
 
+  var FACEPALMS = ['DAMN, I HAVE IT ALREADY', 'FACEPALM', 'I OWN THIS ONE...', 'ALREADY IN MY LIBRARY', 'WHY DID I CATCH THAT'];
   function buy(it) {
     var cost = it.price, note = null, g = it.g;
+    // the same game twice: nothing is bought, nothing is charged
+    if (lib.indexOf(g) >= 0) {
+      dupes++; shake = reduce ? 0 : 0.2;
+      pop(it.x, H - 130, [{ t: '(-_-)', c: '#ffd23f', s: 12 }, { t: pick(FACEPALMS), c: '#ff3d81', s: 9 }, { t: g.n, c: '#a3a3bc', s: 8 }], 1.7);
+      beep(180, 0.18, 'triangle', 0.07);
+      return;
+    }
     if (coupon) {
       if (coupon.type === 'next') {
         cost = Math.round(cost * (1 - coupon.pct / 100)); note = 'COUPON -' + coupon.pct + '%';
@@ -753,7 +764,7 @@
       overlay("TIME'S UP", '#b6ff3b', [
         { t: lib.length + ' games for ' + money(spent) + ' · saved ' + money(sv), c: '#fff' },
         'Money left: ' + money(wallet) + '  ·  Score: ' + score() + (score() >= best && score() > 0 ? '  (new best!)' : ''),
-        'Rank: ' + rank(score())
+        'Rank: ' + rank(score()) + (dupes ? '  ·  Facepalms: ' + dupes : '')
       ], 'CLICK, TAP OR PRESS SPACE TO PLAY AGAIN');
     } else if (state === 'lost') {
       overlay('WALLET EMPTY', '#ff3d81', [
@@ -792,7 +803,7 @@
   // for testing only: ?debug in the address exposes the state
   if (/[?&]debug/.test(location.search)) {
     window.__game = {
-      snap: function () { return { state: state, wallet: wallet, spent: spent, games: lib.length, t: t, coupon: coupon && { type: coupon.type, pct: coupon.pct, g: coupon.g && coupon.g.n },
+      snap: function () { return { state: state, wallet: wallet, spent: spent, games: lib.length, dupes: dupes, t: t, coupon: coupon && { type: coupon.type, pct: coupon.pct, g: coupon.g && coupon.g.n },
         items: items.map(function (i) { return { x: i.x, y: i.y, kind: i.kind, price: i.price, base: i.base, pct: i.pct, g: i.g && i.g.n }; }), headX: head.x, W: W, H: H, score: score() }; },
       setT: function (v) { t = v; },
       // puts an item right above the headset, so that it is caught at once
