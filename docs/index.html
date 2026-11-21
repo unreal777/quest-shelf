@@ -485,9 +485,10 @@
     cv.width = Math.round(W * d); cv.height = Math.round(H * d);
     ctx.setTransform(d, 0, 0, d, 0, 0);
     narrow = W < 560;
-    // on a phone the headset is much bigger relative to the screen, the games smaller and slower
+    // on a phone the games are smaller and slower, but the headset stays small: the point of the game
+    // is to catch the cheap ones and let the others fall past
     S = narrow ? clamp(W * 0.15, 46, 60) : clamp(W * 0.105, 62, 96);
-    head.w = narrow ? clamp(W * 0.52, 150, 250) : clamp(W * 0.23, 124, 220);
+    head.w = narrow ? clamp(W * 0.27, 78, 120) : clamp(W * 0.23, 124, 220);
     head.x = head.tx = clamp(head.x || W / 2, head.w / 2, W - head.w / 2);
   }
 
@@ -538,7 +539,7 @@
     for (var k = 0; k < 6; k++) { var x = S / 2 + Math.random() * (W - S); if (Math.abs(x - lastX) > S * 1.2) { lastX = x; return x; } }
     lastX = S / 2 + Math.random() * (W - S); return lastX;
   }
-  function speed(prog) { return (H / 540) * (95 + 95 * prog + Math.random() * 40) * (narrow ? 0.8 : 1); }
+  function speed(prog) { return (H / 540) * (95 + 95 * prog + Math.random() * 40) * (narrow ? 0.85 : 1); }
 
   function spawnGame(g) {
     var pct = discount();
@@ -597,13 +598,13 @@
     if (k) head.tx = clamp(head.tx + k * W * 0.95 * dt, head.w / 2, W - head.w / 2);
     head.x += (head.tx - head.x) * Math.min(1, dt * 20);
     spawnT -= dt;
-    if (spawnT <= 0) { spawn(); var prog = t / roundLen; spawnT = (0.88 - 0.34 * prog) * (0.8 + Math.random() * 0.4) * (narrow ? 1.5 : 1); }
+    if (spawnT <= 0) { spawn(); var prog = t / roundLen; spawnT = (0.88 - 0.34 * prog) * (0.8 + Math.random() * 0.4) * (narrow ? 0.85 : 1); }
     for (var q = targetQueue.length - 1; q >= 0; q--) if (t >= targetQueue[q].at) { spawnGame(targetQueue[q].g); targetQueue.splice(q, 1); }
     var hy = headTop() + 2;      // top of the headset
     for (var i = items.length - 1; i >= 0; i--) {
       var it = items[i];
       it.y += it.vy * dt;
-      if (it.y + it.s / 2 >= hy && it.y - it.s / 2 <= hy + 26 && Math.abs(it.x - head.x) <= head.w / 2 + it.s * 0.3) {
+      if (it.y + it.s / 2 >= hy && it.y - it.s / 2 <= hy + 26 && Math.abs(it.x - head.x) <= head.w / 2 + it.s * (narrow ? 0.12 : 0.3)) {
         items.splice(i, 1);
         if (it.kind === 'game') { buy(it); if (state !== 'play') return; }
         else if (it.kind === 'next') { coupon = { type: 'next', pct: it.pct }; pop(it.x, hy - 20, [{ t: 'COUPON', c: '#ffd23f', s: 10 }, { t: 'NEXT GAME -' + it.pct + '%', c: '#fff', s: 9 }], 1.5); beep(660, 0.07); beep(880, 0.1); }
@@ -704,7 +705,7 @@
     ctx.beginPath(); ctx.ellipse(cx - 4.2, y + h * 0.17, 4.2, 2.6, 0, 0, 7); ctx.stroke();
     ctx.beginPath(); ctx.ellipse(cx + 4.2, y + h * 0.17, 4.2, 2.6, 0, 0, 7); ctx.stroke();
     // the three camera openings
-    var pw = Math.max(10, w * 0.075), ph = h * 0.44;
+    var pw = Math.max(7, w * 0.075), ph = h * 0.44;
     [[0.31, 1], [0.5, 1.16], [0.69, 1]].forEach(function (p, i) {
       var px = x + w * p[0] - pw / 2, ch = ph * p[1], py = y + h * 0.44 - ch / 2;
       rr(px, py, pw, ch, pw / 2); ctx.fillStyle = '#25253a'; ctx.fill(); ctx.lineWidth = 1.5; ctx.strokeStyle = '#7f7f9c'; ctx.stroke();
@@ -847,14 +848,14 @@
   if (/[?&]debug/.test(location.search)) {
     window.__game = {
       snap: function () { return { state: state, wallet: wallet, spent: spent, games: lib.length, dupes: dupes, t: t, coupon: coupon && { type: coupon.type, pct: coupon.pct, g: coupon.g && coupon.g.n },
-        items: items.map(function (i) { return { x: i.x, y: i.y, kind: i.kind, price: i.price, base: i.base, pct: i.pct, g: i.g && i.g.n }; }), headX: head.x, W: W, H: H, score: score() }; },
+        items: items.map(function (i) { return { x: i.x, y: i.y, vy: i.vy, s: i.s, kind: i.kind, price: i.price, base: i.base, pct: i.pct, g: i.g && i.g.n }; }), headX: head.x, W: W, H: H, score: score() }; },
       setT: function (v) { t = v; },
       // manual clock, so that a round can be played without waiting for animation frames
       step: function (n, dt) { for (var i = 0; i < n && state === 'play'; i++) update(dt); draw(); },
       move: function (x) { head.tx = clamp(x, head.w / 2, W - head.w / 2); head.x = head.tx; },
       start: function () { start(); },
       owned: function () { return lib.map(function (g) { return g.n; }); },
-      dims: function () { return { S: S, headW: head.w, narrow: narrow, W: W, H: H }; },
+      dims: function () { return { S: S, headW: head.w, narrow: narrow, W: W, H: H, top: headTop() }; },
       // puts an item right above the headset, so that it is caught at once
       drop: function (kind, name, pct) {
         var g = GAMES.filter(function (x) { return x.n === name; })[0];
