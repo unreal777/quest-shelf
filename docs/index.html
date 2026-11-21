@@ -186,6 +186,18 @@
   details[open] summary { border-bottom: 4px solid var(--line); color: var(--lime); }
   details p { margin: 0; padding: 20px 22px 24px 64px; color: var(--dim); font-size: 18px; }
 
+  /* bonus stage */
+  .arena { position: relative; }
+  #game { display: block; width: 100%; aspect-ratio: 16 / 9; background: #0b0b15; touch-action: pan-y; cursor: ew-resize; user-select: none; -webkit-user-select: none; }
+  #game:focus { outline: none; }
+  .tools { display: flex; gap: 16px 24px; align-items: center; flex-wrap: wrap; margin-top: 30px; color: var(--dim); }
+  .btn.small { padding: 11px 14px; font-size: 10px; box-shadow: 4px 4px 0 #000; }
+  .tools kbd { font: 400 10px/1 var(--px); background: var(--text); color: #000; padding: 5px 7px; margin: 0 2px; }
+  .herolink { margin-top: 14px; font: 400 10px/1.8 var(--px); text-transform: uppercase; }
+  .herolink a { color: var(--yellow); }
+  .herolink a:hover { border-bottom-color: var(--yellow); }
+  @media (max-width: 700px) { #game { aspect-ratio: 4 / 5; } }
+
   /* continue */
   .cont { margin: 100px 0 0; text-align: center; padding: 70px 24px 80px; border: 4px solid var(--text); background: var(--panel); box-shadow: 12px 12px 0 var(--pink); position: relative; overflow: hidden; }
   .cont::before { content: ""; position: absolute; inset: 0; background: repeating-linear-gradient(0deg, rgba(0,0,0,.2) 0 2px, transparent 2px 5px); pointer-events: none; }
@@ -231,6 +243,7 @@
       <a href="#install">Install</a>
       <a href="#privacy">Privacy</a>
       <a href="#faq">FAQ</a>
+      <a href="#play">Play</a>
       <a href="https://github.com/unreal777/quest-shelf">GitHub</a>
       <a class="btn" href="https://github.com/unreal777/quest-shelf/releases/latest">Download</a>
     </nav>
@@ -250,6 +263,7 @@
           <a class="btn alt" href="#install">How to install</a>
         </div>
         <p class="meta"><b>v1.0.1</b> · Quest 3 · SideQuest or <code>adb</code> · no account · no ads · no analytics</p>
+        <p class="herolink"><a href="#play">▼ Bonus stage: fill your shelf</a></p>
       </div>
       <div class="rig">
         <div class="win">
@@ -358,6 +372,22 @@
     </div>
   </section>
 
+  <section id="play">
+    <div class="wrap">
+      <div class="kicker"><b>BONUS</b> // stage</div>
+      <h2>Fill your shelf</h2>
+      <p class="sub">VR games are falling. Catch them with your shelf and build your library. Dodge what every Quest player knows: tracking lost, a dying controller, the Guardian wall. The games you miss become <b style="color:var(--text)">forgotten</b>.</p>
+      <div class="win arena">
+        <div class="bar"><i></i><i></i><i></i><span>catch_the_games.exe</span></div>
+        <canvas id="game" tabindex="0" role="img" aria-label="Mini-game: move the shelf left and right to catch falling VR games and avoid tracking-lost, low-battery and Guardian-wall hazards."></canvas>
+      </div>
+      <div class="tools">
+        <button class="btn alt small" id="snd" type="button" aria-pressed="false">Sound: off</button>
+        <span>Move: mouse, finger or <kbd>←</kbd> <kbd>→</kbd> · Start: click or <kbd>Space</kbd></span>
+      </div>
+    </div>
+  </section>
+
   <div class="wrap">
     <div class="cont">
       <h2>Continue?</h2>
@@ -412,6 +442,288 @@
     pos = e.keyCode === code[pos] ? pos + 1 : (e.keyCode === code[0] ? 1 : 0);
     if (pos === code.length) { document.body.classList.toggle('party'); pos = 0; }
   });
+</script>
+
+<script>
+// ===== bonus stage: catch the VR games =====
+(function () {
+  var cv = document.getElementById('game');
+  if (!cv || !cv.getContext) return;
+  var ctx = cv.getContext('2d');
+  var PX = '"Press Start 2P", "Courier New", monospace';
+  var BODY = '"Chakra Petch", system-ui, sans-serif';
+  var reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var W = 0, H = 0, S = 56;
+  var state = 'idle', items = [], lib = [], pops = [], t = 0, last = 0, spawnT = 0;
+  var lives = 3, forgotten = 0, saleT = 0, flash = 0, shake = 0, best = 0, visible = true, soundOn = false, ac = null;
+  var shelf = { x: 0, tx: 0, w: 120, h: 14 };
+  var keys = { l: false, r: false };
+  try { best = +localStorage.getItem('qs_best') || 0; } catch (e) {}
+
+  // the kinds of VR game that fall: name, hue
+  var GAMES = [['RHYTHM', 330], ['BOXING', 8], ['CLIMB', 28], ['FISHING', 200], ['SHOOTER', 150], ['HORROR', 275], ['GOLF', 100],
+               ['FITNESS', 340], ['FLIGHT', 215], ['PUZZLE', 55], ['SWORDS', 0], ['RACING', 45], ['ESCAPE', 180], ['SPORTS', 125]];
+  // what every Quest player knows
+  var BADS = [['TRACKING', 'LOST'], ['LOW', 'BATTERY'], ['GUARDIAN', 'WALL']];
+
+  function clamp(v, a, b) { return Math.max(a, Math.min(b, v)); }
+
+  function resize() {
+    var r = cv.getBoundingClientRect(), d = Math.min(2, window.devicePixelRatio || 1);
+    W = r.width; H = r.height;
+    cv.width = Math.round(W * d); cv.height = Math.round(H * d);
+    ctx.setTransform(d, 0, 0, d, 0, 0);
+    S = clamp(W * 0.075, 46, 70);
+    shelf.w = clamp(W * 0.17, 96, 160);
+    shelf.x = shelf.tx = clamp(shelf.x || W / 2, shelf.w / 2, W - shelf.w / 2);
+  }
+
+  // ---- sound (off by default) ----
+  function beep(f, d, type, vol) {
+    if (!soundOn) return;
+    try {
+      ac = ac || new (window.AudioContext || window.webkitAudioContext)();
+      var o = ac.createOscillator(), g = ac.createGain();
+      o.type = type || 'square'; o.frequency.value = f;
+      g.gain.value = vol || 0.05;
+      g.gain.exponentialRampToValueAtTime(0.0001, ac.currentTime + d);
+      o.connect(g); g.connect(ac.destination); o.start(); o.stop(ac.currentTime + d);
+    } catch (e) {}
+  }
+  var snd = document.getElementById('snd');
+  snd.addEventListener('click', function () {
+    soundOn = !soundOn;
+    snd.textContent = 'Sound: ' + (soundOn ? 'on' : 'off');
+    snd.setAttribute('aria-pressed', soundOn);
+    beep(660, 0.1);
+  });
+
+  function reset() {
+    items = []; lib = []; pops = []; t = 0; spawnT = 0.4; lives = 3; forgotten = 0; saleT = 0; flash = 0; shake = 0;
+  }
+  function start() { reset(); state = 'play'; last = performance.now(); beep(440, 0.08); beep(660, 0.12); }
+
+  function spawn() {
+    var lvl = t, r = Math.random();
+    var badP = Math.min(0.36, 0.14 + lvl * 0.003), saleP = 0.045;
+    var it = { x: S / 2 + Math.random() * (W - S), y: -S, s: S, vy: (H / 540) * (95 + lvl * 2.6 + Math.random() * 55), rot: (Math.random() - .5) * 0.25 };
+    if (r < badP) { it.kind = 'bad'; it.lab = BADS[(Math.random() * BADS.length) | 0]; }
+    else if (r < badP + saleP) { it.kind = 'sale'; }
+    else { it.kind = 'game'; var g = GAMES[(Math.random() * GAMES.length) | 0]; it.lab = g[0]; it.hue = g[1]; }
+    items.push(it);
+  }
+
+  function update(dt) {
+    t += dt;
+    // shelf
+    var k = (keys.r ? 1 : 0) - (keys.l ? 1 : 0);
+    if (k) shelf.tx = clamp(shelf.tx + k * W * 0.9 * dt, shelf.w / 2, W - shelf.w / 2);
+    shelf.x += (shelf.tx - shelf.x) * Math.min(1, dt * 20);
+    // spawn
+    spawnT -= dt;
+    if (spawnT <= 0) { spawn(); spawnT = Math.max(0.36, 0.95 - t * 0.008) * (0.8 + Math.random() * 0.4); }
+    if (saleT > 0) saleT -= dt;
+    var sy = H - 66;
+    for (var i = items.length - 1; i >= 0; i--) {
+      var it = items[i];
+      it.y += it.vy * dt;
+      var hit = it.y + it.s / 2 >= sy && it.y - it.s / 2 <= sy + shelf.h && Math.abs(it.x - shelf.x) <= shelf.w / 2 + it.s * 0.35;
+      if (hit) {
+        items.splice(i, 1);
+        if (it.kind === 'game') {
+          var n = saleT > 0 ? 2 : 1;
+          for (var j = 0; j < n; j++) lib.push(it.hue);
+          pops.push({ x: it.x, y: sy - 10, txt: '+' + n, life: 0.7, col: '#b6ff3b' });
+          beep(520 + Math.min(lib.length, 40) * 8, 0.07);
+        } else if (it.kind === 'sale') {
+          saleT = 6; pops.push({ x: it.x, y: sy - 10, txt: 'SALE x2', life: 0.9, col: '#ffd23f' });
+          beep(660, 0.08); beep(880, 0.12);
+        } else {
+          lives--; flash = 0.35; shake = reduce ? 0 : 0.3;
+          pops.push({ x: it.x, y: sy - 10, txt: it.lab[0] + ' ' + it.lab[1], life: 1, col: '#ff3d81' });
+          beep(110, 0.25, 'sawtooth', 0.08);
+          if (lives <= 0) { over(); return; }
+        }
+      } else if (it.y - it.s / 2 > H) {
+        items.splice(i, 1);
+        if (it.kind === 'game') forgotten++;
+      }
+    }
+    for (var q = pops.length - 1; q >= 0; q--) { pops[q].life -= dt; pops[q].y -= 40 * dt; if (pops[q].life <= 0) pops.splice(q, 1); }
+    if (flash > 0) flash -= dt;
+    if (shake > 0) shake -= dt;
+  }
+
+  function over() {
+    state = 'over';
+    if (lib.length > best) { best = lib.length; try { localStorage.setItem('qs_best', best); } catch (e) {} }
+    beep(330, 0.15, 'square'); setTimeout(function () { beep(220, 0.3, 'square'); }, 160);
+  }
+
+  function rank(n) {
+    return n >= 150 ? 'Meta Store Whale' : n >= 100 ? 'Library Master' : n >= 50 ? 'Collector' : n >= 25 ? 'Regular' : n >= 10 ? 'Casual' : 'Just unboxed';
+  }
+
+  // ---- drawing ----
+  function rr(x, y, w, h, r) {
+    ctx.beginPath(); ctx.moveTo(x + r, y); ctx.arcTo(x + w, y, x + w, y + h, r); ctx.arcTo(x + w, y + h, x, y + h, r);
+    ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath();
+  }
+  function text(str, x, y, size, col, align, font) {
+    ctx.font = size + 'px ' + (font || PX); ctx.fillStyle = col; ctx.textAlign = align || 'left'; ctx.textBaseline = 'middle';
+    ctx.fillText(str, x, y);
+  }
+  // a Quest-style app tile: rounded square, gradient, label
+  function tile(x, y, s, hue, lab) {
+    var g = ctx.createLinearGradient(x, y, x + s, y + s);
+    g.addColorStop(0, 'hsl(' + hue + ',78%,60%)'); g.addColorStop(1, 'hsl(' + hue + ',70%,28%)');
+    rr(x, y, s, s, s * 0.22); ctx.fillStyle = g; ctx.fill();
+    ctx.lineWidth = 2; ctx.strokeStyle = 'rgba(0,0,0,.55)'; ctx.stroke();
+    rr(x + s * 0.08, y + s * 0.06, s * 0.84, s * 0.22, s * 0.1); ctx.fillStyle = 'rgba(255,255,255,.18)'; ctx.fill();
+    if (lab) text(lab, x + s / 2, y + s * 0.62, Math.max(7, s * 0.125), '#fff', 'center');
+  }
+  function bad(x, y, s, lab) {
+    rr(x, y, s, s, s * 0.22); ctx.fillStyle = '#1a0a12'; ctx.fill();
+    ctx.lineWidth = 3; ctx.strokeStyle = '#ff3d81'; ctx.stroke();
+    ctx.save(); rr(x + 2, y + 2, s - 4, s - 4, s * 0.2); ctx.clip();
+    ctx.strokeStyle = 'rgba(255,210,63,.35)'; ctx.lineWidth = 4;
+    for (var i = -s; i < s * 2; i += 12) { ctx.beginPath(); ctx.moveTo(x + i, y + s); ctx.lineTo(x + i + s, y); ctx.stroke(); }
+    ctx.restore();
+    text('!', x + s / 2, y + s * 0.3, s * 0.3, '#ffd23f', 'center');
+    text(lab[0], x + s / 2, y + s * 0.58, Math.max(6, s * 0.1), '#fff', 'center');
+    text(lab[1], x + s / 2, y + s * 0.76, Math.max(6, s * 0.1), '#fff', 'center');
+  }
+  function sale(x, y, s) {
+    rr(x, y, s, s, s * 0.22); ctx.fillStyle = '#ffd23f'; ctx.fill(); ctx.lineWidth = 3; ctx.strokeStyle = '#000'; ctx.stroke();
+    text('SALE', x + s / 2, y + s * 0.42, Math.max(8, s * 0.17), '#000', 'center');
+    text('-50%', x + s / 2, y + s * 0.68, Math.max(8, s * 0.15), '#ff3d81', 'center');
+  }
+
+  function drawShelf(ox) {
+    var x = shelf.x - shelf.w / 2 + ox, y = H - 66, w = shelf.w, cols = ['#35e0ff', '#b6ff3b', '#ff3d81', '#f1f1e6'];
+    if (saleT > 0) { ctx.shadowColor = '#ffd23f'; ctx.shadowBlur = 22; }
+    for (var i = 0; i < 4; i++) { ctx.fillStyle = cols[i]; ctx.fillRect(x + (w / 4) * i, y, w / 4, shelf.h); }
+    ctx.shadowBlur = 0;
+    ctx.lineWidth = 3; ctx.strokeStyle = '#000'; ctx.strokeRect(x, y, w, shelf.h);
+    ctx.fillStyle = '#000'; ctx.fillRect(x + 8, y + shelf.h, 6, 8); ctx.fillRect(x + w - 14, y + shelf.h, 6, 8);
+  }
+
+  function hud() {
+    text('LIBRARY ' + lib.length, 14, 20, 11, '#b6ff3b');
+    text('FORGOTTEN ' + forgotten, 14, 40, 8, '#a3a3bc');
+    text('BEST ' + best, W / 2, 20, 8, '#a3a3bc', 'center');
+    for (var i = 0; i < 3; i++) {   // headsets = lives
+      var x = W - 14 - (3 - i) * 30, y = 12;
+      ctx.fillStyle = i < lives ? '#b6ff3b' : '#2a2a3c';
+      ctx.fillRect(x, y, 24, 12); ctx.clearRect(x + 9, y + 8, 6, 4);
+      ctx.fillStyle = i < lives ? '#b6ff3b' : '#2a2a3c'; ctx.fillRect(x + 9, y + 8, 6, 2);
+    }
+    if (saleT > 0) {
+      text('SALE x2', W - 14, 46, 8, '#ffd23f', 'right');
+      ctx.fillStyle = '#ffd23f'; ctx.fillRect(W - 14 - 90 * (saleT / 6), 54, 90 * (saleT / 6), 4);
+    }
+  }
+
+  function strip() {   // the library so far, as little tiles along the bottom
+    var m = 18, gap = 4, per = Math.max(1, Math.floor((W - 16) / (m + gap)));
+    ctx.fillStyle = 'rgba(255,255,255,.05)'; ctx.fillRect(0, H - 34, W, 34);
+    ctx.fillStyle = '#34344f'; ctx.fillRect(0, H - 34, W, 2);
+    var from = Math.max(0, lib.length - per);
+    for (var i = from; i < lib.length; i++) {
+      var x = 8 + (i - from) * (m + gap), h = lib[i];
+      ctx.fillStyle = 'hsl(' + h + ',75%,55%)'; rr(x, H - 27, m, m, 4); ctx.fill();
+    }
+  }
+
+  function overlay(title, lines, sub) {
+    ctx.fillStyle = 'rgba(9,9,15,.82)'; ctx.fillRect(0, 0, W, H);
+    var y = H * 0.26, big = clamp(W * 0.034, 16, 30);
+    text(title, W / 2, y, big, '#ffd23f', 'center');
+    ctx.fillStyle = '#ff3d81'; ctx.fillRect(W / 2 - 40, y + big * 0.9, 80, 4);
+    var ly = y + big * 2.3, fs = clamp(W * 0.021, 15, 20);
+    lines.forEach(function (l, i) { text(l, W / 2, ly + i * fs * 1.6, fs, i === 0 && lines.length > 2 ? '#fff' : '#cfcfe3', 'center', BODY); });
+    if (Math.floor(performance.now() / 500) % 2 === 0) text(sub, W / 2, H * 0.8, clamp(W * 0.016, 9, 13), '#b6ff3b', 'center');
+  }
+
+  function draw() {
+    ctx.save();
+    var ox = 0, oy = 0;
+    if (shake > 0) { ox = (Math.random() - .5) * 10; oy = (Math.random() - .5) * 10; ctx.translate(ox, oy); }
+    // background: dark room with a faint grid floor and stars
+    var bg = ctx.createLinearGradient(0, 0, 0, H); bg.addColorStop(0, '#0b0b18'); bg.addColorStop(1, '#14142a');
+    ctx.fillStyle = bg; ctx.fillRect(-20, -20, W + 40, H + 40);
+    ctx.strokeStyle = 'rgba(255,255,255,.04)'; ctx.lineWidth = 1;
+    for (var gx = 0; gx < W; gx += 40) { ctx.beginPath(); ctx.moveTo(gx, 0); ctx.lineTo(gx, H); ctx.stroke(); }
+    for (var gy = 0; gy < H; gy += 40) { ctx.beginPath(); ctx.moveTo(0, gy); ctx.lineTo(W, gy); ctx.stroke(); }
+    // items
+    items.forEach(function (it) {
+      ctx.save(); ctx.translate(it.x, it.y); ctx.rotate(it.rot);
+      if (it.kind === 'game') tile(-it.s / 2, -it.s / 2, it.s, it.hue, it.lab);
+      else if (it.kind === 'sale') sale(-it.s / 2, -it.s / 2, it.s);
+      else bad(-it.s / 2, -it.s / 2, it.s, it.lab);
+      ctx.restore();
+    });
+    drawShelf(0);
+    strip();
+    pops.forEach(function (p) { ctx.globalAlpha = clamp(p.life * 2, 0, 1); text(p.txt, p.x, p.y, 10, p.col, 'center'); ctx.globalAlpha = 1; });
+    hud();
+    ctx.restore();
+    if (flash > 0 && !reduce) { ctx.fillStyle = 'rgba(255,61,129,' + (flash * 1.1) + ')'; ctx.fillRect(0, 0, W, H); }
+    if (state === 'idle') {
+      overlay('CATCH THE GAMES',
+        ['Your library is empty. Catch VR games with the shelf.', 'Dodge tracking lost, low battery and the Guardian wall.', 'Every game you miss becomes forgotten.'],
+        'CLICK, TAP OR PRESS SPACE TO START');
+    } else if (state === 'over') {
+      overlay('TRACKING LOST',
+        ['Library: ' + lib.length + ' games · Forgotten: ' + forgotten, 'Rank: ' + rank(lib.length) + (lib.length && lib.length >= best ? ' · new best!' : ''), 'Your headset needs a moment.'],
+        'CLICK, TAP OR PRESS SPACE TO PLAY AGAIN');
+    }
+  }
+
+  function loop(now) {
+    requestAnimationFrame(loop);
+    if (!visible || document.hidden) { last = now; return; }
+    var dt = Math.min(0.05, (now - last) / 1000); last = now;
+    if (state === 'play') update(dt);
+    draw();
+  }
+
+  // ---- input ----
+  function setX(clientX) { var r = cv.getBoundingClientRect(); shelf.tx = clamp(clientX - r.left, shelf.w / 2, W - shelf.w / 2); }
+  cv.addEventListener('pointermove', function (e) { setX(e.clientX); });
+  cv.addEventListener('pointerdown', function (e) {
+    setX(e.clientX);
+    if (state !== 'play') start();
+  });
+  addEventListener('keydown', function (e) {
+    var k = e.key;
+    if (k === 'ArrowLeft' || k === 'a' || k === 'A') { keys.l = true; if (state === 'play' && visible) e.preventDefault(); }
+    else if (k === 'ArrowRight' || k === 'd' || k === 'D') { keys.r = true; if (state === 'play' && visible) e.preventDefault(); }
+    else if ((k === ' ' || k === 'Enter') && (state !== 'play') && (document.activeElement === cv)) { e.preventDefault(); start(); }
+    else if (k === ' ' && state === 'play' && visible) { e.preventDefault(); }
+  });
+  addEventListener('keyup', function (e) {
+    var k = e.key;
+    if (k === 'ArrowLeft' || k === 'a' || k === 'A') keys.l = false;
+    if (k === 'ArrowRight' || k === 'd' || k === 'D') keys.r = false;
+  });
+  cv.addEventListener('pointerdown', function () { cv.focus({ preventScroll: true }); });
+
+  // for testing only: ?debug in the address exposes the state
+  if (/[?&]debug/.test(location.search)) {
+    window.__game = { snap: function () { return { state: state, items: items.map(function (i) { return { x: i.x, y: i.y, kind: i.kind }; }), lib: lib.length, forgotten: forgotten, lives: lives, saleT: saleT, shelfX: shelf.x, W: W, H: H }; } };
+  }
+
+  if ('IntersectionObserver' in window) {
+    new IntersectionObserver(function (en) { visible = en[0].isIntersecting; }, { threshold: 0.2 }).observe(cv);
+  }
+  addEventListener('resize', resize);
+
+  var ready = (document.fonts && document.fonts.load)
+    ? Promise.all([document.fonts.load('12px "Press Start 2P"'), document.fonts.load('500 16px "Chakra Petch"')]).catch(function () {})
+    : Promise.resolve();
+  ready.then(function () { resize(); last = performance.now(); requestAnimationFrame(loop); });
+})();
 </script>
 </body>
 </html>
