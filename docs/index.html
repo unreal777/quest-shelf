@@ -193,6 +193,8 @@
   .tools { display: flex; gap: 16px 24px; align-items: center; flex-wrap: wrap; margin-top: 30px; color: var(--dim); }
   .btn.small { padding: 11px 14px; font-size: 10px; box-shadow: 4px 4px 0 #000; }
   .tools kbd { font: 400 10px/1 var(--px); background: var(--text); color: #000; padding: 5px 7px; margin: 0 2px; }
+  .btn.small[aria-pressed="true"] { background: var(--lime); color: #000; border-color: #000; box-shadow: 4px 4px 0 var(--pink); }
+  .fine { color: var(--dim); font-size: 14px; margin: 26px 0 0; max-width: 760px; }
   .herolink { margin-top: 14px; font: 400 10px/1.8 var(--px); text-transform: uppercase; }
   .herolink a { color: var(--yellow); }
   .herolink a:hover { border-bottom-color: var(--yellow); }
@@ -375,16 +377,19 @@
   <section id="play">
     <div class="wrap">
       <div class="kicker"><b>BONUS</b> // stage</div>
-      <h2>Fill your shelf</h2>
-      <p class="sub">VR games are falling. Catch them with your shelf and build your library. Dodge what every Quest player knows: tracking lost, a dying controller, the Guardian wall. The games you miss become <b style="color:var(--text)">forgotten</b>.</p>
+      <h2>Budget run: $300</h2>
+      <p class="sub">Quest games are falling, with real Meta Store prices and sales we made up. Catch them with your Quest 3. Catch as many as you can and spend as little as you can. Spend the whole $300 and you lose. Coupons help: one for your <b style="color:var(--text)">next</b> game, or a secret one for a <b style="color:var(--text)">specific</b> title.</p>
       <div class="win arena">
-        <div class="bar"><i></i><i></i><i></i><span>catch_the_games.exe</span></div>
-        <canvas id="game" tabindex="0" role="img" aria-label="Mini-game: move the shelf left and right to catch falling VR games and avoid tracking-lost, low-battery and Guardian-wall hazards."></canvas>
+        <div class="bar"><i></i><i></i><i></i><span>budget_run.exe</span></div>
+        <canvas id="game" tabindex="0" role="img" aria-label="Mini-game: move your Quest 3 left and right to catch falling Quest games. Each game costs the price on its tile. You have 300 dollars; spending it all loses. Coupons give a discount on your next game or on one specific game."></canvas>
       </div>
       <div class="tools">
+        <button class="btn alt small" id="len60" type="button" aria-pressed="true">Round: 60 s</button>
+        <button class="btn alt small" id="len120" type="button" aria-pressed="false">Round: 120 s</button>
         <button class="btn alt small" id="snd" type="button" aria-pressed="false">Sound: off</button>
         <span>Move: mouse, finger or <kbd>←</kbd> <kbd>→</kbd> · Start: click or <kbd>Space</kbd></span>
       </div>
+      <p class="fine">Prices are approximate Meta Store list prices, discounts are made up. Game covers belong to their publishers and are shown only to identify the games. Not affiliated with Meta or the publishers.</p>
     </div>
   </section>
 
@@ -410,7 +415,7 @@
     </div>
     <div>
       <h4>Special thanks</h4>
-      <p><a href="https://oculusdb.rui2015.me">OculusDB</a> for names and covers · <a href="https://github.com/basti564/LauncherIcons">LauncherIcons</a> for spare covers · Fonts: Press Start 2P and Chakra Petch (SIL Open Font License).</p>
+      <p><a href="https://oculusdb.rui2015.me">OculusDB</a> for names and covers · <a href="https://github.com/basti564/LauncherIcons">LauncherIcons</a> for spare covers · Fonts: Press Start 2P and Chakra Petch (SIL Open Font License). Game covers in the mini-game belong to their publishers.</p>
     </div>
     <div class="thanks">Thanks for playing ◆ press the meta button ◆ get a better library</div>
   </div>
@@ -444,8 +449,9 @@
   });
 </script>
 
+<script src="games-data.js"></script>
 <script>
-// ===== bonus stage: catch the VR games =====
+// ===== bonus stage: budget run =====
 (function () {
   var cv = document.getElementById('game');
   if (!cv || !cv.getContext) return;
@@ -453,29 +459,32 @@
   var PX = '"Press Start 2P", "Courier New", monospace';
   var BODY = '"Chakra Petch", system-ui, sans-serif';
   var reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
-  var W = 0, H = 0, S = 56;
-  var state = 'idle', items = [], lib = [], pops = [], t = 0, last = 0, spawnT = 0;
-  var lives = 3, forgotten = 0, saleT = 0, flash = 0, shake = 0, best = 0, visible = true, soundOn = false, ac = null;
-  var shelf = { x: 0, tx: 0, w: 120, h: 14 };
+  var GAMES = window.QS_GAMES || [];
+  var BUDGET = 30000;                       // cents
+  var W = 0, H = 0, S = 76;
+  var state = 'idle', why = '', roundLen = 60;
+  var items = [], lib = [], pops = [], wallet = BUDGET, spent = 0, listSum = 0, t = 0, last = 0, spawnT = 0, flash = 0, shake = 0;
+  var coupon = null, lastX = 0, targetQueue = [];
+  var best = 0, visible = true, soundOn = false, ac = null;
+  var head = { x: 0, tx: 0, w: 140 };
   var keys = { l: false, r: false };
-  try { best = +localStorage.getItem('qs_best') || 0; } catch (e) {}
+  try { best = +localStorage.getItem('qs_best_run') || 0; } catch (e) {}
 
-  // the kinds of VR game that fall: name, hue
-  var GAMES = [['RHYTHM', 330], ['BOXING', 8], ['CLIMB', 28], ['FISHING', 200], ['SHOOTER', 150], ['HORROR', 275], ['GOLF', 100],
-               ['FITNESS', 340], ['FLIGHT', 215], ['PUZZLE', 55], ['SWORDS', 0], ['RACING', 45], ['ESCAPE', 180], ['SPORTS', 125]];
-  // what every Quest player knows
-  var BADS = [['TRACKING', 'LOST'], ['LOW', 'BATTERY'], ['GUARDIAN', 'WALL']];
+  // covers
+  GAMES.forEach(function (g) { g.img = new Image(); g.img.onload = function () { g.ok = true; }; g.img.src = g.i; });
 
   function clamp(v, a, b) { return Math.max(a, Math.min(b, v)); }
+  function money(c) { return '$' + (c / 100).toFixed(2); }
+  function pick(a) { return a[(Math.random() * a.length) | 0]; }
 
   function resize() {
     var r = cv.getBoundingClientRect(), d = Math.min(2, window.devicePixelRatio || 1);
     W = r.width; H = r.height;
     cv.width = Math.round(W * d); cv.height = Math.round(H * d);
     ctx.setTransform(d, 0, 0, d, 0, 0);
-    S = clamp(W * 0.075, 46, 70);
-    shelf.w = clamp(W * 0.17, 96, 160);
-    shelf.x = shelf.tx = clamp(shelf.x || W / 2, shelf.w / 2, W - shelf.w / 2);
+    S = clamp(W * 0.105, 62, 96);
+    head.w = clamp(W * 0.2, 112, 190);
+    head.x = head.tx = clamp(head.x || W / 2, head.w / 2, W - head.w / 2);
   }
 
   // ---- sound (off by default) ----
@@ -484,199 +493,274 @@
     try {
       ac = ac || new (window.AudioContext || window.webkitAudioContext)();
       var o = ac.createOscillator(), g = ac.createGain();
-      o.type = type || 'square'; o.frequency.value = f;
-      g.gain.value = vol || 0.05;
+      o.type = type || 'square'; o.frequency.value = f; g.gain.value = vol || 0.05;
       g.gain.exponentialRampToValueAtTime(0.0001, ac.currentTime + d);
       o.connect(g); g.connect(ac.destination); o.start(); o.stop(ac.currentTime + d);
     } catch (e) {}
   }
   var snd = document.getElementById('snd');
   snd.addEventListener('click', function () {
-    soundOn = !soundOn;
-    snd.textContent = 'Sound: ' + (soundOn ? 'on' : 'off');
-    snd.setAttribute('aria-pressed', soundOn);
-    beep(660, 0.1);
+    soundOn = !soundOn; snd.textContent = 'Sound: ' + (soundOn ? 'on' : 'off'); snd.setAttribute('aria-pressed', soundOn); beep(660, 0.1);
   });
+  var b60 = document.getElementById('len60'), b120 = document.getElementById('len120');
+  function setLen(n) {
+    if (state === 'play') return;
+    roundLen = n; b60.setAttribute('aria-pressed', n === 60); b120.setAttribute('aria-pressed', n === 120);
+  }
+  b60.addEventListener('click', function () { setLen(60); });
+  b120.addEventListener('click', function () { setLen(120); });
 
+  // ---- the game ----
   function reset() {
-    items = []; lib = []; pops = []; t = 0; spawnT = 0.4; lives = 3; forgotten = 0; saleT = 0; flash = 0; shake = 0;
+    items = []; lib = []; pops = []; wallet = BUDGET; spent = 0; listSum = 0; t = 0; spawnT = 0.5; flash = 0; shake = 0;
+    coupon = null; targetQueue = []; lastX = W / 2; why = '';
   }
   function start() { reset(); state = 'play'; last = performance.now(); beep(440, 0.08); beep(660, 0.12); }
 
+  function discount() {
+    var r = Math.random();
+    if (r < 0.34) return 0;
+    if (r < 0.58) return pick([10, 15, 20]);
+    if (r < 0.80) return pick([25, 30, 33, 40]);
+    if (r < 0.95) return pick([50, 60, 70]);
+    return pick([75, 80, 85]);
+  }
+  function salePrice(base, pct) {
+    if (!pct) return base;
+    var c = Math.round(base * (1 - pct / 100) / 100) * 100 - 1;
+    return Math.max(99, c);
+  }
+  function spawnX() {
+    for (var k = 0; k < 6; k++) { var x = S / 2 + Math.random() * (W - S); if (Math.abs(x - lastX) > S * 1.2) { lastX = x; return x; } }
+    lastX = S / 2 + Math.random() * (W - S); return lastX;
+  }
+  function speed(prog) { return (H / 540) * (95 + 95 * prog + Math.random() * 40); }
+
+  function spawnGame(g) {
+    var pct = discount();
+    items.push({ kind: 'game', g: g, x: spawnX(), y: -S, s: S, vy: speed(t / roundLen), rot: (Math.random() - .5) * 0.18,
+                 base: g.p, pct: pct, price: salePrice(g.p, pct) });
+  }
   function spawn() {
-    var lvl = t, r = Math.random();
-    var badP = Math.min(0.36, 0.14 + lvl * 0.003), saleP = 0.045;
-    var it = { x: S / 2 + Math.random() * (W - S), y: -S, s: S, vy: (H / 540) * (95 + lvl * 2.6 + Math.random() * 55), rot: (Math.random() - .5) * 0.25 };
-    if (r < badP) { it.kind = 'bad'; it.lab = BADS[(Math.random() * BADS.length) | 0]; }
-    else if (r < badP + saleP) { it.kind = 'sale'; }
-    else { it.kind = 'game'; var g = GAMES[(Math.random() * GAMES.length) | 0]; it.lab = g[0]; it.hue = g[1]; }
-    items.push(it);
+    var r = Math.random();
+    if (!GAMES.length) return;
+    if (r < 0.07) {
+      items.push({ kind: 'next', x: spawnX(), y: -S, s: S, vy: speed(t / roundLen), rot: 0, pct: pick([20, 25, 30, 40, 50]) });
+    } else if (r < 0.12) {
+      var g = pick(GAMES);
+      items.push({ kind: 'target', g: g, x: spawnX(), y: -S, s: S, vy: speed(t / roundLen), rot: 0 });
+      // the game the coupon is for is sure to fall soon, so the coupon is worth catching
+      targetQueue.push({ g: g, at: t + 1.4 + Math.random() * 1.2 });
+    } else spawnGame(pick(GAMES));
+  }
+
+  function pop(x, y, lines, life) { pops.push({ x: x, y: y, lines: lines, life: life || 1.4, max: life || 1.4 }); }
+
+  function buy(it) {
+    var cost = it.price, note = null, g = it.g;
+    if (coupon) {
+      if (coupon.type === 'next') {
+        cost = Math.round(cost * (1 - coupon.pct / 100)); note = 'COUPON -' + coupon.pct + '%';
+      } else if (coupon.g === g) {
+        cost = Math.round(cost * (1 - coupon.pct / 100)); note = 'SECRET COUPON -' + coupon.pct + '%';
+      } else { note = 'COUPON WASTED'; }
+      coupon = null;
+    }
+    if (cost > wallet) { why = 'CARD DECLINED: ' + g.n + ' costs ' + money(cost) + ', you have ' + money(wallet) + '.'; end('lost'); return; }
+    wallet -= cost; spent += cost; listSum += it.base; lib.push(g);
+    var lines = [{ t: g.n, c: '#fff', s: 10 }, { t: '-' + money(cost), c: '#ff3d81', s: 12 }];
+    if (it.base > cost) lines.push({ t: 'saved ' + money(it.base - cost), c: '#b6ff3b', s: 9 });
+    if (note) lines.push({ t: note, c: note === 'COUPON WASTED' ? '#a3a3bc' : '#ffd23f', s: 9 });
+    pop(it.x, H - 130, lines, 1.7);
+    beep(300 + Math.min(it.pct, 80) * 6, 0.08, 'square');
+    if (wallet < 100) { why = 'You spent the whole budget.'; end('lost'); }
   }
 
   function update(dt) {
     t += dt;
-    // shelf
+    if (t >= roundLen) { t = roundLen; end('won'); return; }
     var k = (keys.r ? 1 : 0) - (keys.l ? 1 : 0);
-    if (k) shelf.tx = clamp(shelf.tx + k * W * 0.9 * dt, shelf.w / 2, W - shelf.w / 2);
-    shelf.x += (shelf.tx - shelf.x) * Math.min(1, dt * 20);
-    // spawn
+    if (k) head.tx = clamp(head.tx + k * W * 0.95 * dt, head.w / 2, W - head.w / 2);
+    head.x += (head.tx - head.x) * Math.min(1, dt * 20);
     spawnT -= dt;
-    if (spawnT <= 0) { spawn(); spawnT = Math.max(0.36, 0.95 - t * 0.008) * (0.8 + Math.random() * 0.4); }
-    if (saleT > 0) saleT -= dt;
-    var sy = H - 66;
+    if (spawnT <= 0) { spawn(); var prog = t / roundLen; spawnT = (0.88 - 0.34 * prog) * (0.8 + Math.random() * 0.4); }
+    for (var q = targetQueue.length - 1; q >= 0; q--) if (t >= targetQueue[q].at) { spawnGame(targetQueue[q].g); targetQueue.splice(q, 1); }
+    var hy = H - 98 - head.w * 0.46 + 4;      // top of the headset
     for (var i = items.length - 1; i >= 0; i--) {
       var it = items[i];
       it.y += it.vy * dt;
-      var hit = it.y + it.s / 2 >= sy && it.y - it.s / 2 <= sy + shelf.h && Math.abs(it.x - shelf.x) <= shelf.w / 2 + it.s * 0.35;
-      if (hit) {
+      if (it.y + it.s / 2 >= hy && it.y - it.s / 2 <= hy + 26 && Math.abs(it.x - head.x) <= head.w / 2 + it.s * 0.3) {
         items.splice(i, 1);
-        if (it.kind === 'game') {
-          var n = saleT > 0 ? 2 : 1;
-          for (var j = 0; j < n; j++) lib.push(it.hue);
-          pops.push({ x: it.x, y: sy - 10, txt: '+' + n, life: 0.7, col: '#b6ff3b' });
-          beep(520 + Math.min(lib.length, 40) * 8, 0.07);
-        } else if (it.kind === 'sale') {
-          saleT = 6; pops.push({ x: it.x, y: sy - 10, txt: 'SALE x2', life: 0.9, col: '#ffd23f' });
-          beep(660, 0.08); beep(880, 0.12);
-        } else {
-          lives--; flash = 0.35; shake = reduce ? 0 : 0.3;
-          pops.push({ x: it.x, y: sy - 10, txt: it.lab[0] + ' ' + it.lab[1], life: 1, col: '#ff3d81' });
-          beep(110, 0.25, 'sawtooth', 0.08);
-          if (lives <= 0) { over(); return; }
-        }
-      } else if (it.y - it.s / 2 > H) {
-        items.splice(i, 1);
-        if (it.kind === 'game') forgotten++;
-      }
+        if (it.kind === 'game') { buy(it); if (state !== 'play') return; }
+        else if (it.kind === 'next') { coupon = { type: 'next', pct: it.pct }; pop(it.x, hy - 20, [{ t: 'COUPON', c: '#ffd23f', s: 10 }, { t: 'NEXT GAME -' + it.pct + '%', c: '#fff', s: 9 }], 1.5); beep(660, 0.07); beep(880, 0.1); }
+        else { coupon = { type: 'target', g: it.g, pct: 30 + ((Math.random() * 51) | 0) }; pop(it.x, hy - 20, [{ t: 'SECRET COUPON', c: '#ffd23f', s: 10 }, { t: 'only for ' + it.g.n, c: '#fff', s: 9 }], 1.6); beep(660, 0.07); beep(990, 0.1); }
+      } else if (it.y - it.s > H) items.splice(i, 1);
     }
-    for (var q = pops.length - 1; q >= 0; q--) { pops[q].life -= dt; pops[q].y -= 40 * dt; if (pops[q].life <= 0) pops.splice(q, 1); }
+    for (var j = pops.length - 1; j >= 0; j--) { pops[j].life -= dt; pops[j].y -= 14 * dt; if (pops[j].life <= 0) pops.splice(j, 1); }
     if (flash > 0) flash -= dt;
     if (shake > 0) shake -= dt;
   }
 
-  function over() {
-    state = 'over';
-    if (lib.length > best) { best = lib.length; try { localStorage.setItem('qs_best', best); } catch (e) {} }
-    beep(330, 0.15, 'square'); setTimeout(function () { beep(220, 0.3, 'square'); }, 160);
+  function score() { return lib.length * 100 + Math.floor(wallet / 100); }
+  function end(kind) {
+    state = kind;
+    if (kind === 'lost') { flash = 0.4; shake = reduce ? 0 : 0.35; beep(110, 0.3, 'sawtooth', 0.08); }
+    else { beep(523, 0.1); setTimeout(function () { beep(784, 0.2); }, 120); }
+    if (kind === 'won' && score() > best) { best = score(); try { localStorage.setItem('qs_best_run', best); } catch (e) {} }
   }
-
-  function rank(n) {
-    return n >= 150 ? 'Meta Store Whale' : n >= 100 ? 'Library Master' : n >= 50 ? 'Collector' : n >= 25 ? 'Regular' : n >= 10 ? 'Casual' : 'Just unboxed';
-  }
+  function rank(sc) { return sc >= 2000 ? 'Meta Store legend' : sc >= 1500 ? 'Coupon master' : sc >= 1000 ? 'Deal hunter' : sc >= 500 ? 'Casual buyer' : 'Window shopper'; }
 
   // ---- drawing ----
   function rr(x, y, w, h, r) {
     ctx.beginPath(); ctx.moveTo(x + r, y); ctx.arcTo(x + w, y, x + w, y + h, r); ctx.arcTo(x + w, y + h, x, y + h, r);
     ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath();
   }
-  function text(str, x, y, size, col, align, font) {
-    ctx.font = size + 'px ' + (font || PX); ctx.fillStyle = col; ctx.textAlign = align || 'left'; ctx.textBaseline = 'middle';
-    ctx.fillText(str, x, y);
+  function text(str, x, y, size, col, align, font, outline, weight) {
+    ctx.font = (weight ? weight + ' ' : '') + size + 'px ' + (font || PX); ctx.textAlign = align || 'left'; ctx.textBaseline = 'middle';
+    if (outline) { ctx.lineWidth = 4; ctx.strokeStyle = '#000'; ctx.lineJoin = 'round'; ctx.strokeText(str, x, y); }
+    ctx.fillStyle = col; ctx.fillText(str, x, y);
   }
-  // a Quest-style app tile: rounded square, gradient, label
-  function tile(x, y, s, hue, lab) {
-    var g = ctx.createLinearGradient(x, y, x + s, y + s);
-    g.addColorStop(0, 'hsl(' + hue + ',78%,60%)'); g.addColorStop(1, 'hsl(' + hue + ',70%,28%)');
-    rr(x, y, s, s, s * 0.22); ctx.fillStyle = g; ctx.fill();
-    ctx.lineWidth = 2; ctx.strokeStyle = 'rgba(0,0,0,.55)'; ctx.stroke();
-    rr(x + s * 0.08, y + s * 0.06, s * 0.84, s * 0.22, s * 0.1); ctx.fillStyle = 'rgba(255,255,255,.18)'; ctx.fill();
-    if (lab) text(lab, x + s / 2, y + s * 0.62, Math.max(7, s * 0.125), '#fff', 'center');
+  function cover(g, x, y, s) {
+    rr(x, y, s, s, s * 0.18);
+    if (g.ok) { ctx.save(); ctx.clip(); ctx.drawImage(g.img, x, y, s, s); ctx.restore(); }
+    else { ctx.fillStyle = '#2a2a3c'; ctx.fill(); text(g.n.charAt(0), x + s / 2, y + s / 2, s * 0.4, '#fff', 'center'); }
+    rr(x, y, s, s, s * 0.18); ctx.lineWidth = 2.5; ctx.strokeStyle = '#000'; ctx.stroke();
   }
-  function bad(x, y, s, lab) {
-    rr(x, y, s, s, s * 0.22); ctx.fillStyle = '#1a0a12'; ctx.fill();
-    ctx.lineWidth = 3; ctx.strokeStyle = '#ff3d81'; ctx.stroke();
-    ctx.save(); rr(x + 2, y + 2, s - 4, s - 4, s * 0.2); ctx.clip();
-    ctx.strokeStyle = 'rgba(255,210,63,.35)'; ctx.lineWidth = 4;
-    for (var i = -s; i < s * 2; i += 12) { ctx.beginPath(); ctx.moveTo(x + i, y + s); ctx.lineTo(x + i + s, y); ctx.stroke(); }
+  function gameTile(it) {
+    var s = it.s, x = -s / 2, y = -s / 2;
+    cover(it.g, x, y, s);
+    // price strip
+    var sh = Math.max(18, s * 0.27);
+    ctx.save(); rr(x, y, s, s, s * 0.18); ctx.clip();
+    ctx.fillStyle = 'rgba(0,0,0,.82)'; ctx.fillRect(x, y + s - sh, s, sh);
     ctx.restore();
-    text('!', x + s / 2, y + s * 0.3, s * 0.3, '#ffd23f', 'center');
-    text(lab[0], x + s / 2, y + s * 0.58, Math.max(6, s * 0.1), '#fff', 'center');
-    text(lab[1], x + s / 2, y + s * 0.76, Math.max(6, s * 0.1), '#fff', 'center');
+    if (it.pct) {
+      text(money(it.base), x + s / 2, y + s - sh + sh * 0.3, Math.max(8, s * 0.1), '#8a8aa3', 'center', BODY);
+      var wd = ctx.measureText(money(it.base)).width;
+      ctx.strokeStyle = '#8a8aa3'; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.moveTo(x + s / 2 - wd / 2, y + s - sh + sh * 0.3); ctx.lineTo(x + s / 2 + wd / 2, y + s - sh + sh * 0.3); ctx.stroke();
+      text(money(it.price), x + s / 2, y + s - sh * 0.3, Math.max(9, s * 0.135), '#b6ff3b', 'center');
+      // discount badge
+      var bw = Math.max(34, s * 0.5), bh = Math.max(16, s * 0.22);
+      ctx.fillStyle = '#ff3d81'; ctx.fillRect(x - 3, y + 6, bw, bh); ctx.lineWidth = 2; ctx.strokeStyle = '#000'; ctx.strokeRect(x - 3, y + 6, bw, bh);
+      text('-' + it.pct + '%', x - 3 + bw / 2, y + 6 + bh / 2 + 1, Math.max(8, s * 0.12), '#fff', 'center');
+    } else {
+      text(money(it.price), x + s / 2, y + s - sh / 2, Math.max(9, s * 0.135), '#f1f1e6', 'center');
+    }
   }
-  function sale(x, y, s) {
-    rr(x, y, s, s, s * 0.22); ctx.fillStyle = '#ffd23f'; ctx.fill(); ctx.lineWidth = 3; ctx.strokeStyle = '#000'; ctx.stroke();
-    text('SALE', x + s / 2, y + s * 0.42, Math.max(8, s * 0.17), '#000', 'center');
-    text('-50%', x + s / 2, y + s * 0.68, Math.max(8, s * 0.15), '#ff3d81', 'center');
+  function ticket(it) {
+    var s = it.s, x = -s / 2, y = -s / 2;
+    rr(x, y, s, s, 8); ctx.fillStyle = '#ffd23f'; ctx.fill(); ctx.lineWidth = 3; ctx.strokeStyle = '#000'; ctx.stroke();
+    ctx.fillStyle = '#0b0b15'; ctx.beginPath(); ctx.arc(x, y + s / 2, 7, 0, 7); ctx.arc(x + s, y + s / 2, 7, 0, 7); ctx.fill();
+    ctx.strokeStyle = 'rgba(0,0,0,.35)'; ctx.setLineDash([4, 4]); ctx.beginPath(); ctx.moveTo(x + 10, y + s * 0.34); ctx.lineTo(x + s - 10, y + s * 0.34); ctx.stroke(); ctx.setLineDash([]);
+    text('COUPON', x + s / 2, y + s * 0.18, Math.max(7, s * 0.1), '#000', 'center');
+    if (it.kind === 'next') {
+      text('NEXT', x + s / 2, y + s * 0.52, Math.max(9, s * 0.15), '#000', 'center');
+      text('-' + it.pct + '%', x + s / 2, y + s * 0.78, Math.max(11, s * 0.19), '#ff3d81', 'center', PX, false);
+    } else {
+      cover(it.g, x + s * 0.28, y + s * 0.4, s * 0.44);
+      text('-?%', x + s / 2, y + s * 0.88, Math.max(9, s * 0.15), '#ff3d81', 'center');
+    }
   }
 
-  function drawShelf(ox) {
-    var x = shelf.x - shelf.w / 2 + ox, y = H - 66, w = shelf.w, cols = ['#35e0ff', '#b6ff3b', '#ff3d81', '#f1f1e6'];
-    if (saleT > 0) { ctx.shadowColor = '#ffd23f'; ctx.shadowBlur = 22; }
-    for (var i = 0; i < 4; i++) { ctx.fillStyle = cols[i]; ctx.fillRect(x + (w / 4) * i, y, w / 4, shelf.h); }
-    ctx.shadowBlur = 0;
-    ctx.lineWidth = 3; ctx.strokeStyle = '#000'; ctx.strokeRect(x, y, w, shelf.h);
-    ctx.fillStyle = '#000'; ctx.fillRect(x + 8, y + shelf.h, 6, 8); ctx.fillRect(x + w - 14, y + shelf.h, 6, 8);
+  // the Quest 3, seen from the front
+  function headset() {
+    var w = head.w, h = w * 0.46, x = head.x - w / 2, y = H - 98 - h;
+    ctx.fillStyle = '#2a2a36'; ctx.fillRect(x - 8, y + h * 0.28, 10, h * 0.44); ctx.fillRect(x + w - 2, y + h * 0.28, 10, h * 0.44);
+    var g = ctx.createLinearGradient(0, y, 0, y + h); g.addColorStop(0, '#fbfbfd'); g.addColorStop(1, '#bfbfca');
+    rr(x, y, w, h, h * 0.3); ctx.fillStyle = g; ctx.fill(); ctx.lineWidth = 3; ctx.strokeStyle = '#000'; ctx.stroke();
+    rr(x + w * 0.06, y + h * 0.14, w * 0.88, h * 0.6, h * 0.22); ctx.fillStyle = '#10101a'; ctx.fill();
+    ctx.fillStyle = '#26263a';          // camera cut-outs: a pill on each side, a pair at the nose
+    [[0.17, 0.46], [0.83, 0.46]].forEach(function (p) { rr(x + w * p[0] - 6, y + h * p[1] - h * 0.2, 12, h * 0.4, 6); ctx.fill(); });
+    [[0.4, 0.58], [0.6, 0.58]].forEach(function (p) { ctx.beginPath(); ctx.arc(x + w * p[0], y + h * p[1], 4.5, 0, 7); ctx.fill(); });
+    ctx.fillStyle = 'rgba(255,255,255,.12)'; ctx.fillRect(x + w * 0.1, y + h * 0.2, w * 0.8, 3);
+    ctx.fillStyle = '#10101a'; rr(x + w * 0.42, y + h - 7, w * 0.16, 9, 4); ctx.fill();    // nose notch
+  }
+
+  function strip() {   // the games bought, as little covers along the bottom
+    var m = 28, gap = 4, per = Math.max(1, Math.floor((W - 16) / (m + gap)));
+    ctx.fillStyle = 'rgba(9,9,15,.92)'; ctx.fillRect(0, H - 40, W, 40);
+    ctx.fillStyle = '#34344f'; ctx.fillRect(0, H - 40, W, 2);
+    var from = Math.max(0, lib.length - per);
+    for (var i = from; i < lib.length; i++) cover(lib[i], 8 + (i - from) * (m + gap), H - 34, m);
   }
 
   function hud() {
-    text('LIBRARY ' + lib.length, 14, 20, 11, '#b6ff3b');
-    text('FORGOTTEN ' + forgotten, 14, 40, 8, '#a3a3bc');
-    text('BEST ' + best, W / 2, 20, 8, '#a3a3bc', 'center');
-    for (var i = 0; i < 3; i++) {   // headsets = lives
-      var x = W - 14 - (3 - i) * 30, y = 12;
-      ctx.fillStyle = i < lives ? '#b6ff3b' : '#2a2a3c';
-      ctx.fillRect(x, y, 24, 12); ctx.clearRect(x + 9, y + 8, 6, 4);
-      ctx.fillStyle = i < lives ? '#b6ff3b' : '#2a2a3c'; ctx.fillRect(x + 9, y + 8, 6, 2);
-    }
-    if (saleT > 0) {
-      text('SALE x2', W - 14, 46, 8, '#ffd23f', 'right');
-      ctx.fillStyle = '#ffd23f'; ctx.fillRect(W - 14 - 90 * (saleT / 6), 54, 90 * (saleT / 6), 4);
-    }
+    ctx.fillStyle = 'rgba(9,9,15,.88)'; ctx.fillRect(0, 0, W, 54);
+    ctx.fillStyle = '#34344f'; ctx.fillRect(0, 54, W, 2);
+    text(money(wallet), 14, 20, 15, wallet < 5000 ? '#ff3d81' : '#b6ff3b');
+    var narrow = W < 560;
+    text(narrow ? 'GAMES ' + lib.length : 'GAMES ' + lib.length + '   SAVED ' + money(Math.max(0, listSum - spent)), 14, 42, 8, '#a3a3bc');
+    var left = Math.max(0, Math.ceil(roundLen - t));
+    text(Math.floor(left / 60) + ':' + ('0' + (left % 60)).slice(-2), W / 2 + (narrow ? 18 : 0), 20, narrow ? 12 : 15, left <= 10 ? '#ff3d81' : '#f1f1e6', 'center');
+    if (!narrow) text('BEST ' + best, W / 2, 42, 8, '#a3a3bc', 'center');
+    // the coupon in hand
+    var cx = W - 12;
+    if (coupon) {
+      var label = coupon.type === 'next' ? (narrow ? 'NEXT -' + coupon.pct + '%' : 'COUPON: NEXT GAME -' + coupon.pct + '%') : (narrow ? 'SECRET' : 'SECRET COUPON: ' + coupon.g.n);
+      text(label, cx, 20, 8, '#ffd23f', 'right');
+      if (narrow && coupon.type === 'target') text(coupon.g.n, cx, 40, 7, '#a3a3bc', 'right');
+      else if (!narrow) text(coupon.type === 'next' ? 'use it on a pricey one' : 'catch that game next, or it is wasted', cx, 40, 7, '#a3a3bc', 'right');
+    } else text('NO COUPON', cx, 20, 8, '#4a4a63', 'right');
   }
 
-  function strip() {   // the library so far, as little tiles along the bottom
-    var m = 18, gap = 4, per = Math.max(1, Math.floor((W - 16) / (m + gap)));
-    ctx.fillStyle = 'rgba(255,255,255,.05)'; ctx.fillRect(0, H - 34, W, 34);
-    ctx.fillStyle = '#34344f'; ctx.fillRect(0, H - 34, W, 2);
-    var from = Math.max(0, lib.length - per);
-    for (var i = from; i < lib.length; i++) {
-      var x = 8 + (i - from) * (m + gap), h = lib[i];
-      ctx.fillStyle = 'hsl(' + h + ',75%,55%)'; rr(x, H - 27, m, m, 4); ctx.fill();
-    }
-  }
-
-  function overlay(title, lines, sub) {
-    ctx.fillStyle = 'rgba(9,9,15,.82)'; ctx.fillRect(0, 0, W, H);
-    var y = H * 0.26, big = clamp(W * 0.034, 16, 30);
-    text(title, W / 2, y, big, '#ffd23f', 'center');
+  function overlay(title, col, lines, sub) {
+    ctx.fillStyle = 'rgba(9,9,15,.86)'; ctx.fillRect(0, 0, W, H);
+    var y = H * 0.18, big = clamp(W * 0.034, 15, 30);
+    text(title, W / 2, y, big, col, 'center');
     ctx.fillStyle = '#ff3d81'; ctx.fillRect(W / 2 - 40, y + big * 0.9, 80, 4);
-    var ly = y + big * 2.3, fs = clamp(W * 0.021, 15, 20);
-    lines.forEach(function (l, i) { text(l, W / 2, ly + i * fs * 1.6, fs, i === 0 && lines.length > 2 ? '#fff' : '#cfcfe3', 'center', BODY); });
-    if (Math.floor(performance.now() / 500) % 2 === 0) text(sub, W / 2, H * 0.8, clamp(W * 0.016, 9, 13), '#b6ff3b', 'center');
+    var ly = y + big * 2.2, fs = clamp(W * 0.0215, 14, 20);
+    lines.forEach(function (l, i) { text(l.t || l, W / 2, ly + i * fs * 1.55, fs, l.c || '#cfcfe3', 'center', BODY); });
+    if (Math.floor(performance.now() / 500) % 2 === 0) text(sub, W / 2, H * 0.88, clamp(W * 0.0155, 9, 13), '#b6ff3b', 'center');
   }
 
   function draw() {
     ctx.save();
-    var ox = 0, oy = 0;
-    if (shake > 0) { ox = (Math.random() - .5) * 10; oy = (Math.random() - .5) * 10; ctx.translate(ox, oy); }
-    // background: dark room with a faint grid floor and stars
+    if (shake > 0) ctx.translate((Math.random() - .5) * 10, (Math.random() - .5) * 10);
     var bg = ctx.createLinearGradient(0, 0, 0, H); bg.addColorStop(0, '#0b0b18'); bg.addColorStop(1, '#14142a');
     ctx.fillStyle = bg; ctx.fillRect(-20, -20, W + 40, H + 40);
     ctx.strokeStyle = 'rgba(255,255,255,.04)'; ctx.lineWidth = 1;
     for (var gx = 0; gx < W; gx += 40) { ctx.beginPath(); ctx.moveTo(gx, 0); ctx.lineTo(gx, H); ctx.stroke(); }
     for (var gy = 0; gy < H; gy += 40) { ctx.beginPath(); ctx.moveTo(0, gy); ctx.lineTo(W, gy); ctx.stroke(); }
-    // items
     items.forEach(function (it) {
       ctx.save(); ctx.translate(it.x, it.y); ctx.rotate(it.rot);
-      if (it.kind === 'game') tile(-it.s / 2, -it.s / 2, it.s, it.hue, it.lab);
-      else if (it.kind === 'sale') sale(-it.s / 2, -it.s / 2, it.s);
-      else bad(-it.s / 2, -it.s / 2, it.s, it.lab);
+      if (it.kind === 'game') {
+        gameTile(it);
+        ctx.rotate(-it.rot);
+        text(it.g.n, 0, it.s / 2 + 13, 13, '#fff', 'center', BODY, true, '700');
+      } else ticket(it);
       ctx.restore();
     });
-    drawShelf(0);
+    headset();
     strip();
-    pops.forEach(function (p) { ctx.globalAlpha = clamp(p.life * 2, 0, 1); text(p.txt, p.x, p.y, 10, p.col, 'center'); ctx.globalAlpha = 1; });
+    pops.forEach(function (p) {
+      ctx.globalAlpha = clamp(p.life * 2, 0, 1);
+      p.lines.forEach(function (l, i) { text(l.t, p.x, p.y + i * 17, l.s, l.c, 'center', PX, true); });
+      ctx.globalAlpha = 1;
+    });
     hud();
     ctx.restore();
     if (flash > 0 && !reduce) { ctx.fillStyle = 'rgba(255,61,129,' + (flash * 1.1) + ')'; ctx.fillRect(0, 0, W, H); }
     if (state === 'idle') {
-      overlay('CATCH THE GAMES',
-        ['Your library is empty. Catch VR games with the shelf.', 'Dodge tracking lost, low battery and the Guardian wall.', 'Every game you miss becomes forgotten.'],
-        'CLICK, TAP OR PRESS SPACE TO START');
-    } else if (state === 'over') {
-      overlay('TRACKING LOST',
-        ['Library: ' + lib.length + ' games · Forgotten: ' + forgotten, 'Rank: ' + rank(lib.length) + (lib.length && lib.length >= best ? ' · new best!' : ''), 'Your headset needs a moment.'],
-        'CLICK, TAP OR PRESS SPACE TO PLAY AGAIN');
+      overlay('BUDGET RUN', '#ffd23f', [
+        'Catch Quest games with your Quest 3. Each costs the price on its tile.',
+        { t: 'You have $300. Spend it all and you lose.', c: '#ff8fb5' },
+        'Most games, least money, wins. Grab coupons: one for your next game,',
+        'or a secret one for a specific title (only if that one is next).',
+        { t: 'Round: ' + roundLen + ' seconds', c: '#fff' }
+      ], 'CLICK, TAP OR PRESS SPACE TO START');
+    } else if (state === 'won') {
+      var sv = Math.max(0, listSum - spent);
+      overlay("TIME'S UP", '#b6ff3b', [
+        { t: lib.length + ' games for ' + money(spent) + ' · saved ' + money(sv), c: '#fff' },
+        'Money left: ' + money(wallet) + '  ·  Score: ' + score() + (score() >= best && score() > 0 ? '  (new best!)' : ''),
+        'Rank: ' + rank(score())
+      ], 'CLICK, TAP OR PRESS SPACE TO PLAY AGAIN');
+    } else if (state === 'lost') {
+      overlay('WALLET EMPTY', '#ff3d81', [
+        { t: why, c: '#fff' },
+        lib.length + ' games for ' + money(spent) + '. Game over.',
+        'Tip: the sale price is on the tile, and coupons are worth saving.'
+      ], 'CLICK, TAP OR PRESS SPACE TO TRY AGAIN');
     }
   }
 
@@ -689,38 +773,41 @@
   }
 
   // ---- input ----
-  function setX(clientX) { var r = cv.getBoundingClientRect(); shelf.tx = clamp(clientX - r.left, shelf.w / 2, W - shelf.w / 2); }
+  function setX(clientX) { var r = cv.getBoundingClientRect(); head.tx = clamp(clientX - r.left, head.w / 2, W - head.w / 2); }
   cv.addEventListener('pointermove', function (e) { setX(e.clientX); });
-  cv.addEventListener('pointerdown', function (e) {
-    setX(e.clientX);
-    if (state !== 'play') start();
-  });
+  cv.addEventListener('pointerdown', function (e) { setX(e.clientX); cv.focus({ preventScroll: true }); if (state !== 'play') start(); });
   addEventListener('keydown', function (e) {
     var k = e.key;
     if (k === 'ArrowLeft' || k === 'a' || k === 'A') { keys.l = true; if (state === 'play' && visible) e.preventDefault(); }
     else if (k === 'ArrowRight' || k === 'd' || k === 'D') { keys.r = true; if (state === 'play' && visible) e.preventDefault(); }
-    else if ((k === ' ' || k === 'Enter') && (state !== 'play') && (document.activeElement === cv)) { e.preventDefault(); start(); }
-    else if (k === ' ' && state === 'play' && visible) { e.preventDefault(); }
+    else if ((k === ' ' || k === 'Enter') && state !== 'play' && document.activeElement === cv) { e.preventDefault(); start(); }
+    else if (k === ' ' && state === 'play' && visible) e.preventDefault();
   });
   addEventListener('keyup', function (e) {
     var k = e.key;
     if (k === 'ArrowLeft' || k === 'a' || k === 'A') keys.l = false;
     if (k === 'ArrowRight' || k === 'd' || k === 'D') keys.r = false;
   });
-  cv.addEventListener('pointerdown', function () { cv.focus({ preventScroll: true }); });
 
   // for testing only: ?debug in the address exposes the state
   if (/[?&]debug/.test(location.search)) {
-    window.__game = { snap: function () { return { state: state, items: items.map(function (i) { return { x: i.x, y: i.y, kind: i.kind }; }), lib: lib.length, forgotten: forgotten, lives: lives, saleT: saleT, shelfX: shelf.x, W: W, H: H }; } };
+    window.__game = {
+      snap: function () { return { state: state, wallet: wallet, spent: spent, games: lib.length, t: t, coupon: coupon && { type: coupon.type, pct: coupon.pct, g: coupon.g && coupon.g.n },
+        items: items.map(function (i) { return { x: i.x, y: i.y, kind: i.kind, price: i.price, base: i.base, pct: i.pct, g: i.g && i.g.n }; }), headX: head.x, W: W, H: H, score: score() }; },
+      setT: function (v) { t = v; },
+      // puts an item right above the headset, so that it is caught at once
+      drop: function (kind, name, pct) {
+        var g = GAMES.filter(function (x) { return x.n === name; })[0];
+        var it = { kind: kind, g: g, x: head.x, y: H - 98 - head.w * 0.46 - 8, s: S, vy: 300, rot: 0, base: g && g.p, pct: pct || 0, price: g ? salePrice(g.p, pct || 0) : 0 };
+        items.push(it);
+      }
+    };
   }
 
-  if ('IntersectionObserver' in window) {
-    new IntersectionObserver(function (en) { visible = en[0].isIntersecting; }, { threshold: 0.2 }).observe(cv);
-  }
+  if ('IntersectionObserver' in window) new IntersectionObserver(function (en) { visible = en[0].isIntersecting; }, { threshold: 0.2 }).observe(cv);
   addEventListener('resize', resize);
-
   var ready = (document.fonts && document.fonts.load)
-    ? Promise.all([document.fonts.load('12px "Press Start 2P"'), document.fonts.load('500 16px "Chakra Petch"')]).catch(function () {})
+    ? Promise.all([document.fonts.load('12px "Press Start 2P"'), document.fonts.load('600 12px "Chakra Petch"')]).catch(function () {})
     : Promise.resolve();
   ready.then(function () { resize(); last = performance.now(); requestAnimationFrame(loop); });
 })();
