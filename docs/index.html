@@ -242,10 +242,10 @@
     <nav class="menu">
       <a href="#features">Features</a>
       <a href="#screens">Screens</a>
+      <a href="#play">Play</a>
       <a href="#install">Install</a>
       <a href="#privacy">Privacy</a>
       <a href="#faq">FAQ</a>
-      <a href="#play">Play</a>
       <a href="https://github.com/unreal777/quest-shelf">GitHub</a>
       <a class="btn" href="https://github.com/unreal777/quest-shelf/releases/latest">Download</a>
     </nav>
@@ -317,6 +317,25 @@
     </div>
   </section>
 
+  <section id="play">
+    <div class="wrap">
+      <div class="kicker"><b>BONUS</b> // stage</div>
+      <h2>Budget run: $300</h2>
+      <p class="sub">Quest games are falling, with real Meta Store prices and sales we made up. Catch them with your Quest 3. Catch as many as you can and spend as little as you can. Spend the whole $300 and you lose. Coupons help: one for your <b style="color:var(--text)">next</b> game, or a secret one for a <b style="color:var(--text)">specific</b> title.</p>
+      <div class="win arena">
+        <div class="bar"><i></i><i></i><i></i><span>budget_run.exe</span></div>
+        <canvas id="game" tabindex="0" role="img" aria-label="Mini-game: move your Quest 3 left and right to catch falling Quest games. Each game costs the price on its tile. You have 300 dollars; spending it all loses. Coupons give a discount on your next game or on one specific game."></canvas>
+      </div>
+      <div class="tools">
+        <button class="btn alt small" id="len60" type="button" aria-pressed="true">Round: 60 s</button>
+        <button class="btn alt small" id="len120" type="button" aria-pressed="false">Round: 120 s</button>
+        <button class="btn alt small" id="snd" type="button" aria-pressed="false">Sound: off</button>
+        <span>Move: mouse, finger or <kbd>←</kbd> <kbd>→</kbd> · Start: click or <kbd>Space</kbd></span>
+      </div>
+      <p class="fine">Prices are approximate Meta Store list prices, discounts are made up. Game covers belong to their publishers and are shown only to identify the games. Not affiliated with Meta or the publishers.</p>
+    </div>
+  </section>
+
   <section id="install">
     <div class="wrap">
       <div class="kicker"><b>03</b> // quest log</div>
@@ -374,24 +393,6 @@
     </div>
   </section>
 
-  <section id="play">
-    <div class="wrap">
-      <div class="kicker"><b>BONUS</b> // stage</div>
-      <h2>Budget run: $300</h2>
-      <p class="sub">Quest games are falling, with real Meta Store prices and sales we made up. Catch them with your Quest 3. Catch as many as you can and spend as little as you can. Spend the whole $300 and you lose. Coupons help: one for your <b style="color:var(--text)">next</b> game, or a secret one for a <b style="color:var(--text)">specific</b> title.</p>
-      <div class="win arena">
-        <div class="bar"><i></i><i></i><i></i><span>budget_run.exe</span></div>
-        <canvas id="game" tabindex="0" role="img" aria-label="Mini-game: move your Quest 3 left and right to catch falling Quest games. Each game costs the price on its tile. You have 300 dollars; spending it all loses. Coupons give a discount on your next game or on one specific game."></canvas>
-      </div>
-      <div class="tools">
-        <button class="btn alt small" id="len60" type="button" aria-pressed="true">Round: 60 s</button>
-        <button class="btn alt small" id="len120" type="button" aria-pressed="false">Round: 120 s</button>
-        <button class="btn alt small" id="snd" type="button" aria-pressed="false">Sound: off</button>
-        <span>Move: mouse, finger or <kbd>←</kbd> <kbd>→</kbd> · Start: click or <kbd>Space</kbd></span>
-      </div>
-      <p class="fine">Prices are approximate Meta Store list prices, discounts are made up. Game covers belong to their publishers and are shown only to identify the games. Not affiliated with Meta or the publishers.</p>
-    </div>
-  </section>
 
   <div class="wrap">
     <div class="cont">
@@ -461,7 +462,7 @@
   var reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
   var GAMES = window.QS_GAMES || [];
   var BUDGET = 30000;                       // cents
-  var W = 0, H = 0, S = 76;
+  var W = 0, H = 0, S = 76, narrow = false;
   var state = 'idle', why = '', roundLen = 60;
   var dupes = 0;
   var items = [], lib = [], pops = [], wallet = BUDGET, spent = 0, listSum = 0, t = 0, last = 0, spawnT = 0, flash = 0, shake = 0;
@@ -483,8 +484,10 @@
     W = r.width; H = r.height;
     cv.width = Math.round(W * d); cv.height = Math.round(H * d);
     ctx.setTransform(d, 0, 0, d, 0, 0);
-    S = clamp(W * 0.105, 62, 96);
-    head.w = clamp(W * 0.23, 124, 220);
+    narrow = W < 560;
+    // on a phone the headset is much bigger relative to the screen, the games smaller and slower
+    S = narrow ? clamp(W * 0.15, 46, 60) : clamp(W * 0.105, 62, 96);
+    head.w = narrow ? clamp(W * 0.52, 150, 250) : clamp(W * 0.23, 124, 220);
     head.x = head.tx = clamp(head.x || W / 2, head.w / 2, W - head.w / 2);
   }
 
@@ -535,7 +538,7 @@
     for (var k = 0; k < 6; k++) { var x = S / 2 + Math.random() * (W - S); if (Math.abs(x - lastX) > S * 1.2) { lastX = x; return x; } }
     lastX = S / 2 + Math.random() * (W - S); return lastX;
   }
-  function speed(prog) { return (H / 540) * (95 + 95 * prog + Math.random() * 40); }
+  function speed(prog) { return (H / 540) * (95 + 95 * prog + Math.random() * 40) * (narrow ? 0.8 : 1); }
 
   function spawnGame(g) {
     var pct = discount();
@@ -557,7 +560,7 @@
     } else spawnGame(pick(GAMES));
   }
 
-  function pop(x, y, lines, life) { pops.push({ x: x, y: y, lines: lines, life: life || 1.4, max: life || 1.4 }); }
+  function pop(x, y, lines, life) { x = clamp(x, 95, W - 95); pops.push({ x: x, y: y, lines: lines, life: life || 1.4, max: life || 1.4 }); }
 
   var FACEPALMS = ['DAMN, I HAVE IT ALREADY', 'FACEPALM', 'I OWN THIS ONE...', 'ALREADY IN MY LIBRARY', 'WHY DID I CATCH THAT'];
   function buy(it) {
@@ -594,7 +597,7 @@
     if (k) head.tx = clamp(head.tx + k * W * 0.95 * dt, head.w / 2, W - head.w / 2);
     head.x += (head.tx - head.x) * Math.min(1, dt * 20);
     spawnT -= dt;
-    if (spawnT <= 0) { spawn(); var prog = t / roundLen; spawnT = (0.88 - 0.34 * prog) * (0.8 + Math.random() * 0.4); }
+    if (spawnT <= 0) { spawn(); var prog = t / roundLen; spawnT = (0.88 - 0.34 * prog) * (0.8 + Math.random() * 0.4) * (narrow ? 1.5 : 1); }
     for (var q = targetQueue.length - 1; q >= 0; q--) if (t >= targetQueue[q].at) { spawnGame(targetQueue[q].g); targetQueue.splice(q, 1); }
     var hy = headTop() + 2;      // top of the headset
     for (var i = items.length - 1; i >= 0; i--) {
@@ -747,12 +750,21 @@
 
   function overlay(title, col, lines, sub) {
     ctx.fillStyle = 'rgba(9,9,15,.86)'; ctx.fillRect(0, 0, W, H);
-    var y = H * 0.18, big = clamp(W * 0.034, 15, 30);
+    var y = H * (narrow ? 0.1 : 0.18), big = clamp(W * 0.034, 15, 30);
     text(title, W / 2, y, big, col, 'center');
     ctx.fillStyle = '#ff3d81'; ctx.fillRect(W / 2 - 40, y + big * 0.9, 80, 4);
-    var ly = y + big * 2.2, fs = clamp(W * 0.0215, 14, 20);
-    lines.forEach(function (l, i) { text(l.t || l, W / 2, ly + i * fs * 1.55, fs, l.c || '#cfcfe3', 'center', BODY); });
-    if (Math.floor(performance.now() / 500) % 2 === 0) text(sub, W / 2, H * 0.88, clamp(W * 0.0155, 9, 13), '#b6ff3b', 'center');
+    var ly = y + big * 2.2, fs = clamp(W * 0.0215, 14, 20), row = 0;
+    ctx.font = fs + 'px ' + BODY;
+    lines.forEach(function (l) {
+      var words = (l.t || l).split(' '), cur = '';
+      words.forEach(function (w) {
+        var tryLine = cur ? cur + ' ' + w : w;
+        if (ctx.measureText(tryLine).width > W - 36 && cur) { text(cur, W / 2, ly + row++ * fs * 1.5, fs, l.c || '#cfcfe3', 'center', BODY); cur = w; }
+        else cur = tryLine;
+      });
+      text(cur, W / 2, ly + row++ * fs * 1.5, fs, l.c || '#cfcfe3', 'center', BODY);
+    });
+    if (Math.floor(performance.now() / 500) % 2 === 0) text(sub, W / 2, H * 0.9, clamp(W * 0.0155, 8, 13), '#b6ff3b', 'center');
   }
 
   function draw() {
@@ -768,7 +780,7 @@
       if (it.kind === 'game') {
         gameTile(it);
         ctx.rotate(-it.rot);
-        text(it.g.n, 0, it.s / 2 + 13, 13, '#fff', 'center', BODY, true, '700');
+        if (!narrow || it.s >= 52) text(it.g.n, 0, it.s / 2 + (narrow ? 10 : 13), narrow ? 10 : 13, '#fff', 'center', BODY, true, '700');
       } else ticket(it);
       ctx.restore();
     });
@@ -837,6 +849,12 @@
       snap: function () { return { state: state, wallet: wallet, spent: spent, games: lib.length, dupes: dupes, t: t, coupon: coupon && { type: coupon.type, pct: coupon.pct, g: coupon.g && coupon.g.n },
         items: items.map(function (i) { return { x: i.x, y: i.y, kind: i.kind, price: i.price, base: i.base, pct: i.pct, g: i.g && i.g.n }; }), headX: head.x, W: W, H: H, score: score() }; },
       setT: function (v) { t = v; },
+      // manual clock, so that a round can be played without waiting for animation frames
+      step: function (n, dt) { for (var i = 0; i < n && state === 'play'; i++) update(dt); draw(); },
+      move: function (x) { head.tx = clamp(x, head.w / 2, W - head.w / 2); head.x = head.tx; },
+      start: function () { start(); },
+      owned: function () { return lib.map(function (g) { return g.n; }); },
+      dims: function () { return { S: S, headW: head.w, narrow: narrow, W: W, H: H }; },
       // puts an item right above the headset, so that it is caught at once
       drop: function (kind, name, pct) {
         var g = GAMES.filter(function (x) { return x.n === name; })[0];
