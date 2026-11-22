@@ -173,6 +173,8 @@
     <string name="run_back">Back to the game</string>
     <string name="run_quit">Quit the game</string>
     <string name="t_quit_failed">Could not quit it from here. Use Quit in the Meta menu.</string>
+    <string name="battery_tip">Headset battery: %1$d%%</string>
+    <string name="battery_tip_charging">Headset battery: %1$d%%, charging</string>
     <string name="unpin">Back to automatic order</string>
     <string name="reset_pins">Reset my rearrangements</string>
     <string name="pl_note">The headset has counted play time only since %s</string>

@@ -15,6 +15,7 @@ import android.graphics.drawable.ColorDrawable
 import android.graphics.drawable.Drawable
 import android.graphics.drawable.GradientDrawable
 import android.net.Uri
+import android.os.BatteryManager
 import android.os.Build
 import android.os.Bundle
 import android.os.Handler
@@ -313,6 +314,9 @@ open class MainActivity : Activity() {
         top.addView(filterSlot, LinearLayout.LayoutParams(WRAP, WRAP))
         top.addView(ui.iconButton(Ic.SORT, s(R.string.sort_title)) { showSortMenu() })
         top.addView(ui.iconButton(Ic.SLIDERS, s(R.string.settings)) { showSettings() })
+        // the headset's charge, at the far right like a status corner
+        battery = BatteryView(this, ui)
+        top.addView(battery, LinearLayout.LayoutParams(WRAP, dp(48)).apply { leftMargin = dp(8) })
         root.addView(top, LinearLayout.LayoutParams(MATCH, WRAP))
 
         // ---- tabs
@@ -479,6 +483,43 @@ open class MainActivity : Activity() {
         }
     }
     private var packageReceiverOn = false
+
+    // The charge is listened to only while the window is on screen: the system hands over the
+    // current value at once on registering, and nothing runs for it in the background.
+    private lateinit var battery: BatteryView
+    private var batteryReceiverOn = false
+    private val batteryReceiver = object : BroadcastReceiver() {
+        override fun onReceive(c: Context, i: Intent) = showBattery(i)
+    }
+
+    private fun showBattery(i: Intent?) {
+        i ?: return
+        val level = i.getIntExtra(BatteryManager.EXTRA_LEVEL, -1)
+        val scale = i.getIntExtra(BatteryManager.EXTRA_SCALE, 100)
+        if (level < 0 || scale <= 0) return
+        val status = i.getIntExtra(BatteryManager.EXTRA_STATUS, -1)
+        val plugged = status == BatteryManager.BATTERY_STATUS_CHARGING || status == BatteryManager.BATTERY_STATUS_FULL
+        battery.set(level * 100 / scale, plugged)
+    }
+
+    override fun onStart() {
+        super.onStart()
+        if (!batteryReceiverOn) {
+            batteryReceiverOn = true
+            showBattery(registerReceiver(batteryReceiver, IntentFilter(Intent.ACTION_BATTERY_CHANGED)))
+        }
+    }
+
+    override fun onStop() {
+        if (batteryReceiverOn) {
+            batteryReceiverOn = false
+            try {
+                unregisterReceiver(batteryReceiver)
+            } catch (_: Exception) {
+            }
+        }
+        super.onStop()
+    }
 
     /** Reads the app list again after [ms], once however many reasons come in meanwhile. */
     private fun reloadSoon(ms: Long) {

@@ -172,6 +172,8 @@
     <string name="run_back">Вернуться в игру</string>
     <string name="run_quit">Закрыть игру</string>
     <string name="t_quit_failed">Отсюда закрыть не вышло. Нажми «Закрыть» в меню Meta.</string>
+    <string name="battery_tip">Заряд шлема: %1$d%%</string>
+    <string name="battery_tip_charging">Заряд шлема: %1$d%%, заряжается</string>
     <string name="unpin">Вернуть в общий порядок</string>
     <string name="reset_pins">Сбросить свои перестановки</string>
     <string name="pl_note">Шлем считает время в играх только с %s</string>

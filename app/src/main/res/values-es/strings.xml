@@ -172,6 +172,8 @@
     <string name="run_back">Volver al juego</string>
     <string name="run_quit">Cerrar el juego</string>
     <string name="t_quit_failed">No se pudo cerrar desde aquí. Usa Salir en el menú de Meta.</string>
+    <string name="battery_tip">Batería del visor: %1$d%%</string>
+    <string name="battery_tip_charging">Batería del visor: %1$d%%, cargando</string>
     <string name="unpin">Volver al orden automático</string>
     <string name="reset_pins">Restablecer mi orden</string>
     <string name="pl_note">El visor solo cuenta el tiempo de juego desde el %s</string>

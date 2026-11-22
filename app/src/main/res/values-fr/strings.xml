@@ -172,6 +172,8 @@
     <string name="run_back">Retour au jeu</string>
     <string name="run_quit">Quitter le jeu</string>
     <string name="t_quit_failed">Impossible de le quitter d\'ici. Utilise Quitter dans le menu Meta.</string>
+    <string name="battery_tip">Batterie du casque : %1$d%%</string>
+    <string name="battery_tip_charging">Batterie du casque : %1$d%%, en charge</string>
     <string name="unpin">Revenir à l\'ordre automatique</string>
     <string name="reset_pins">Réinitialiser mon ordre</string>
     <string name="pl_note">Le casque ne compte le temps de jeu que depuis le %s</string>
